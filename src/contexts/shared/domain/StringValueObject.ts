@@ -1,3 +1,11 @@
 export abstract class StringValueObject {
-	constructor(public readonly value: string) {}
+  constructor(readonly value: string) {}
+
+  toString(): string {
+    return this.value;
+  }
+
+  equals(other: StringValueObject): boolean {
+    return this.value === other?.value;
+  }
 }

@@ -1,46 +1,32 @@
-import { NextResponse } from "next/server";
-
-import { DomainError } from "../../domain/DomainError";
+import { NextResponse } from 'next/server';
 
 export class HttpNextResponse {
-	static domainError(error: DomainError, statusCode: number): NextResponse {
-		return NextResponse.json(
-			{
-				error: error.toPrimitives(),
-			},
-			{ status: statusCode },
-		);
-	}
+  static ok(data?: any): NextResponse {
+    return NextResponse.json(data, { status: 200 });
+  }
 
-	static badRequest(message: string): NextResponse {
-		return NextResponse.json(
-			{
-				error: {
-					type: "InvalidRequest",
-					description: message,
-					data: {},
-				},
-			},
-			{ status: 404 },
-		);
-	}
+  static created(data?: any): NextResponse {
+    return NextResponse.json(data, { status: 201 });
+  }
 
-	static internalServerError(): NextResponse {
-		return NextResponse.json(
-			{
-				code: "InternalServerError",
-				message: "Internal server error",
-				data: {},
-			},
-			{ status: 500 },
-		);
-	}
+  static badRequest(message: string): NextResponse {
+    return NextResponse.json(
+      { error: message },
+      { status: 400 }
+    );
+  }
 
-	static created(): NextResponse {
-		return new NextResponse(null, { status: 201 });
-	}
+  static notFound(message: string): NextResponse {
+    return NextResponse.json(
+      { error: message },
+      { status: 404 }
+    );
+  }
 
-	static json<JsonBody>(data: JsonBody): NextResponse {
-		return NextResponse.json(data, { status: 200 });
-	}
+  static internalServerError(message: string = 'Internal Server Error'): NextResponse {
+    return NextResponse.json(
+      { error: message },
+      { status: 500 }
+    );
+  }
 }

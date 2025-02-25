@@ -1,48 +1,45 @@
-import postgres from "postgres";
+import pg from 'pg';
 
 export class PostgresConnection {
-	private sqlInstance: postgres.Sql | null = null;
+  private client: pg.Client;
 
-	get sql(): postgres.Sql {
-		if (!this.sqlInstance) {
-			this.sqlInstance = postgres({
-				host: "localhost",
-				port: 5432,
-				user: "codely",
-				password: "c0d3ly7v",
-				database: "ecommerce",
-				onnotice: () => {},
-			});
-		}
+  private constructor(client: pg.Client) {
+    this.client = client;
+  }
 
-		return this.sqlInstance;
-	}
+  static async create(config: pg.ClientConfig): Promise<PostgresConnection> {
+    const client = new pg.Client(config);
+    await client.connect();
+    return new PostgresConnection(client);
+  }
 
-	async searchOne<T>(query: string): Promise<T | null> {
-		return (await this.sql.unsafe(query))[0] as T;
-	}
+  async close(): Promise<void> {
+    await this.client.end();
+  }
 
-	async searchAll<T>(query: string): Promise<T[]> {
-		return (await this.sql.unsafe(query)) as T[];
-	}
+  async execute(query: string, values: any[] = []): Promise<void> {
+    await this.client.query(query, values);
+  }
 
-	async execute(query: string): Promise<void> {
-		await this.sql.unsafe(query);
-	}
+  async query<T>(query: string, values: any[] = []): Promise<T[]> {
+    const result = await this.client.query<T>(query, values);
+    return result.rows;
+  }
 
-	async truncateAll(): Promise<void> {
-		await this.execute(`DO
-$$
-DECLARE
-    r RECORD;
-BEGIN
-    FOR r IN (SELECT schemaname, tablename
-              FROM pg_tables
-              WHERE schemaname IN ('shop', 'shared', 'product'))
-    LOOP
-        EXECUTE 'TRUNCATE TABLE ' || quote_ident(r.schemaname) || '.' || quote_ident(r.tablename) || ' CASCADE';
-    END LOOP;
-END
-$$;`);
-	}
+  async queryOne<T>(query: string, values: any[] = []): Promise<T | null> {
+    const result = await this.client.query<T>(query, values);
+    return result.rows[0] || null;
+  }
+
+  async transaction<T>(callback: () => Promise<T>): Promise<T> {
+    try {
+      await this.execute('BEGIN');
+      const result = await callback();
+      await this.execute('COMMIT');
+      return result;
+    } catch (error) {
+      await this.execute('ROLLBACK');
+      throw error;
+    }
+  }
 }
