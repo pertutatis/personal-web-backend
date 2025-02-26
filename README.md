@@ -125,19 +125,63 @@ npm run dev
 
 ## Testing
 
-Run all tests:
-```bash
-npm test
-```
+The project includes comprehensive test coverage:
 
-The project includes:
-- Unit tests for domain objects
-- Integration tests for repositories
+### Test Types
+- Unit tests for domain objects and value objects
+- Integration tests for repositories and database operations
+- Application tests for use cases and business logic
 - E2E tests for API endpoints
 
-### Test Database Setup
+### Running Tests
 
-Integration tests use separate test databases that are automatically created and cleaned up during test runs.
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Generate coverage report
+npm run test:coverage
+
+# Run tests in CI mode
+npm run test:ci
+```
+
+### Test Environment Setup
+
+1. Set up test environment (required once):
+```bash
+npm run test:setup
+```
+This will:
+- Start required Docker containers
+- Create test databases
+- Apply database schemas
+- Configure test environment
+
+2. Test databases:
+- Separate databases for tests
+- Automatic cleanup between test runs
+- Isolated from development databases
+
+### Test Structure
+
+Tests follow the project's structure:
+```
+src/
+├── contexts/
+    ├── blog/
+    │   ├── article/
+    │   │   ├── application/__tests__/    # Use case tests
+    │   │   ├── domain/__tests__/         # Domain object tests
+    │   │   └── infrastructure/__tests__/  # Repository tests
+    │   └── book/
+    │       ├── application/__tests__/
+    │       ├── domain/__tests__/
+    │       └── infrastructure/__tests__/
+```
 
 ## Architecture
 
@@ -167,26 +211,75 @@ This project follows:
 
 ## Development
 
+### Available Commands
+
+```bash
+# Start development server
+npm run dev
+
+# Lint code
+npm run lint
+
+# Format code
+npm run format
+
+# Type check
+npm run type-check
+
+# Build for production
+npm run build
+
+# Start production server
+npm run start
+```
+
+### Development Workflow
+
 1. Coding Standards:
    - TypeScript for type safety
-   - ESLint for code quality
-   - Prettier for code formatting
+   - ESLint for code quality (`npm run lint`)
+   - Prettier for code formatting (`npm run format`)
+   - Pre-commit hooks for code quality
 
 2. Git Workflow:
-   - Feature branches
-   - Pull request reviews
-   - Automated testing on CI
+   - Create feature branch: `git checkout -b feature/nombre-feature`
+   - Commit using conventional commits: `type(scope): message`
+   - Push changes: `git push origin feature/nombre-feature`
+   - Create pull request
+   - Automated CI checks
+   - Code review process
+   - Merge after approval
 
 3. Database Management:
    - PostgreSQL for persistence
    - Separate databases for articles and books
-   - Automatic schema initialization
+   - Schema files in `databases/` directory
+   - Automatic schema initialization on Docker startup
+   - Test databases managed separately
 
 ## Documentation
 
+The project includes comprehensive documentation:
+
+### Architecture Documentation
 - [Architecture Decision Records](./docs/adr)
+  - `001-arquitectura-hexagonal.md`: Decisiones sobre arquitectura hexagonal
+  - `002-persistencia-datos.md`: Estrategia de persistencia de datos
+  - `003-api-rest.md`: Diseño de la API REST
+
+### Business Rules
 - [Operation Behavior Rules](./docs/obr)
+  - `001-article-rules.md`: Reglas de negocio para artículos
+  - `002-book-rules.md`: Reglas de negocio para libros
+
+### Technical Setup
 - [Setup Documentation](./docs/setup)
+  - `path-aliases.md`: Configuración de alias de rutas
+  - `path-aliases-implementation.md`: Implementación técnica de los alias
+
+### Additional Resources
+- [Testing Guide](./docs/testing.md): Guía detallada de pruebas
+- [Prompts](./docs/prompts): Documentación de tareas y prompts
 
 ## Error Handling
 
