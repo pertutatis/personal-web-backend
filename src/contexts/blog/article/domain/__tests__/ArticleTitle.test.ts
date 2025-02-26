@@ -1,34 +1,36 @@
-import { ArticleTitle } from '../ArticleTitle';
 import { ArticleTitleEmpty } from '../ArticleTitleEmpty';
 import { ArticleTitleLengthExceeded } from '../ArticleTitleLengthExceeded';
+import { ArticleTitleMother } from './mothers/ArticleTitleMother';
 
 describe('ArticleTitle', () => {
   it('should create a valid article title', () => {
-    const title = 'Valid Article Title';
-    const articleTitle = ArticleTitle.create(title);
-    expect(articleTitle.value).toBe(title);
+    const title = ArticleTitleMother.create();
+    expect(title.value).toBe('10 Clean Code Principles Every Developer Should Follow');
   });
 
   it('should throw error when title is empty', () => {
     expect(() => {
-      ArticleTitle.create('');
+      ArticleTitleMother.empty();
     }).toThrow(ArticleTitleEmpty);
 
     expect(() => {
-      ArticleTitle.create('   ');
+      ArticleTitleMother.withSpacesOnly();
     }).toThrow(ArticleTitleEmpty);
   });
 
   it('should throw error when title exceeds maximum length', () => {
-    const longTitle = 'a'.repeat(151); // Max length is 150 characters
     expect(() => {
-      ArticleTitle.create(longTitle);
+      ArticleTitleMother.tooLong();
     }).toThrow(ArticleTitleLengthExceeded);
   });
 
+  it('should accept title with exactly maximum length', () => {
+    const title = ArticleTitleMother.maxLength();
+    expect(title.value.length).toBe(150);
+  });
+
   it('should trim title', () => {
-    const title = '  Title with spaces  ';
-    const articleTitle = ArticleTitle.create(title);
-    expect(articleTitle.value).toBe('Title with spaces');
+    const title = ArticleTitleMother.withWhitespace();
+    expect(title.value).toBe('Title with spaces');
   });
 });

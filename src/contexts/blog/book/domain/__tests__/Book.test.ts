@@ -1,36 +1,27 @@
 import { Book } from '../Book';
-import { BookId } from '../BookId';
-import { BookTitle } from '../BookTitle';
-import { BookAuthor } from '../BookAuthor';
-import { BookIsbn } from '../BookIsbn';
 import { BookTitleEmpty } from '../BookTitleEmpty';
 import { BookAuthorEmpty } from '../BookAuthorEmpty';
 import { InvalidBookIsbn } from '../InvalidBookIsbn';
+import { BookMother } from './mothers/BookMother';
+import { BookTitleMother } from './mothers/BookTitleMother';
+import { BookAuthorMother } from './mothers/BookAuthorMother';
+import { BookIsbnMother } from './mothers/BookIsbnMother';
 
 describe('Book', () => {
-  const now = new Date();
-  const validBookData = {
-    id: BookId.create('test-id'),
-    title: BookTitle.create('Test Book'),
-    author: BookAuthor.create('Test Author'),
-    isbn: BookIsbn.create('9780141036144'), // Valid ISBN-13
-    createdAt: now,
-    updatedAt: now
-  };
-
   it('should create a valid book', () => {
-    const book = Book.create(validBookData);
+    const now = new Date();
+    const book = BookMother.withDates(now, now);
 
-    expect(book.id.toString()).toBe('test-id');
-    expect(book.title.toString()).toBe('Test Book');
-    expect(book.author.toString()).toBe('Test Author');
-    expect(book.isbn.toString()).toBe('9780141036144');
+    expect(book.id.toString()).toBeDefined();
+    expect(book.title.toString()).toBe('Clean Code');
+    expect(book.author.toString()).toBe('Robert C. Martin');
+    expect(book.isbn.toString()).toBe('978-0-13-235088-4');
     expect(book.createdAt).toBe(now);
     expect(book.updatedAt).toBe(now);
   });
 
   it('should create a book event when created', () => {
-    const book = Book.create(validBookData);
+    const book = BookMother.create();
     const events = book.pullDomainEvents();
 
     expect(events).toHaveLength(1);
@@ -38,10 +29,10 @@ describe('Book', () => {
   });
 
   it('should update book properties', () => {
-    const book = Book.create(validBookData);
-    const newTitle = BookTitle.create('Updated Title');
-    const newAuthor = BookAuthor.create('Updated Author');
-    const newIsbn = BookIsbn.create('9780062315007'); // Different valid ISBN-13
+    const book = BookMother.create();
+    const newTitle = BookTitleMother.create('Updated Title');
+    const newAuthor = BookAuthorMother.create('Updated Author');
+    const newIsbn = BookIsbnMother.create('9780062315007');
 
     book.update({
       title: newTitle,
@@ -51,15 +42,15 @@ describe('Book', () => {
 
     expect(book.title.toString()).toBe('Updated Title');
     expect(book.author.toString()).toBe('Updated Author');
-    expect(book.isbn.toString()).toBe('9780062315007');
+    expect(book.isbn.toString()).toBe('978-0-06-231500-7');
   });
 
   it('should create an updated event when updated', () => {
-    const book = Book.create(validBookData);
+    const book = BookMother.create();
     book.update({
-      title: BookTitle.create('Updated Title'),
-      author: BookAuthor.create('Updated Author'),
-      isbn: BookIsbn.create('9780062315007')
+      title: BookTitleMother.create('Updated Title'),
+      author: BookAuthorMother.create('Updated Author'),
+      isbn: BookIsbnMother.create('9780062315007')
     });
 
     const events = book.pullDomainEvents();
@@ -68,43 +59,47 @@ describe('Book', () => {
   });
 
   it('should convert to primitives', () => {
-    const book = Book.create(validBookData);
+    const now = new Date();
+    const book = BookMother.withDates(now, now);
     const primitives = book.toPrimitives();
 
     expect(primitives).toEqual({
-      id: 'test-id',
-      title: 'Test Book',
-      author: 'Test Author',
-      isbn: '9780141036144',
+      id: book.id.toString(),
+      title: 'Clean Code',
+      author: 'Robert C. Martin',
+      isbn: '978-0-13-235088-4',
       createdAt: now,
       updatedAt: now
     });
   });
 
   it('should not create book with empty title', () => {
-    expect(() =>
-      Book.create({
-        ...validBookData,
-        title: BookTitle.create('')
-      })
-    ).toThrow(BookTitleEmpty);
+    expect(() => {
+      const book = BookMother.create(
+        undefined,
+        BookTitleMother.empty()
+      );
+    }).toThrow(BookTitleEmpty);
   });
 
   it('should not create book with empty author', () => {
-    expect(() =>
-      Book.create({
-        ...validBookData,
-        author: BookAuthor.create('')
-      })
-    ).toThrow(BookAuthorEmpty);
+    expect(() => {
+      const book = BookMother.create(
+        undefined,
+        undefined,
+        BookAuthorMother.empty()
+      );
+    }).toThrow(BookAuthorEmpty);
   });
 
   it('should not create book with invalid ISBN', () => {
-    expect(() =>
-      Book.create({
-        ...validBookData,
-        isbn: BookIsbn.create('invalid-isbn')
-      })
-    ).toThrow(InvalidBookIsbn);
+    expect(() => {
+      const book = BookMother.create(
+        undefined,
+        undefined,
+        undefined,
+        BookIsbnMother.invalid()
+      );
+    }).toThrow(InvalidBookIsbn);
   });
 });

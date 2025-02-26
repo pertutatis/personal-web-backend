@@ -1,34 +1,36 @@
-import { ArticleContent } from '../ArticleContent';
 import { ArticleContentEmpty } from '../ArticleContentEmpty';
 import { ArticleContentLengthExceeded } from '../ArticleContentLengthExceeded';
+import { ArticleContentMother } from './mothers/ArticleContentMother';
 
 describe('ArticleContent', () => {
   it('should create a valid article content', () => {
-    const content = 'Valid article content';
-    const articleContent = ArticleContent.create(content);
-    expect(articleContent.value).toBe(content);
+    const content = ArticleContentMother.create();
+    expect(content.value).toContain('Clean code is not just about making the code work');
   });
 
   it('should throw error when content is empty', () => {
     expect(() => {
-      ArticleContent.create('');
+      ArticleContentMother.empty();
     }).toThrow(ArticleContentEmpty);
 
     expect(() => {
-      ArticleContent.create('   ');
+      ArticleContentMother.withSpacesOnly();
     }).toThrow(ArticleContentEmpty);
   });
 
   it('should throw error when content exceeds maximum length', () => {
-    const longContent = 'a'.repeat(10001); // Max length is 10000 characters
     expect(() => {
-      ArticleContent.create(longContent);
+      ArticleContentMother.tooLong();
     }).toThrow(ArticleContentLengthExceeded);
   });
 
+  it('should accept content with exactly maximum length', () => {
+    const content = ArticleContentMother.maxLength();
+    expect(content.value.length).toBe(10000);
+  });
+
   it('should trim content', () => {
-    const content = '  Content with spaces  ';
-    const articleContent = ArticleContent.create(content);
-    expect(articleContent.value).toBe('Content with spaces');
+    const content = ArticleContentMother.withWhitespace();
+    expect(content.value).toBe('Content with spaces');
   });
 });

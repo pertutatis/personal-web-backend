@@ -64,12 +64,12 @@ export class Book extends AggregateRoot {
   update(params: UpdateBookParams): void {
     const now = new Date();
 
-     Object.assign(this, {
-       title: params.title,
-       author: params.author,
-       isbn: params.isbn,
-       updatedAt: now,
-     });
+    Object.assign(this, {
+      title: params.title,
+      author: params.author,
+      isbn: params.isbn,
+      updatedAt: now,
+    });
 
     this.record(new BookUpdatedDomainEvent({
       aggregateId: this.id.value,
@@ -85,7 +85,7 @@ export class Book extends AggregateRoot {
       id: this.id.value,
       title: this.title.value,
       author: this.author.value,
-      isbn: this.isbn.value,
+      isbn: this.isbn.toString(),
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     };

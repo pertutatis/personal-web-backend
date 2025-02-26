@@ -1,124 +1,95 @@
-# Book Rules
+# Reglas de Negocio para el Módulo Book
 
-## Use Cases
+## Entidad Book
 
-### 1. Create Book
-- **Primary Flow**:
-  1. Receive title, author, and ISBN
-  2. Validate all inputs
-  3. Create new book
-  4. Return success
+### Propiedades
+1. **BookId**
+   - Debe ser un UUID válido
+   - No puede estar vacío
 
-- **Edge Cases**:
-  - Title is empty → Return error
-  - Title exceeds 150 characters → Return error
-  - Author is empty → Return error
-  - Author exceeds 100 characters → Return error
-  - ISBN is invalid format → Return error
-  - ISBN already exists → Return error
-  - Invalid UUID format → Return error
+2. **BookTitle**
+   - No puede estar vacío
+   - Longitud máxima: 100 caracteres
+   - No puede contener solo espacios en blanco
 
-### 2. Get Book by ID
-- **Primary Flow**:
-  1. Receive book ID
-  2. Find book
-  3. Return book data
+3. **BookAuthor**
+   - No puede estar vacío
+   - Longitud máxima: 100 caracteres
+   - No puede contener solo espacios en blanco
 
-- **Edge Cases**:
-  - Book not found → Return 404
-  - Invalid UUID format → Return error
+4. **BookIsbn**
+   - Debe ser un ISBN válido
+   - Debe seguir el formato ISBN-13 o ISBN-10
+   - No puede estar vacío
 
-### 3. List Books
-- **Primary Flow**:
-  1. Receive optional pagination params
-  2. Return books list
-  3. Sort by creation date (newest first)
+## Escenarios de Prueba
 
-- **Edge Cases**:
-  - Negative page number → Return error
-  - Zero or negative limit → Return error
-  - Page exceeds available data → Return empty list
+### Creación de Book
+1. **Escenario Feliz**
+   - Todos los campos válidos
+   - ISBN-13 válido
+   - ISBN-10 válido
 
-### 4. Update Book
-- **Primary Flow**:
-  1. Receive book ID and updated data
-  2. Validate all inputs
-  3. Update book
-  4. Return success
+2. **Escenarios de Error**
+   - Título vacío
+   - Título excede longitud máxima
+   - Autor vacío
+   - Autor excede longitud máxima
+   - ISBN inválido
+   - ISBN vacío
 
-- **Edge Cases**:
-  - Book not found → Return 404
-  - Invalid UUID format → Return error
-  - Title is empty → Return error
-  - Title exceeds 150 characters → Return error
-  - Author is empty → Return error
-  - Author exceeds 100 characters → Return error
-  - ISBN is invalid format → Return error
-  - New ISBN already exists → Return error
+### Actualización de Book
+1. **Escenario Feliz**
+   - Actualización de todos los campos
+   - Actualización parcial
 
-## Test Scenarios
+2. **Escenarios de Error**
+   - Book no encontrado
+   - Campos inválidos (mismas validaciones que en creación)
 
-### Unit Tests
-1. Book Domain Model:
-   - Creating valid book
-   - Creating book with invalid title
-   - Creating book with invalid author
-   - Creating book with invalid ISBN
-   - Updating book properties
-   - Converting to primitives
+### Listado de Books
+1. **Escenarios Felices**
+   - Lista vacía
+   - Lista con un elemento
+   - Lista con múltiples elementos
+   - Paginación correcta
 
-2. Value Objects:
-   - BookTitle validation
-   - BookAuthor validation
-   - BookIsbn validation
-   - BookId format validation
+2. **Escenarios de Error**
+   - Parámetros de paginación inválidos
 
-### Integration Tests
-1. PostgresBookRepository:
-   - Saving new book
-   - Finding book by ID
-   - Listing books with pagination
-   - Updating existing book
-   - Handling non-existent books
-   - Handling database connection errors
-   - Verifying unique ISBN constraint
+### Obtener Book por ID
+1. **Escenario Feliz**
+   - Book encontrado
 
-### E2E Tests
-1. API Endpoints:
-   - POST /api/blog/books
-   - GET /api/blog/books
-   - GET /api/blog/books/:id
-   - PUT /api/blog/books/:id
+2. **Escenarios de Error**
+   - Book no encontrado
+   - ID inválido
 
-## Validation Rules
+## Implementación de Object Mothers
 
-1. Book Title:
-   - Required
-   - Min length: 1 character
-   - Max length: 150 characters
-   - Trimmed before validation
+Se crearán los siguientes Object Mothers:
 
-2. Book Author:
-   - Required
-   - Min length: 1 character
-   - Max length: 100 characters
-   - Trimmed before validation
+1. **BookMother**
+   - `create()`: Crea un Book válido con valores por defecto
+   - `random()`: Crea un Book válido con valores aleatorios
+   - `withId(id: string)`: Crea un Book con un ID específico
+   - `invalid()`: Crea un Book con valores inválidos
 
-3. ISBN:
-   - Required
-   - Must be a valid ISBN-10 or ISBN-13 format
-   - Must be unique in the system
-   - Case insensitive comparison
-   - Hyphens and spaces are removed before validation
+2. **BookTitleMother**
+   - `create()`: Crea un título válido
+   - `random()`: Crea un título aleatorio válido
+   - `tooLong()`: Crea un título que excede la longitud máxima
+   - `empty()`: Crea un título vacío
 
-## Database Considerations
+3. **BookAuthorMother**
+   - `create()`: Crea un autor válido
+   - `random()`: Crea un autor aleatorio válido
+   - `tooLong()`: Crea un autor que excede la longitud máxima
+   - `empty()`: Crea un autor vacío
 
-1. Indexes:
-   - Primary key on id (UUID)
-   - Unique index on ISBN
-   - Index on creation date for sorting
-
-2. Constraints:
-   - NOT NULL on all required fields
-   - UNIQUE on ISBN column
-   - Check constraints on string lengths
+4. **BookIsbnMother**
+   - `create()`: Crea un ISBN-13 válido
+   - `createIsbn10()`: Crea un ISBN-10 válido
+   - `random()`: Crea un ISBN aleatorio válido
+   - `invalid()`: Crea un ISBN inválido
+   - `empty()`: Crea un ISBN vacío

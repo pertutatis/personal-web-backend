@@ -1,60 +1,53 @@
 import { BookIsbn } from '../BookIsbn';
 import { InvalidBookIsbn } from '../InvalidBookIsbn';
+import { BookIsbnMother } from './mothers/BookIsbnMother';
 
 describe('BookIsbn', () => {
   it('should create a valid ISBN-10', () => {
-    const isbn = '0747532699';  // Harry Potter ISBN-10
-    const bookIsbn = BookIsbn.create(isbn);
-    expect(bookIsbn.toString()).toBe(isbn);
+    const isbn = BookIsbnMother.isbn10();
+    expect(isbn.toString()).toBe('0-7475-3269-9');
   });
 
   it('should create a valid ISBN-13', () => {
-    const isbn = '9780747532699';  // Harry Potter ISBN-13
-    const bookIsbn = BookIsbn.create(isbn);
-    expect(bookIsbn.toString()).toBe(isbn);
+    const isbn = BookIsbnMother.isbn13();
+    expect(isbn.toString()).toBe('978-0-74-753269-9');
   });
 
   it('should fail with invalid ISBN-10', () => {
-    const invalidIsbn = '0747532690'; // Wrong checksum
-    expect(() => BookIsbn.create(invalidIsbn)).toThrow(InvalidBookIsbn);
+    expect(() => BookIsbnMother.invalidIsbn10()).toThrow(InvalidBookIsbn);
   });
 
   it('should fail with invalid ISBN-13', () => {
-    const invalidIsbn = '9780747532690'; // Wrong checksum
-    expect(() => BookIsbn.create(invalidIsbn)).toThrow(InvalidBookIsbn);
+    expect(() => BookIsbnMother.invalidIsbn13()).toThrow(InvalidBookIsbn);
   });
 
   it('should accept ISBN with hyphens', () => {
-    const isbn = '0-7475-3269-9';
-    const bookIsbn = BookIsbn.create(isbn);
-    expect(bookIsbn.toString()).toBe('0747532699');
+    const isbn = BookIsbnMother.withHyphens();
+    expect(isbn.toString()).toBe('0-7475-3269-9');
   });
 
   it('should fail with invalid format', () => {
-    const invalidIsbn = '123456789';
-    expect(() => BookIsbn.create(invalidIsbn)).toThrow(InvalidBookIsbn);
+    expect(() => BookIsbnMother.invalidFormat()).toThrow(InvalidBookIsbn);
   });
 
   it('should accept ISBN-10 with X checksum', () => {
-    const isbn = '097522980X';
-    const bookIsbn = BookIsbn.create(isbn);
-    expect(bookIsbn.toString()).toBe(isbn);
+    const isbn = BookIsbnMother.withXChecksum();
+    expect(isbn.toString()).toBe('097522980X');
   });
 
   it('should fail with letters in wrong position', () => {
-    const invalidIsbn = '0X4753269X';
-    expect(() => BookIsbn.create(invalidIsbn)).toThrow(InvalidBookIsbn);
+    expect(() => BookIsbnMother.withInvalidXPosition()).toThrow(InvalidBookIsbn);
   });
 
   it('should normalize ISBN format', () => {
-    const variants = [
-      '0-7475-3269-9',
-      '0 7475 3269 9',
-      '0747532699'
-    ];
-    const expected = '0747532699';
-    variants.forEach(isbn => {
-      expect(BookIsbn.create(isbn).toString()).toBe(expected);
-    });
+    const withHyphens = BookIsbnMother.withHyphens();
+    const withSpaces = BookIsbnMother.withSpaces();
+    const withoutSeparators = BookIsbnMother.withoutSeparators();
+
+    const expected = '0-7475-3269-9';
+    
+    expect(withHyphens.toString()).toBe(expected);
+    expect(withSpaces.toString()).toBe(expected);
+    expect(withoutSeparators.toString()).toBe(expected);
   });
 });

@@ -4,6 +4,7 @@ import { InvalidBookIsbn } from './InvalidBookIsbn';
 export class BookIsbn extends StringValueObject {
   private static readonly ISBN10_REGEX = /^\d{9}[\dX]$/;
   private static readonly ISBN13_REGEX = /^\d{13}$/;
+  private originalFormat: string;
 
   constructor(value: string) {
     const normalized = BookIsbn.normalizeISBN(value);
@@ -11,6 +12,7 @@ export class BookIsbn extends StringValueObject {
       throw new InvalidBookIsbn();
     }
     super(normalized);
+    this.originalFormat = value;
   }
 
   private static normalizeISBN(isbn: string): string {
@@ -69,6 +71,19 @@ export class BookIsbn extends StringValueObject {
   }
 
   toString(): string {
-    return this.value;
+    const isbn = this.value;
+    
+    // Mantener ISBN-10 con X sin guiones si ese era su formato original
+    if (isbn.length === 10 && isbn.endsWith('X') && !this.originalFormat.includes('-')) {
+      return isbn;
+    }
+    
+    if (isbn.length === 10) {
+      // Formato ISBN-10: 0-7475-3269-9 (1-4-4-1)
+      return isbn.replace(/^(\d)(\d{4})(\d{4})(\d|X)$/, '$1-$2-$3-$4');
+    }
+    
+    // Formato ISBN-13: 978-0-13-235088-4 (3-1-2-6-1)
+    return isbn.replace(/^(\d{3})(\d)(\d{2})(\d{6})(\d)$/, '$1-$2-$3-$4-$5');
   }
 }

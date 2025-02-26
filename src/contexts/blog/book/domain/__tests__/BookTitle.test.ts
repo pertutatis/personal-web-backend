@@ -1,39 +1,35 @@
 import { BookTitle } from '../BookTitle';
 import { BookTitleEmpty } from '../BookTitleEmpty';
 import { BookTitleLengthExceeded } from '../BookTitleLengthExceeded';
+import { BookTitleMother } from './mothers/BookTitleMother';
 
 describe('BookTitle', () => {
   it('should create a valid book title', () => {
-    const title = 'Test Book Title';
-    const bookTitle = BookTitle.create(title);
-    expect(bookTitle.toString()).toBe(title);
+    const title = BookTitleMother.create();
+    expect(title.toString()).toBe('Clean Code');
   });
 
   it('should fail when title is empty', () => {
-    expect(() => BookTitle.create('')).toThrow(BookTitleEmpty);
-    expect(() => BookTitle.create('   ')).toThrow(BookTitleEmpty);
+    expect(() => BookTitleMother.empty()).toThrow(BookTitleEmpty);
+    expect(() => BookTitleMother.withSpacesOnly()).toThrow(BookTitleEmpty);
   });
 
   it('should fail when title exceeds 255 characters', () => {
-    const longTitle = 'a'.repeat(256);
-    expect(() => BookTitle.create(longTitle)).toThrow(BookTitleLengthExceeded);
+    expect(() => BookTitleMother.tooLong()).toThrow(BookTitleLengthExceeded);
   });
 
   it('should accept titles with exactly 255 characters', () => {
-    const maxTitle = 'a'.repeat(255);
-    const bookTitle = BookTitle.create(maxTitle);
-    expect(bookTitle.toString()).toBe(maxTitle);
+    const title = BookTitleMother.maxLength();
+    expect(title.toString()).toBe('a'.repeat(255));
   });
 
   it('should maintain special characters and spaces', () => {
-    const specialTitle = '¡The Amazing Book! (2nd Edition) - Vol. 1';
-    const bookTitle = BookTitle.create(specialTitle);
-    expect(bookTitle.toString()).toBe(specialTitle);
+    const title = BookTitleMother.withSpecialCharacters();
+    expect(title.toString()).toBe('¡The Amazing Book! (2nd Edition) - Vol. 1');
   });
 
   it('should trim whitespace', () => {
-    const untrimmedTitle = '  Book Title  ';
-    const bookTitle = BookTitle.create(untrimmedTitle);
-    expect(bookTitle.toString()).toBe('Book Title');
+    const title = BookTitleMother.withWhitespace();
+    expect(title.toString()).toBe('Book Title');
   });
 });

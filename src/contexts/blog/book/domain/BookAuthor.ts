@@ -6,9 +6,10 @@ export class BookAuthor extends StringValueObject {
   static readonly MAX_LENGTH = 100;
 
   constructor(value: string) {
-    super(value);
-    this.ensureIsNotEmpty(value);
-    this.ensureLengthIsNotExceeded(value);
+    const trimmedValue = value.trim();
+    super(trimmedValue);
+    this.ensureIsNotEmpty(trimmedValue);
+    this.ensureLengthIsNotExceeded(trimmedValue);
   }
 
   private ensureIsNotEmpty(value: string): void {
