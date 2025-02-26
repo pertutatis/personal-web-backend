@@ -2,59 +2,73 @@ import { StringValueObject } from '@/contexts/shared/domain/StringValueObject';
 import { InvalidBookIsbn } from './InvalidBookIsbn';
 
 export class BookIsbn extends StringValueObject {
-  static create(value: string): BookIsbn {
-    const cleanedValue = value.replace(/[-\s]/g, '').toUpperCase();
-    
-    if (!this.isValidISBN(cleanedValue)) {
+  private static readonly ISBN10_REGEX = /^\d{9}[\dX]$/;
+  private static readonly ISBN13_REGEX = /^\d{13}$/;
+
+  constructor(value: string) {
+    const normalized = BookIsbn.normalizeISBN(value);
+    if (!BookIsbn.isValidISBN(normalized)) {
       throw new InvalidBookIsbn();
     }
-
-    return new BookIsbn(cleanedValue);
+    super(normalized);
   }
 
-  private static isValidISBN(isbn: string): boolean {
-    // ISBN-10 validation
-    if (isbn.length === 10) {
-      return this.isValidISBN10(isbn);
-    }
+  private static normalizeISBN(isbn: string): string {
+    return isbn.replace(/[-\s]/g, '').toUpperCase();
+  }
 
-    // ISBN-13 validation
-    if (isbn.length === 13) {
-      return this.isValidISBN13(isbn);
+  private static calculateISBN10Checksum(digits: string): string {
+    let sum = 0;
+    for (let i = 0; i < 9; i++) {
+      sum += (10 - i) * parseInt(digits[i]);
     }
+    const checksum = (11 - (sum % 11)) % 11;
+    return checksum === 10 ? 'X' : checksum.toString();
+  }
 
-    return false;
+  private static calculateISBN13Checksum(digits: string): string {
+    let sum = 0;
+    for (let i = 0; i < 12; i++) {
+      sum += (i % 2 === 0 ? 1 : 3) * parseInt(digits[i]);
+    }
+    const checksum = (10 - (sum % 10)) % 10;
+    return checksum.toString();
   }
 
   private static isValidISBN10(isbn: string): boolean {
-    let sum = 0;
-    for (let i = 0; i < 9; i++) {
-      const digit = parseInt(isbn[i], 10);
-      if (isNaN(digit)) return false;
-      sum += digit * (10 - i);
+    if (!this.ISBN10_REGEX.test(isbn)) {
+      return false;
     }
 
-    // Check digit can be 'X' or a number
-    const lastChar = isbn[9].toUpperCase();
-    const checkDigit = lastChar === 'X' ? 10 : parseInt(lastChar, 10);
-    if (isNaN(checkDigit) && lastChar !== 'X') return false;
+    const digits = isbn.slice(0, 9);
+    const expectedChecksum = isbn[9];
+    const calculatedChecksum = this.calculateISBN10Checksum(digits);
 
-    sum += checkDigit;
-    return sum % 11 === 0;
+    return expectedChecksum === calculatedChecksum;
   }
 
   private static isValidISBN13(isbn: string): boolean {
-    let sum = 0;
-    for (let i = 0; i < 12; i++) {
-      const digit = parseInt(isbn[i], 10);
-      if (isNaN(digit)) return false;
-      sum += (i % 2 === 0) ? digit : digit * 3;
+    if (!this.ISBN13_REGEX.test(isbn)) {
+      return false;
     }
 
-    const checkDigit = parseInt(isbn[12], 10);
-    if (isNaN(checkDigit)) return false;
+    const digits = isbn.slice(0, 12);
+    const expectedChecksum = isbn[12];
+    const calculatedChecksum = this.calculateISBN13Checksum(digits);
 
-    const calculatedCheck = (10 - (sum % 10)) % 10;
-    return checkDigit === calculatedCheck;
+    return expectedChecksum === calculatedChecksum;
+  }
+
+  static isValidISBN(isbn: string): boolean {
+    const normalized = this.normalizeISBN(isbn);
+    return this.isValidISBN10(normalized) || this.isValidISBN13(normalized);
+  }
+
+  static create(value: string): BookIsbn {
+    return new BookIsbn(value);
+  }
+
+  toString(): string {
+    return this.value;
   }
 }

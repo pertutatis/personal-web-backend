@@ -41,7 +41,7 @@ npm install
 
 4. Start the development environment:
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 5. Run database migrations (executed automatically by Docker):

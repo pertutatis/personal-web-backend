@@ -1,37 +1,32 @@
-import { PostgresBookRepository } from '../PostgresBookRepository';
 import { Book } from '../../domain/Book';
 import { BookId } from '../../domain/BookId';
 import { BookTitle } from '../../domain/BookTitle';
 import { BookAuthor } from '../../domain/BookAuthor';
 import { BookIsbn } from '../../domain/BookIsbn';
-import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection';
-import { getTestConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
+import { PostgresBookRepository } from '../PostgresBookRepository';
+import { TestDatabase } from '@/contexts/shared/infrastructure/__tests__/TestDatabase';
 
 describe('PostgresBookRepository', () => {
-  let connection: PostgresConnection;
   let repository: PostgresBookRepository;
 
   beforeAll(async () => {
-    connection = await PostgresConnection.create(getTestConfig('test_books'));
+    const connection = await TestDatabase.getBooksConnection();
     repository = new PostgresBookRepository(connection);
   });
 
-  afterAll(async () => {
-    await connection.close();
-  });
-
   beforeEach(async () => {
-    await connection.execute('DELETE FROM books');
+    await TestDatabase.cleanBooks();
   });
 
   it('should save and retrieve a book', async () => {
+    const now = new Date();
     const book = Book.create({
       id: BookId.create('test-id'),
       title: BookTitle.create('Test Book'),
       author: BookAuthor.create('Test Author'),
       isbn: BookIsbn.create('9780141036144'),
-      createdAt: new Date(),
-      updatedAt: new Date()
+      createdAt: now,
+      updatedAt: now
     });
 
     await repository.save(book);
@@ -39,7 +34,10 @@ describe('PostgresBookRepository', () => {
     const retrieved = await repository.search(BookId.create('test-id'));
     expect(retrieved).not.toBeNull();
     expect(retrieved?.toPrimitives()).toEqual({
-      ...book.toPrimitives(),
+      id: 'test-id',
+      title: 'Test Book',
+      author: 'Test Author',
+      isbn: '9780141036144',
       createdAt: expect.any(Date),
       updatedAt: expect.any(Date)
     });
@@ -51,13 +49,14 @@ describe('PostgresBookRepository', () => {
   });
 
   it('should update a book', async () => {
+    const now = new Date();
     const book = Book.create({
       id: BookId.create('test-id'),
       title: BookTitle.create('Test Book'),
       author: BookAuthor.create('Test Author'),
       isbn: BookIsbn.create('9780141036144'),
-      createdAt: new Date(),
-      updatedAt: new Date()
+      createdAt: now,
+      updatedAt: now
     });
 
     await repository.save(book);
@@ -77,14 +76,15 @@ describe('PostgresBookRepository', () => {
   });
 
   it('should list books with pagination', async () => {
+    const now = new Date();
     const books = Array.from({ length: 5 }, (_, i) => 
       Book.create({
         id: BookId.create(`test-id-${i}`),
         title: BookTitle.create(`Test Book ${i}`),
         author: BookAuthor.create(`Test Author ${i}`),
         isbn: BookIsbn.create(`978014103614${i}`),
-        createdAt: new Date(),
-        updatedAt: new Date()
+        createdAt: now,
+        updatedAt: now
       })
     );
 

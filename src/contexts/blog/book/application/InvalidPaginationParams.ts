@@ -1,12 +1,9 @@
-import { DomainError } from '../../../shared/domain/DomainError';
+import { DomainError } from '@/contexts/shared/domain/DomainError';
 
 export class InvalidPaginationParams extends DomainError {
-  readonly type: string = 'book.invalid_pagination_params';
-  readonly message: string;
+  readonly type = 'InvalidPaginationParams';
 
-  constructor(page: number, limit: number) {
-    super();
-    this.message = `Invalid pagination parameters: page ${page}, limit ${limit}. Both must be greater than 0.`;
-    Object.setPrototypeOf(this, InvalidPaginationParams.prototype);
+  constructor() {
+    super('Invalid pagination parameters: page and limit must be positive numbers');
   }
 }

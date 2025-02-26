@@ -10,40 +10,29 @@ const customJestConfig = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1'
   },
+  testMatch: [
+    '**/domain/__tests__/**/*.test.ts',
+    '**/application/__tests__/**/*.test.ts'
+  ],
   transform: {
     '^.+\\.(ts|tsx)$': ['ts-jest', {
       tsconfig: 'tsconfig.json'
     }]
   },
-  testTimeout: 30000,
   verbose: true,
   collectCoverage: true,
   collectCoverageFrom: [
-    'src/**/*.ts',
+    'src/**/domain/**/*.ts',
+    'src/**/application/**/*.ts',
     '!src/**/*.d.ts',
-    '!src/types/**/*.ts',
-    '!src/**/index.ts'
+    '!src/types/**/*.ts'
   ],
-  coverageDirectory: 'coverage',
+  coverageDirectory: 'coverage/unit',
   coverageReporters: ['text', 'lcov'],
-  // Global settings
-  globals: {
-    'ts-jest': {
-      isolatedModules: true
-    }
-  },
-  // Error handling
-  bail: false,
-  detectOpenHandles: true,
-  forceExit: true,
-  // Module resolution
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
-  roots: ['<rootDir>/src'],
-  testPathIgnorePatterns: [
-    '/node_modules/',
-    '/dist/',
-    '/.next/'
-  ]
+  // Run tests in parallel for unit tests
+  maxWorkers: '50%',
+  // Setup global test timeout
+  testTimeout: 5000
 };
 
 module.exports = createJestConfig(customJestConfig);

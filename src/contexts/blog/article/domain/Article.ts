@@ -5,127 +5,93 @@ import { ArticleContent } from './ArticleContent';
 import { ArticleBookIds } from './ArticleBookIds';
 import { ArticleCreatedDomainEvent } from './event/ArticleCreatedDomainEvent';
 import { ArticleUpdatedDomainEvent } from './event/ArticleUpdatedDomainEvent';
-import { Book } from '@/contexts/blog/book/domain/Book';
 
-export type ArticleProperties = {
-  id: ArticleId;
-  title: ArticleTitle;
-  content: ArticleContent;
-  bookIds: ArticleBookIds;
-  books?: Book[];
-  createdAt: Date;
-  updatedAt: Date;
-};
-
-export type UpdateArticleProperties = {
-  title: ArticleTitle;
-  content: ArticleContent;
-  bookIds: ArticleBookIds;
-};
-
-export type ArticlePrimitives = {
+type ArticlePrimitives = {
   id: string;
   title: string;
   content: string;
   bookIds: string[];
-  books?: Array<{
-    id: string;
-    title: string;
-    author: string;
-    isbn: string;
-    createdAt: string;
-    updatedAt: string;
-  }>;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+type CreateArticleParams = {
+  id: ArticleId;
+  title: ArticleTitle;
+  content: ArticleContent;
+  bookIds: ArticleBookIds;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+type UpdateArticleParams = {
+  title: ArticleTitle;
+  content: ArticleContent;
+  bookIds: ArticleBookIds;
 };
 
 export class Article extends AggregateRoot {
   readonly id: ArticleId;
-  private _title: ArticleTitle;
-  private _content: ArticleContent;
-  private _bookIds: ArticleBookIds;
-  private _books?: Book[];
+  readonly title: ArticleTitle;
+  readonly content: ArticleContent;
+  readonly bookIds: ArticleBookIds;
   readonly createdAt: Date;
-  private _updatedAt: Date;
+  readonly updatedAt: Date;
 
-  private constructor(properties: ArticleProperties) {
+  constructor(params: CreateArticleParams) {
     super();
-    this.id = properties.id;
-    this._title = properties.title;
-    this._content = properties.content;
-    this._bookIds = properties.bookIds;
-    this._books = properties.books;
-    this.createdAt = properties.createdAt;
-    this._updatedAt = properties.updatedAt;
+    this.id = params.id;
+    this.title = params.title;
+    this.content = params.content;
+    this.bookIds = params.bookIds;
+    this.createdAt = params.createdAt;
+    this.updatedAt = params.updatedAt;
   }
 
-  static create(properties: ArticleProperties): Article {
-    const article = new Article(properties);
-    
+  static create(params: CreateArticleParams): Article {
+    const article = new Article(params);
     article.record(new ArticleCreatedDomainEvent({
-      aggregateId: properties.id.value,
-      title: properties.title.value,
-      content: properties.content.value,
-      bookIds: properties.bookIds.value,
-      createdAt: properties.createdAt.toISOString(),
-      updatedAt: properties.updatedAt.toISOString()
+      aggregateId: params.id.value,
+      title: params.title.value,
+      content: params.content.value,
+      bookIds: params.bookIds.getValue(),
+      createdAt: params.createdAt,
+      updatedAt: params.updatedAt,
+      occurredOn: new Date()
     }));
-
     return article;
   }
 
-  get title(): ArticleTitle {
-    return this._title;
-  }
+  update(params: UpdateArticleParams): void {
+    const now = new Date();
+    
+    // Actualizamos directamente las propiedades en la instancia actual
+    Object.assign(this, {
+      title: params.title,
+      content: params.content,
+      bookIds: params.bookIds,
+      updatedAt: now
+    });
 
-  get content(): ArticleContent {
-    return this._content;
-  }
-
-  get bookIds(): ArticleBookIds {
-    return this._bookIds;
-  }
-
-  get books(): Book[] | undefined {
-    return this._books;
-  }
-
-  get updatedAt(): Date {
-    return this._updatedAt;
-  }
-
-  update(properties: UpdateArticleProperties): void {
-    this._title = properties.title;
-    this._content = properties.content;
-    this._bookIds = properties.bookIds;
-    this._updatedAt = new Date();
-
+    // Registramos el evento en la instancia actual
     this.record(new ArticleUpdatedDomainEvent({
       aggregateId: this.id.value,
-      title: this._title.value,
-      content: this._content.value,
-      bookIds: this._bookIds.value,
-      updatedAt: this._updatedAt.toISOString()
+      title: params.title.value,
+      content: params.content.value,
+      bookIds: params.bookIds.getValue(),
+      updatedAt: now,
+      occurredOn: now
     }));
   }
 
   toPrimitives(): ArticlePrimitives {
     return {
       id: this.id.value,
-      title: this._title.value,
-      content: this._content.value,
-      bookIds: this._bookIds.value,
-      books: this._books?.map(book => ({
-        id: book.id.value,
-        title: book.title.value,
-        author: book.author.value,
-        isbn: book.isbn.value,
-        createdAt: book.createdAt.toISOString(),
-        updatedAt: book.updatedAt.toISOString()
-      })),
-      createdAt: this.createdAt.toISOString(),
-      updatedAt: this._updatedAt.toISOString()
+      title: this.title.value,
+      content: this.content.value,
+      bookIds: this.bookIds.getValue(),
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt
     };
   }
 }

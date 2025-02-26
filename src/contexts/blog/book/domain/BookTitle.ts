@@ -3,17 +3,25 @@ import { BookTitleEmpty } from './BookTitleEmpty';
 import { BookTitleLengthExceeded } from './BookTitleLengthExceeded';
 
 export class BookTitle extends StringValueObject {
-  static create(value: string): BookTitle {
-    const trimmedValue = value.trim();
+  constructor(value: string) {
+    const trimmed = value.trim();
     
-    if (trimmedValue.length === 0) {
+    if (trimmed.length === 0) {
       throw new BookTitleEmpty();
     }
-
-    if (trimmedValue.length > 150) {
+    
+    if (trimmed.length > 255) {
       throw new BookTitleLengthExceeded();
     }
+    
+    super(trimmed);
+  }
 
-    return new BookTitle(trimmedValue);
+  static create(value: string): BookTitle {
+    return new BookTitle(value);
+  }
+
+  toString(): string {
+    return this.value;
   }
 }

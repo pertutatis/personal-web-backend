@@ -1,11 +1,10 @@
 import { DomainError } from '@/contexts/shared/domain/DomainError';
+import { ArticleId } from '../domain/ArticleId';
 
 export class ArticleNotFound extends DomainError {
-  constructor(id: string) {
-    super(`Article with id ${id} not found`);
-  }
+  readonly type = 'ArticleNotFound';
 
-  get type(): string {
-    return 'ArticleNotFound';
+  constructor(id: ArticleId) {
+    super(`Article with id ${id.value} not found`);
   }
 }

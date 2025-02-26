@@ -1,26 +1,36 @@
-import { ArticleBookIdsEmpty } from './ArticleBookIdsEmpty';
-
 export class ArticleBookIds {
-  private constructor(private readonly _value: string[]) {}
+  private readonly value: string[];
 
-  static create(value: string[]): ArticleBookIds {
-    const uniqueValues = Array.from(new Set(value));
-
+  constructor(bookIds: string[]) {
+    const uniqueValues = Array.from(new Set(bookIds));
+    
     if (uniqueValues.length === 0) {
       throw new ArticleBookIdsEmpty();
     }
-
-    return new ArticleBookIds(uniqueValues);
+    
+    this.value = uniqueValues;
   }
 
-  get value(): string[] {
-    return this._value;
+  getValue(): string[] {
+    return [...this.value];
+  }
+
+  static create(value: string[]): ArticleBookIds {
+    return new ArticleBookIds(value);
+  }
+
+  toString(): string {
+    return this.value.join(',');
   }
 
   equals(other: ArticleBookIds): boolean {
-    if (this._value.length !== other._value.length) {
+    if (this.value.length !== other.value.length) {
       return false;
     }
-    return this._value.every((id, index) => id === other._value[index]);
+
+    const thisSet = new Set(this.value);
+    return other.value.every(id => thisSet.has(id));
   }
 }
+
+import { ArticleBookIdsEmpty } from './ArticleBookIdsEmpty';

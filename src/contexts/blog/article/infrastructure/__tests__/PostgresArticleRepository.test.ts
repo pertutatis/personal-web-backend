@@ -1,40 +1,33 @@
-import { PostgresArticleRepository } from '../PostgresArticleRepository';
 import { Article } from '../../domain/Article';
 import { ArticleId } from '../../domain/ArticleId';
 import { ArticleTitle } from '../../domain/ArticleTitle';
 import { ArticleContent } from '../../domain/ArticleContent';
 import { ArticleBookIds } from '../../domain/ArticleBookIds';
-import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection';
-import { getTestConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
+import { PostgresArticleRepository } from '../PostgresArticleRepository';
+import { TestDatabase } from '@/contexts/shared/infrastructure/__tests__/TestDatabase';
 
 describe('PostgresArticleRepository', () => {
-  let articlesConnection: PostgresConnection;
-  let booksConnection: PostgresConnection;
   let repository: PostgresArticleRepository;
 
   beforeAll(async () => {
-    articlesConnection = await PostgresConnection.create(getTestConfig('test_articles'));
-    booksConnection = await PostgresConnection.create(getTestConfig('test_books'));
+    const articlesConnection = await TestDatabase.getArticlesConnection();
+    const booksConnection = await TestDatabase.getBooksConnection();
     repository = new PostgresArticleRepository(articlesConnection, booksConnection);
   });
 
-  afterAll(async () => {
-    await articlesConnection.close();
-    await booksConnection.close();
-  });
-
   beforeEach(async () => {
-    await articlesConnection.execute('DELETE FROM articles');
+    await TestDatabase.cleanAll();
   });
 
   it('should save and retrieve an article', async () => {
+    const now = new Date();
     const article = Article.create({
       id: ArticleId.create('test-id'),
       title: ArticleTitle.create('Test Article'),
       content: ArticleContent.create('Test Content'),
       bookIds: ArticleBookIds.create([]),
-      createdAt: new Date(),
-      updatedAt: new Date()
+      createdAt: now,
+      updatedAt: now
     });
 
     await repository.save(article);
@@ -42,7 +35,10 @@ describe('PostgresArticleRepository', () => {
     const retrieved = await repository.search(ArticleId.create('test-id'));
     expect(retrieved).not.toBeNull();
     expect(retrieved?.toPrimitives()).toEqual({
-      ...article.toPrimitives(),
+      id: 'test-id',
+      title: 'Test Article',
+      content: 'Test Content',
+      bookIds: [],
       createdAt: expect.any(Date),
       updatedAt: expect.any(Date)
     });
@@ -54,13 +50,14 @@ describe('PostgresArticleRepository', () => {
   });
 
   it('should update an article', async () => {
+    const now = new Date();
     const article = Article.create({
       id: ArticleId.create('test-id'),
       title: ArticleTitle.create('Test Article'),
       content: ArticleContent.create('Test Content'),
       bookIds: ArticleBookIds.create([]),
-      createdAt: new Date(),
-      updatedAt: new Date()
+      createdAt: now,
+      updatedAt: now
     });
 
     await repository.save(article);
@@ -76,17 +73,19 @@ describe('PostgresArticleRepository', () => {
     const updated = await repository.search(ArticleId.create('test-id'));
     expect(updated?.title.value).toBe('Updated Title');
     expect(updated?.content.value).toBe('Updated Content');
+    expect(updated?.bookIds.value).toEqual([]);
   });
 
   it('should list articles with pagination', async () => {
+    const now = new Date();
     const articles = Array.from({ length: 5 }, (_, i) => 
       Article.create({
         id: ArticleId.create(`test-id-${i}`),
         title: ArticleTitle.create(`Test Article ${i}`),
         content: ArticleContent.create(`Test Content ${i}`),
         bookIds: ArticleBookIds.create([]),
-        createdAt: new Date(),
-        updatedAt: new Date()
+        createdAt: now,
+        updatedAt: now
       })
     );
 

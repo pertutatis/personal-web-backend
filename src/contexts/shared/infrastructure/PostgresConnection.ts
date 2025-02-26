@@ -1,45 +1,53 @@
-import pg from 'pg';
+import { Pool, PoolClient, QueryResult, QueryResultRow } from 'pg';
+import { DatabaseConfig } from './config/DatabaseConfig';
 
 export class PostgresConnection {
-  private client: pg.Client;
+  private constructor(private readonly connection: Pool | PoolClient) {}
 
-  private constructor(client: pg.Client) {
-    this.client = client;
+  static async create(config: DatabaseConfig): Promise<PostgresConnection> {
+    const pool = new Pool(config);
+    
+    try {
+      // Test connection
+      await pool.query('SELECT NOW()');
+      return new PostgresConnection(pool);
+    } catch (error) {
+      await pool.end();
+      throw error;
+    }
   }
 
-  static async create(config: pg.ClientConfig): Promise<PostgresConnection> {
-    const client = new pg.Client(config);
-    await client.connect();
-    return new PostgresConnection(client);
+  async execute<T extends QueryResultRow = any>(
+    query: string, 
+    values: any[] = []
+  ): Promise<QueryResult<T>> {
+    return this.connection.query<T>(query, values);
+  }
+
+  async transaction<T>(callback: (client: PostgresConnection) => Promise<T>): Promise<T> {
+    if (!(this.connection instanceof Pool)) {
+      throw new Error('Cannot start transaction on non-pool connection');
+    }
+
+    const client = await this.connection.connect();
+    
+    try {
+      await client.query('BEGIN');
+      const result = await callback(new PostgresConnection(client));
+      await client.query('COMMIT');
+      return result;
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
   }
 
   async close(): Promise<void> {
-    await this.client.end();
-  }
-
-  async execute(query: string, values: any[] = []): Promise<void> {
-    await this.client.query(query, values);
-  }
-
-  async query<T>(query: string, values: any[] = []): Promise<T[]> {
-    const result = await this.client.query<T>(query, values);
-    return result.rows;
-  }
-
-  async queryOne<T>(query: string, values: any[] = []): Promise<T | null> {
-    const result = await this.client.query<T>(query, values);
-    return result.rows[0] || null;
-  }
-
-  async transaction<T>(callback: () => Promise<T>): Promise<T> {
-    try {
-      await this.execute('BEGIN');
-      const result = await callback();
-      await this.execute('COMMIT');
-      return result;
-    } catch (error) {
-      await this.execute('ROLLBACK');
-      throw error;
+    if (this.connection instanceof Pool) {
+      await this.connection.end();
     }
+    // PoolClient instances are released in transaction()
   }
 }

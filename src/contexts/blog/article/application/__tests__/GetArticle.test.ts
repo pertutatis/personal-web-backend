@@ -1,15 +1,16 @@
 import { GetArticle } from '../GetArticle';
-import { ArticleNotFound } from '../ArticleNotFound';
-import { Article } from '../../domain/Article';
 import { ArticleRepository } from '../../domain/ArticleRepository';
+import { Article } from '../../domain/Article';
 import { ArticleId } from '../../domain/ArticleId';
 import { ArticleTitle } from '../../domain/ArticleTitle';
 import { ArticleContent } from '../../domain/ArticleContent';
 import { ArticleBookIds } from '../../domain/ArticleBookIds';
+import { ArticleNotFound } from '../ArticleNotFound';
 
 describe('GetArticle', () => {
   let repository: ArticleRepository;
   let getArticle: GetArticle;
+  const now = new Date();
 
   beforeEach(() => {
     repository = {
@@ -17,6 +18,7 @@ describe('GetArticle', () => {
       search: jest.fn(),
       searchAll: jest.fn(),
       searchByPage: jest.fn(),
+      searchByBookId: jest.fn(),
       update: jest.fn()
     };
     getArticle = new GetArticle(repository);
@@ -24,28 +26,29 @@ describe('GetArticle', () => {
 
   it('should throw ArticleNotFound when article does not exist', async () => {
     repository.search = jest.fn().mockResolvedValue(null);
-    
-    await expect(getArticle.run('non-existent-id'))
+    const id = ArticleId.create('non-existent-id');
+
+    await expect(getArticle.run(id))
       .rejects
       .toThrow(ArticleNotFound);
   });
 
   it('should return the article when it exists', async () => {
-    const now = new Date();
-    const existingArticle = Article.create({
-      id: ArticleId.create('existing-id'),
+    const article = Article.create({
+      id: ArticleId.create('test-id'),
       title: ArticleTitle.create('Test Article'),
       content: ArticleContent.create('Test Content'),
-      bookIds: ArticleBookIds.create([]),
+      bookIds: ArticleBookIds.create(['book-1']), // Add at least one book ID
       createdAt: now,
       updatedAt: now
     });
 
-    repository.search = jest.fn().mockResolvedValue(existingArticle);
-    
-    const result = await getArticle.run('existing-id');
-    
-    expect(result).toEqual(existingArticle);
-    expect(repository.search).toHaveBeenCalledWith(expect.any(ArticleId));
+    repository.search = jest.fn().mockResolvedValue(article);
+    const id = ArticleId.create('test-id');
+
+    const result = await getArticle.run(id);
+
+    expect(result).toBe(article);
+    expect(repository.search).toHaveBeenCalledWith(id);
   });
 });

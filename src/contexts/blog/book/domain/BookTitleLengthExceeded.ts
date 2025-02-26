@@ -1,11 +1,9 @@
 import { DomainError } from '@/contexts/shared/domain/DomainError';
 
 export class BookTitleLengthExceeded extends DomainError {
-  constructor() {
-    super('Book title cannot exceed 150 characters');
-  }
+  readonly type = 'BookTitleLengthExceeded';
 
-  get type(): string {
-    return 'BookTitleLengthExceeded';
+  constructor() {
+    super('Book title cannot exceed 255 characters');
   }
 }

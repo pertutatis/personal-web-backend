@@ -1,16 +1,16 @@
-import { ListArticles } from '../ListArticles';
-import { ArticleRepository } from '../../domain/ArticleRepository';
-import { Article } from '../../domain/Article';
-import { ArticleId } from '../../domain/ArticleId';
-import { ArticleTitle } from '../../domain/ArticleTitle';
-import { ArticleContent } from '../../domain/ArticleContent';
-import { ArticleBookIds } from '../../domain/ArticleBookIds';
+import { ListBooks } from '../ListBooks';
+import { BookRepository } from '../../domain/BookRepository';
+import { Book } from '../../domain/Book';
+import { BookId } from '../../domain/BookId';
+import { BookTitle } from '../../domain/BookTitle';
+import { BookAuthor } from '../../domain/BookAuthor';
+import { BookIsbn } from '../../domain/BookIsbn';
 import { Collection } from '@/contexts/shared/domain/Collection';
 import { InvalidPaginationParams } from '../InvalidPaginationParams';
 
-describe('ListArticles', () => {
-  let repository: ArticleRepository;
-  let listArticles: ListArticles;
+describe('ListBooks', () => {
+  let repository: BookRepository;
+  let listBooks: ListBooks;
 
   beforeEach(() => {
     repository = {
@@ -18,34 +18,34 @@ describe('ListArticles', () => {
       search: jest.fn(),
       searchAll: jest.fn(),
       searchByPage: jest.fn(),
-      searchByBookId: jest.fn(),
+      searchByIds: jest.fn(),
       update: jest.fn()
     };
-    listArticles = new ListArticles(repository);
+    listBooks = new ListBooks(repository);
   });
 
-  it('should return paginated articles', async () => {
+  it('should return paginated books', async () => {
     const now = new Date();
-    const articles = Array.from({ length: 2 }, (_, i) => 
-      Article.create({
-        id: ArticleId.create(`test-id-${i}`),
-        title: ArticleTitle.create(`Test Article ${i}`),
-        content: ArticleContent.create(`Test Content ${i}`),
-        bookIds: ArticleBookIds.create(['book-1']), // Add at least one book ID
+    const books = Array.from({ length: 2 }, (_, i) => 
+      Book.create({
+        id: BookId.create(`test-id-${i}`),
+        title: BookTitle.create(`Test Book ${i}`),
+        author: BookAuthor.create(`Test Author ${i}`),
+        isbn: BookIsbn.create('9780141036144'),
         createdAt: now,
         updatedAt: now
       })
     );
 
     repository.searchByPage = jest.fn().mockResolvedValue(
-      new Collection(articles, {
+      new Collection(books, {
         page: 1,
         limit: 10,
         total: 2
       })
     );
 
-    const result = await listArticles.run(1, 10);
+    const result = await listBooks.run(1, 10);
 
     expect(result.items).toHaveLength(2);
     expect(result.pagination).toEqual({
@@ -57,18 +57,18 @@ describe('ListArticles', () => {
   });
 
   it('should throw InvalidPaginationParams for invalid page', async () => {
-    await expect(listArticles.run(0, 10))
+    await expect(listBooks.run(0, 10))
       .rejects
       .toThrow(InvalidPaginationParams);
   });
 
   it('should throw InvalidPaginationParams for invalid limit', async () => {
-    await expect(listArticles.run(1, 0))
+    await expect(listBooks.run(1, 0))
       .rejects
       .toThrow(InvalidPaginationParams);
   });
 
-  it('should return empty collection when no articles exist', async () => {
+  it('should return empty collection when no books exist', async () => {
     repository.searchByPage = jest.fn().mockResolvedValue(
       new Collection([], {
         page: 1,
@@ -77,7 +77,7 @@ describe('ListArticles', () => {
       })
     );
 
-    const result = await listArticles.run(1, 10);
+    const result = await listBooks.run(1, 10);
 
     expect(result.items).toHaveLength(0);
     expect(result.pagination).toEqual({

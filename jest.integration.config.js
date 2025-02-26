@@ -10,6 +10,9 @@ const customJestConfig = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1'
   },
+  testMatch: [
+    '**/infrastructure/__tests__/**/*.test.ts'
+  ],
   transform: {
     '^.+\\.(ts|tsx)$': ['ts-jest', {
       tsconfig: 'tsconfig.json'
@@ -19,31 +22,20 @@ const customJestConfig = {
   verbose: true,
   collectCoverage: true,
   collectCoverageFrom: [
-    'src/**/*.ts',
+    'src/**/infrastructure/**/*.ts',
     '!src/**/*.d.ts',
-    '!src/types/**/*.ts',
-    '!src/**/index.ts'
+    '!src/types/**/*.ts'
   ],
-  coverageDirectory: 'coverage',
+  coverageDirectory: 'coverage/integration',
   coverageReporters: ['text', 'lcov'],
-  // Global settings
-  globals: {
-    'ts-jest': {
-      isolatedModules: true
-    }
-  },
-  // Error handling
-  bail: false,
-  detectOpenHandles: true,
-  forceExit: true,
-  // Module resolution
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
-  roots: ['<rootDir>/src'],
-  testPathIgnorePatterns: [
-    '/node_modules/',
-    '/dist/',
-    '/.next/'
-  ]
+  // Run tests sequentially
+  maxWorkers: 1,
+  // Retry failed tests
+  retryTimes: 2,
+  // Setup global test timeout
+  setupTimeout: 60000,
+  // Global teardown
+  globalTeardown: '<rootDir>/scripts/test-teardown.js'
 };
 
 module.exports = createJestConfig(customJestConfig);

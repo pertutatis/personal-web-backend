@@ -1,31 +1,18 @@
-import { ArticleRepository } from '../domain/ArticleRepository';
 import { Collection } from '@/contexts/shared/domain/Collection';
-import { Article } from '../domain/Article';
+import { ArticleRepository } from '../domain/ArticleRepository';
 import { InvalidPaginationParams } from './InvalidPaginationParams';
-
-export type ListArticlesRequest = {
-  page?: number;
-  limit?: number;
-};
+import { Article } from '../domain/Article';
 
 export class ListArticles {
   constructor(private readonly repository: ArticleRepository) {}
 
-  async run(request: ListArticlesRequest): Promise<Collection<Article>> {
-    if (this.shouldPaginate(request)) {
-      this.ensureValidPaginationParams(request.page!, request.limit!);
-      return this.repository.searchByPage(request.page!, request.limit!);
-    }
-
-    return this.repository.searchAll();
+  async run(page: number, limit: number): Promise<Collection<Article>> {
+    this.ensureValidPagination(page, limit);
+    return this.repository.searchByPage(page, limit);
   }
 
-  private shouldPaginate(request: ListArticlesRequest): boolean {
-    return request.page !== undefined && request.limit !== undefined;
-  }
-
-  private ensureValidPaginationParams(page: number, limit: number): void {
-    if (page < 1 || limit < 1) {
+  private ensureValidPagination(page: number, limit: number): void {
+    if (page <= 0 || limit <= 0) {
       throw new InvalidPaginationParams();
     }
   }

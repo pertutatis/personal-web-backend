@@ -1,12 +1,10 @@
-import { DomainError } from '../../../shared/domain/DomainError';
+import { DomainError } from '@/contexts/shared/domain/DomainError';
+import { BookId } from '../domain/BookId';
 
 export class BookNotFound extends DomainError {
-  readonly type: string = 'book.not_found';
-  readonly message: string;
+  readonly type = 'BookNotFound';
 
-  constructor(id: string) {
-    super();
-    this.message = `Book with id <${id}> not found`;
-    Object.setPrototypeOf(this, BookNotFound.prototype);
+  constructor(id: BookId) {
+    super(`Book with id ${id.value} not found`);
   }
 }

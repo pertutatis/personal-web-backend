@@ -1,29 +1,7 @@
-version: '3.8'
+# Local development environment
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
-    environment:
-      - DB_HOST=host.docker.internal
-      - DB_PORT=5432
-      - ARTICLES_DB_NAME=articles
-      - ARTICLES_DB_USER=postgres
-      - ARTICLES_DB_PASSWORD=postgres
-      - BOOKS_DB_NAME=books
-      - BOOKS_DB_USER=postgres
-      - BOOKS_DB_PASSWORD=postgres
-    volumes:
-      - .:/app
-      - /app/node_modules
-    depends_on:
-      - articles-db
-      - books-db
-
   articles-db:
-    image: postgres:15
+    image: postgres:16-alpine
     environment:
       POSTGRES_DB: articles
       POSTGRES_USER: postgres
@@ -35,7 +13,7 @@ services:
       - articles-data:/var/lib/postgresql/data
 
   books-db:
-    image: postgres:15
+    image: postgres:16-alpine
     environment:
       POSTGRES_DB: books
       POSTGRES_USER: postgres

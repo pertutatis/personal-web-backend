@@ -3,44 +3,45 @@ import { ArticleId } from '../ArticleId';
 import { ArticleTitle } from '../ArticleTitle';
 import { ArticleContent } from '../ArticleContent';
 import { ArticleBookIds } from '../ArticleBookIds';
+import { ArticleTitleEmpty } from '../ArticleTitleEmpty';
+import { ArticleContentEmpty } from '../ArticleContentEmpty';
+import { ArticleBookIdsEmpty } from '../ArticleBookIdsEmpty';
 
 describe('Article', () => {
-  const validId = ArticleId.create('valid-id');
-  const validTitle = ArticleTitle.create('Valid Title');
-  const validContent = ArticleContent.create('Valid content for the article');
-  const validBookIds = ArticleBookIds.create(['book-1', 'book-2']);
+  const now = new Date();
+  const validArticleData = {
+    id: ArticleId.create('test-id'),
+    title: ArticleTitle.create('Test Article'),
+    content: ArticleContent.create('Test Content'),
+    bookIds: ArticleBookIds.create(['book-1']),
+    createdAt: now,
+    updatedAt: now
+  };
 
   it('should create a valid article', () => {
-    const article = Article.create({
-      id: validId,
-      title: validTitle,
-      content: validContent,
-      bookIds: validBookIds,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    });
+    const article = Article.create(validArticleData);
 
-    expect(article.id).toBe(validId);
-    expect(article.title).toBe(validTitle);
-    expect(article.content).toBe(validContent);
-    expect(article.bookIds).toBe(validBookIds);
-    expect(article.createdAt).toBeInstanceOf(Date);
-    expect(article.updatedAt).toBeInstanceOf(Date);
+    expect(article.id.toString()).toBe('test-id');
+    expect(article.title.toString()).toBe('Test Article');
+    expect(article.content.toString()).toBe('Test Content');
+    expect(article.bookIds.toString()).toBe('book-1');
+    expect(article.createdAt).toBe(now);
+    expect(article.updatedAt).toBe(now);
+  });
+
+  it('should create an article event when created', () => {
+    const article = Article.create(validArticleData);
+    const events = article.pullDomainEvents();
+
+    expect(events).toHaveLength(1);
+    expect(events[0].eventName).toBe('article.created');
   });
 
   it('should update article properties', () => {
-    const article = Article.create({
-      id: validId,
-      title: validTitle,
-      content: validContent,
-      bookIds: validBookIds,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    });
-
-    const newTitle = ArticleTitle.create('New Title');
-    const newContent = ArticleContent.create('New content');
-    const newBookIds = ArticleBookIds.create(['book-3']);
+    const article = Article.create(validArticleData);
+    const newTitle = ArticleTitle.create('Updated Title');
+    const newContent = ArticleContent.create('Updated Content');
+    const newBookIds = ArticleBookIds.create(['book-2', 'book-3']);
 
     article.update({
       title: newTitle,
@@ -48,33 +49,62 @@ describe('Article', () => {
       bookIds: newBookIds
     });
 
-    expect(article.title).toBe(newTitle);
-    expect(article.content).toBe(newContent);
-    expect(article.bookIds).toBe(newBookIds);
+    expect(article.title.toString()).toBe('Updated Title');
+    expect(article.content.toString()).toBe('Updated Content');
+    expect(article.bookIds.toString()).toBe('book-2,book-3');
+  });
+
+  it('should create an updated event when updated', () => {
+    const article = Article.create(validArticleData);
+    article.update({
+      title: ArticleTitle.create('Updated Title'),
+      content: ArticleContent.create('Updated Content'),
+      bookIds: ArticleBookIds.create(['book-2'])
+    });
+    
+    const events = article.pullDomainEvents();
+    expect(events).toHaveLength(2);
+    expect(events[1].eventName).toBe('article.updated');
   });
 
   it('should convert to primitives', () => {
-    const createdAt = new Date();
-    const updatedAt = new Date();
-    
-    const article = Article.create({
-      id: validId,
-      title: validTitle,
-      content: validContent,
-      bookIds: validBookIds,
-      createdAt,
-      updatedAt
-    });
-
+    const article = Article.create(validArticleData);
     const primitives = article.toPrimitives();
 
     expect(primitives).toEqual({
-      id: validId.value,
-      title: validTitle.value,
-      content: validContent.value,
-      bookIds: validBookIds.value,
-      createdAt: createdAt.toISOString(),
-      updatedAt: updatedAt.toISOString()
+      id: 'test-id',
+      title: 'Test Article',
+      content: 'Test Content',
+      bookIds: ['book-1'],
+      createdAt: now,
+      updatedAt: now
     });
+  });
+
+  it('should not create article with empty title', () => {
+    expect(() => 
+      Article.create({
+        ...validArticleData,
+        title: ArticleTitle.create('')
+      })
+    ).toThrow(ArticleTitleEmpty);
+  });
+
+  it('should not create article with empty content', () => {
+    expect(() => 
+      Article.create({
+        ...validArticleData,
+        content: ArticleContent.create('')
+      })
+    ).toThrow(ArticleContentEmpty);
+  });
+
+  it('should not create article without book ids', () => {
+    expect(() => 
+      Article.create({
+        ...validArticleData,
+        bookIds: ArticleBookIds.create([])
+      })
+    ).toThrow(ArticleBookIdsEmpty);
   });
 });

@@ -6,7 +6,16 @@ import { BookIsbn } from './BookIsbn';
 import { BookCreatedDomainEvent } from './event/BookCreatedDomainEvent';
 import { BookUpdatedDomainEvent } from './event/BookUpdatedDomainEvent';
 
-export type BookProperties = {
+type BookPrimitives = {
+  id: string;
+  title: string;
+  author: string;
+  isbn: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+type CreateBookParams = {
   id: BookId;
   title: BookTitle;
   author: BookAuthor;
@@ -15,93 +24,70 @@ export type BookProperties = {
   updatedAt: Date;
 };
 
-export type UpdateBookProperties = {
+type UpdateBookParams = {
   title: BookTitle;
   author: BookAuthor;
   isbn: BookIsbn;
 };
 
-export type BookPrimitives = {
-  id: string;
-  title: string;
-  author: string;
-  isbn: string;
-  createdAt: string;
-  updatedAt: string;
-};
-
 export class Book extends AggregateRoot {
   readonly id: BookId;
-  private _title: BookTitle;
-  private _author: BookAuthor;
-  private _isbn: BookIsbn;
+  title: BookTitle;
+  author: BookAuthor;
+  isbn: BookIsbn;
   readonly createdAt: Date;
-  private _updatedAt: Date;
+  updatedAt: Date;
 
-  private constructor(properties: BookProperties) {
+  constructor(params: CreateBookParams) {
     super();
-    this.id = properties.id;
-    this._title = properties.title;
-    this._author = properties.author;
-    this._isbn = properties.isbn;
-    this.createdAt = properties.createdAt;
-    this._updatedAt = properties.updatedAt;
+    this.id = params.id;
+    this.title = params.title;
+    this.author = params.author;
+    this.isbn = params.isbn;
+    this.createdAt = params.createdAt;
+    this.updatedAt = params.updatedAt;
   }
 
-  static create(properties: BookProperties): Book {
-    const book = new Book(properties);
-    
+  static create(params: CreateBookParams): Book {
+    const book = new Book(params);
     book.record(new BookCreatedDomainEvent({
-      aggregateId: properties.id.value,
-      title: properties.title.value,
-      author: properties.author.value,
-      isbn: properties.isbn.value,
-      createdAt: properties.createdAt.toISOString(),
-      updatedAt: properties.updatedAt.toISOString()
+      aggregateId: params.id.value,
+      title: params.title.value,
+      author: params.author.value,
+      isbn: params.isbn.value,
+      createdAt: params.createdAt,
+      updatedAt: params.updatedAt
     }));
-
     return book;
   }
 
-  get title(): BookTitle {
-    return this._title;
-  }
+  update(params: UpdateBookParams): void {
+    const now = new Date();
 
-  get author(): BookAuthor {
-    return this._author;
-  }
-
-  get isbn(): BookIsbn {
-    return this._isbn;
-  }
-
-  get updatedAt(): Date {
-    return this._updatedAt;
-  }
-
-  update(properties: UpdateBookProperties): void {
-    this._title = properties.title;
-    this._author = properties.author;
-    this._isbn = properties.isbn;
-    this._updatedAt = new Date();
+     Object.assign(this, {
+       title: params.title,
+       author: params.author,
+       isbn: params.isbn,
+       updatedAt: now,
+     });
 
     this.record(new BookUpdatedDomainEvent({
       aggregateId: this.id.value,
-      title: this._title.value,
-      author: this._author.value,
-      isbn: this._isbn.value,
-      updatedAt: this._updatedAt.toISOString()
+      title: params.title.value,
+      author: params.author.value,
+      isbn: params.isbn.value,
+      updatedAt: now
     }));
   }
 
   toPrimitives(): BookPrimitives {
     return {
       id: this.id.value,
-      title: this._title.value,
-      author: this._author.value,
-      isbn: this._isbn.value,
-      createdAt: this.createdAt.toISOString(),
-      updatedAt: this._updatedAt.toISOString()
+      title: this.title.value,
+      author: this.author.value,
+      isbn: this.isbn.value,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt
     };
   }
 }

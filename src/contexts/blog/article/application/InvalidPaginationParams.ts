@@ -1,11 +1,9 @@
 import { DomainError } from '@/contexts/shared/domain/DomainError';
 
 export class InvalidPaginationParams extends DomainError {
-  constructor() {
-    super('Page and limit must be greater than 0');
-  }
+  readonly type = 'InvalidPaginationParams';
 
-  get type(): string {
-    return 'InvalidPaginationParams';
+  constructor() {
+    super('Invalid pagination parameters: page and limit must be positive numbers');
   }
 }

@@ -1,22 +1,21 @@
 import { DomainEvent } from '@/contexts/shared/domain/event/DomainEvent';
 
-type BookUpdatedDomainEventProps = {
+export type BookUpdatedDomainEventProps = {
   aggregateId: string;
   title: string;
   author: string;
   isbn: string;
-  updatedAt: string;
-  eventId?: string;
+  updatedAt: Date;
   occurredOn?: Date;
 };
 
 export class BookUpdatedDomainEvent extends DomainEvent {
-  static EVENT_NAME = 'book.updated';
+  static readonly EVENT_NAME = 'book.updated';
 
   readonly title: string;
   readonly author: string;
   readonly isbn: string;
-  readonly updatedAt: string;
+  readonly updatedAt: Date;
 
   constructor({
     aggregateId,
@@ -24,28 +23,23 @@ export class BookUpdatedDomainEvent extends DomainEvent {
     author,
     isbn,
     updatedAt,
-    eventId,
     occurredOn
   }: BookUpdatedDomainEventProps) {
-    super({
-      eventName: BookUpdatedDomainEvent.EVENT_NAME,
-      aggregateId,
-      eventId,
-      occurredOn
-    });
-    
+    super(BookUpdatedDomainEvent.EVENT_NAME, aggregateId, occurredOn);
     this.title = title;
     this.author = author;
     this.isbn = isbn;
     this.updatedAt = updatedAt;
   }
 
-  toPrimitives(): object {
+  toPrimitives(): BookUpdatedDomainEventProps {
     return {
+      aggregateId: this.aggregateId,
       title: this.title,
       author: this.author,
       isbn: this.isbn,
-      updatedAt: this.updatedAt
+      updatedAt: this.updatedAt,
+      occurredOn: this.occurredOn
     };
   }
 }
