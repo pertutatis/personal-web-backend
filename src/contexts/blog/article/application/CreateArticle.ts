@@ -18,7 +18,7 @@ export class CreateArticle {
     private readonly uuidGenerator: UuidGenerator
   ) {}
 
-  async run(request: CreateArticleRequest): Promise<void> {
+  async run(request: CreateArticleRequest): Promise<Article> {
     const articleId = await this.uuidGenerator.generate();
 
     const article = Article.create({
@@ -31,5 +31,6 @@ export class CreateArticle {
     });
 
     await this.repository.save(article);
+    return article;
   }
 }

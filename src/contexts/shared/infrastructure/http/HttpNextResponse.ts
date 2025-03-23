@@ -1,32 +1,47 @@
 import { NextResponse } from 'next/server';
 
+type ErrorResponse = {
+  type: string;
+  message: string;
+  stack?: string;
+  details?: unknown;
+};
+
 export class HttpNextResponse {
-  static ok(data?: any): NextResponse {
+  static ok<T>(data: T): NextResponse {
     return NextResponse.json(data, { status: 200 });
   }
 
-  static created(data?: any): NextResponse {
-    return NextResponse.json(data, { status: 201 });
+  static created<T>(data?: T): NextResponse {
+    return NextResponse.json(data || {}, { status: 201 });
   }
 
-  static badRequest(message: string): NextResponse {
-    return NextResponse.json(
-      { error: message },
-      { status: 400 }
-    );
+  static noContent(): NextResponse {
+    return new NextResponse(null, { status: 204 });
   }
 
-  static notFound(message: string): NextResponse {
-    return NextResponse.json(
-      { error: message },
-      { status: 404 }
-    );
+  static badRequest(error: string | ErrorResponse): NextResponse {
+    const response = typeof error === 'string' ? { type: 'BadRequest', message: error } : error;
+    return NextResponse.json(response, { status: 400 });
   }
 
-  static internalServerError(message: string = 'Internal Server Error'): NextResponse {
-    return NextResponse.json(
-      { error: message },
-      { status: 500 }
-    );
+  static notFound(error: string | ErrorResponse): NextResponse {
+    const response = typeof error === 'string' ? { type: 'NotFound', message: error } : error;
+    return NextResponse.json(response, { status: 404 });
+  }
+
+  static internalServerError(error: string | ErrorResponse): NextResponse {
+    const response = typeof error === 'string' 
+      ? { type: 'InternalServerError', message: error } 
+      : error;
+
+    if (process.env.NODE_ENV !== 'production') {
+      // En desarrollo, incluimos más detalles del error
+      return NextResponse.json(response, { status: 500 });
+    }
+
+    // En producción, solo enviamos el tipo y mensaje
+    const { type, message } = response;
+    return NextResponse.json({ type, message }, { status: 500 });
   }
 }

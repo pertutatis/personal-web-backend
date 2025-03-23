@@ -71,6 +71,10 @@ export class BookIsbn extends StringValueObject {
   }
 
   toString(): string {
+  //   return this.value;
+  // }
+
+  // toFormattedString(): string {
     const isbn = this.value;
     
     // Mantener ISBN-10 con X sin guiones si ese era su formato original

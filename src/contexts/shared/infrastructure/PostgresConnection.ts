@@ -18,10 +18,16 @@ export class PostgresConnection {
   }
 
   async execute<T extends QueryResultRow = any>(
-    query: string, 
+    query: string,
     values: any[] = []
   ): Promise<QueryResult<T>> {
-    return this.connection.query<T>(query, values);
+
+    try {
+      const result = await this.connection.query<T>(query, values);
+      return result;
+    } catch (error) {
+      throw error;
+    }
   }
 
   async transaction<T>(callback: (client: PostgresConnection) => Promise<T>): Promise<T> {

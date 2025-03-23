@@ -10,4 +10,5 @@ export interface ArticleRepository {
   searchByPage(page: number, limit: number): Promise<Collection<Article>>;
   searchByBookId(bookId: BookId): Promise<Article[]>;
   update(article: Article): Promise<void>;
+  delete(id: ArticleId): Promise<void>;
 }

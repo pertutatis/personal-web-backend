@@ -8,5 +8,7 @@ export interface BookRepository {
   searchAll(): Promise<Book[]>;
   searchByPage(page: number, limit: number): Promise<Collection<Book>>;
   searchByIds(ids: BookId[]): Promise<Book[]>;
+  searchByIsbn(isbn: string): Promise<Book | null>;
   update(book: Book): Promise<void>;
+  delete(id: BookId): Promise<void>;
 }

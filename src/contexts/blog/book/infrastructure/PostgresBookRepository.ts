@@ -35,34 +35,58 @@ export class PostgresBookRepository implements BookRepository {
   }
 
   async search(id: BookId): Promise<Book | null> {
-    const result = await this.connection.queryOne<BookRow>(
+    const result = await this.connection.execute<BookRow>(
       'SELECT * FROM books WHERE id = $1',
       [id.value]
     );
 
-    if (!result) {
+    if (result.rows.length === 0) {
       return null;
     }
 
-    return this.createBookFromRow(result);
+    return this.createBookFromRow(result.rows[0]);
   }
 
-  async searchAll(): Promise<Collection<Book>> {
-    const results = await this.connection.query<BookRow>(
+  async searchByIsbn(isbn: string): Promise<Book | null> {
+    const result = await this.connection.execute<BookRow>(
+      'SELECT * FROM books WHERE isbn = $1',
+      [isbn]
+    );
+
+    if (result.rows.length === 0) {
+      return null;
+    }
+
+    return this.createBookFromRow(result.rows[0]);
+  }
+
+  async searchAll(): Promise<Book[]> {
+    const result = await this.connection.execute<BookRow>(
       'SELECT * FROM books ORDER BY created_at DESC'
     );
 
-    return new Collection(results.map(row => this.createBookFromRow(row)));
+    return result.rows.map(row => this.createBookFromRow(row));
   }
 
   async searchByPage(page: number, limit: number): Promise<Collection<Book>> {
     const offset = (page - 1) * limit;
-    const results = await this.connection.query<BookRow>(
+    
+    const countResult = await this.connection.execute<{ total: string }>(
+      'SELECT COUNT(*) as total FROM books'
+    );
+    
+    const total = parseInt(countResult.rows[0].total);
+
+    const result = await this.connection.execute<BookRow>(
       'SELECT * FROM books ORDER BY created_at DESC LIMIT $1 OFFSET $2',
       [limit, offset]
     );
 
-    return new Collection(results.map(row => this.createBookFromRow(row)));
+    return new Collection(result.rows.map(row => this.createBookFromRow(row)), {
+      page,
+      limit,
+      total
+    });
   }
 
   async update(book: Book): Promise<void> {
@@ -79,17 +103,24 @@ export class PostgresBookRepository implements BookRepository {
     );
   }
 
-  async searchByIds(ids: string[]): Promise<Collection<Book>> {
+  async delete(id: BookId): Promise<void> {
+    await this.connection.execute(
+      'DELETE FROM books WHERE id = $1',
+      [id.value]
+    );
+  }
+
+  async searchByIds(ids: BookId[]): Promise<Book[]> {
     if (ids.length === 0) {
-      return new Collection([]);
+      return [];
     }
 
-    const results = await this.connection.query<BookRow>(
+    const result = await this.connection.execute<BookRow>(
       'SELECT * FROM books WHERE id = ANY($1)',
-      [ids]
+      [ids.map(id => id.value)]
     );
 
-    return new Collection(results.map(row => this.createBookFromRow(row)));
+    return result.rows.map(row => this.createBookFromRow(row));
   }
 
   private createBookFromRow(row: BookRow): Book {

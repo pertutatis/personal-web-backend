@@ -14,12 +14,19 @@
     "test:coverage": "jest -c jest.unit.config.js --coverage",
     "test:unit": "jest -c jest.unit.config.js --runInBand --verbose",
     "test:integration": "jest -c jest.integration.config.js --runInBand --verbose",
+    "test:e2e": "npm run test:e2e:setup",
+    "test:e2e:setup": "./scripts/setup-test-env.sh && npm run test:e2e:run",
+    "test:e2e:run": "start-server-and-test 'next start' http://localhost:3000/api/blog/articles 'playwright test'",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:fresh": "./scripts/run-tests.sh",
     "test:init": "node scripts/test-init.js",
     "test:verify": "ts-node scripts/verify-test-env.ts",
-    "test:ci": "npm run test:init && npm run test:unit && npm run test:integration",
+    "test:ci": "npm run test:init && npm run test:unit && npm run test:integration && npm run test:e2e:fresh",
     "test:full": "npm run lint && npm run test:ci",
     "test:clean": "node scripts/test-teardown.js",
-    "test:all": "npm run test:init && npm run test:unit && npm run test:integration && npm run test:clean"
+    "test:all": "npm run test:init && npm run test:unit && npm run test:integration && npm run test:e2e && npm run test:clean",
+    "test:server": "next start --port 3000"
   },
   "dependencies": {
     "next": "14.1.0",
@@ -29,6 +36,7 @@
     "uuid": "^9.0.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.42.1",
     "@types/dotenv": "^8.2.0",
     "@types/jest": "^29.5.12",
     "@types/node": "^20.11.19",
@@ -43,6 +51,7 @@
     "eslint-config-next": "14.1.0",
     "jest": "^29.7.0",
     "jest-environment-node": "^29.7.0",
+    "start-server-and-test": "^2.0.3",
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"

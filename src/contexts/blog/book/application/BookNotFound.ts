@@ -1,10 +1,9 @@
-import { DomainError } from '@/contexts/shared/domain/DomainError';
+import { NotFoundError } from '@/contexts/shared/domain/NotFoundError';
 import { BookId } from '../domain/BookId';
 
-export class BookNotFound extends DomainError {
-  readonly type = 'BookNotFound';
-
-  constructor(id: BookId) {
-    super(`Book with id ${id.value} not found`);
+export class BookNotFound extends NotFoundError {
+  constructor(bookId: BookId) {
+    super(`Book with id ${bookId.value} not found`);
+    this.name = 'BookNotFound';
   }
 }
