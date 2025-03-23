@@ -1,48 +1,87 @@
-# Project Documentation
+# Personal Web Backend - Documentación
 
-## Memory Bank
-La documentación principal del proyecto se encuentra en el directorio `memory-bank/`. Esta documentación sigue un formato estructurado y jerárquico que permite mantener un registro claro del estado y evolución del proyecto.
+Este repositorio contiene el backend para mi web personal, implementado con Next.js, TypeScript y PostgreSQL, siguiendo los principios de Arquitectura Hexagonal y Domain-Driven Design.
 
-### Core Files
-1. [`projectbrief.md`](./memory-bank/projectbrief.md) - Documento fundacional que define los requisitos y objetivos
-2. [`productContext.md`](./memory-bank/productContext.md) - Contexto del producto y problemas que resuelve
-3. [`systemPatterns.md`](./memory-bank/systemPatterns.md) - Arquitectura y patrones del sistema
-4. [`techContext.md`](./memory-bank/techContext.md) - Stack tecnológico y configuración
-5. [`activeContext.md`](./memory-bank/activeContext.md) - Estado actual y decisiones activas
-6. [`progress.md`](./memory-bank/progress.md) - Progreso y problemas conocidos
+## Documentación de la API
 
-### Additional Context
-- [`adr/`](./adr/) - Architectural Decision Records
-- [`obr/`](./obr/) - Object Business Rules
-- [`setup/`](./setup/) - Guías de configuración
+La API está completamente documentada utilizando OpenAPI/Swagger. Puedes encontrar la documentación en:
 
-## Estructura de Directorios
+- [Especificación OpenAPI](api/openapi.json)
+- [Guía de Uso y Ejemplos](api/examples.md)
+
+## Arquitectura
+
+El proyecto sigue una arquitectura hexagonal (ports & adapters) con:
+
+- [ADR-001: Arquitectura Hexagonal](adr/001-arquitectura-hexagonal.md)
+- [ADR-002: Persistencia de Datos](adr/002-persistencia-datos.md)
+- [ADR-003: API REST](adr/003-api-rest.md)
+- [ADR-004: Object Mother Pattern](adr/004-object-mother-pattern.md)
+- [ADR-005: Testing](adr/005-testing.md)
+- [ADR-006: Testing E2E](adr/006-testing-e2e.md)
+
+## Estructura del Proyecto
 
 ```
-docs/
-├── README.md
-├── memory-bank/        # Documentación principal
-│   ├── projectbrief.md
-│   ├── productContext.md
-│   ├── systemPatterns.md
-│   ├── techContext.md
-│   ├── activeContext.md
-│   └── progress.md
-├── adr/               # Decisiones arquitectónicas
-├── obr/               # Reglas de negocio
-└── setup/             # Guías de configuración
+src/
+├── app/                    # Rutas de Next.js (API endpoints)
+├── contexts/              # Bounded contexts
+│   ├── blog/             # Contexto del blog
+│   │   ├── article/      # Módulo de artículos
+│   │   └── book/         # Módulo de libros
+│   └── shared/           # Código compartido
+└── types/                # Tipos globales
 ```
 
-## Mantenimiento
+## Desarrollo
 
-La documentación debe actualizarse en los siguientes casos:
-1. Al descubrir nuevos patrones del proyecto
-2. Después de implementar cambios significativos
-3. Cuando el usuario solicita **update memory bank**
-4. Cuando el contexto necesita clarificación
+1. Configuración del entorno:
+   ```bash
+   cp .env.example .env
+   npm install
+   ```
 
-## Convenciones
-1. Usar Markdown para toda la documentación
-2. Incluir diagramas cuando sea útil (usando Mermaid)
-3. Mantener los archivos organizados y actualizados
-4. Documentar decisiones importantes en ADRs
+2. Iniciar base de datos:
+   ```bash
+   docker-compose up -d
+   ```
+
+3. Ejecutar migraciones:
+   ```bash
+   psql -h localhost -U postgres -d blog < databases/articles.sql
+   psql -h localhost -U postgres -d blog < databases/books.sql
+   ```
+
+4. Iniciar servidor de desarrollo:
+   ```bash
+   npm run dev
+   ```
+
+## Testing
+
+El proyecto incluye varios tipos de tests:
+
+- Tests unitarios:
+  ```bash
+  npm run test:unit
+  ```
+
+- Tests de integración:
+  ```bash
+  npm run test:integration
+  ```
+
+- Tests end-to-end:
+  ```bash
+  npm run test:e2e
+  ```
+
+## Características Principales
+
+- **API RESTful** para gestión de artículos y libros
+- **Arquitectura Hexagonal** para una clara separación de responsabilidades
+- **Domain-Driven Design** para modelar el dominio de la aplicación
+- **Tests Completos** incluyendo unitarios, integración y e2e
+- **Base de Datos PostgreSQL** para persistencia de datos
+- **TypeScript** para tipado estático
+- **Validaciones Robustas** de datos de entrada
