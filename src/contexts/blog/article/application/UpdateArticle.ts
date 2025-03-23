@@ -7,27 +7,39 @@ import { ArticleNotFound } from './ArticleNotFound';
 
 export type UpdateArticleRequest = {
   id: string;
-  title: string;
-  content: string;
-  bookIds: string[];
+  title?: string;
+  content?: string;
+  bookIds?: string[];
 };
 
 export class UpdateArticle {
   constructor(private readonly repository: ArticleRepository) {}
 
   async run(request: UpdateArticleRequest): Promise<void> {
-    const article = await this.repository.search(ArticleId.create(request.id));
+    const articleId = ArticleId.create(request.id);
+    const article = await this.repository.search(articleId);
 
     if (!article) {
-      throw new ArticleNotFound(request.id);
+      throw new ArticleNotFound(articleId);
     }
 
-    article.update({
-      title: ArticleTitle.create(request.title),
-      content: ArticleContent.create(request.content),
-      bookIds: ArticleBookIds.create(request.bookIds)
-    });
+    const updateData: Partial<{
+      title: ArticleTitle;
+      content: ArticleContent;
+      bookIds: ArticleBookIds;
+    }> = {};
 
-    await this.repository.update(article);
+    if (request.title !== undefined) {
+      updateData.title = ArticleTitle.create(request.title);
+    }
+    if (request.content !== undefined) {
+      updateData.content = ArticleContent.create(request.content);
+    }
+    if (request.bookIds !== undefined) {
+      updateData.bookIds = ArticleBookIds.create(request.bookIds);
+    }
+
+    const updatedArticle = article.update(updateData);
+    await this.repository.update(updatedArticle);
   }
 }

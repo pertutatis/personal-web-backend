@@ -1,68 +1,89 @@
 import { NextRequest } from 'next/server';
-import { executeWithErrorHandling } from '@/contexts/shared/infrastructure/http/executeWithErrorHandling';
-import { HttpNextResponse } from '@/contexts/shared/infrastructure/http/HttpNextResponse';
-import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection';
 import { PostgresBookRepository } from '@/contexts/blog/book/infrastructure/PostgresBookRepository';
+import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection';
 import { GetBook } from '@/contexts/blog/book/application/GetBook';
 import { UpdateBook } from '@/contexts/blog/book/application/UpdateBook';
-import { BookNotFound } from '@/contexts/blog/book/application/BookNotFound';
-import { booksDbConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
+import { DeleteBook as DeleteBookAction } from '@/contexts/blog/book/application/DeleteBook';
+import { getBooksConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
+import { executeWithErrorHandling } from '@/contexts/shared/infrastructure/http/executeWithErrorHandling';
+import { HttpNextResponse } from '@/contexts/shared/infrastructure/http/HttpNextResponse';
+import { ValidationError } from '@/contexts/shared/domain/ValidationError';
+import { BookIsbn } from '@/contexts/blog/book/domain/BookIsbn';
 
-let connection: PostgresConnection;
+// Crear conexión como promesa para asegurar una única instancia
+const booksConnectionPromise = PostgresConnection.create(getBooksConfig());
 
 async function getConnection() {
-  if (!connection) {
-    connection = await PostgresConnection.create(booksDbConfig);
-  }
-  return connection;
+  return await booksConnectionPromise;
 }
 
-type Params = {
-  params: {
-    id: string;
-  };
-};
-
-export async function GET(_request: NextRequest, { params }: Params) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   return executeWithErrorHandling(async () => {
     const connection = await getConnection();
     const repository = new PostgresBookRepository(connection);
     const getBook = new GetBook(repository);
-    
-    try {
-      const book = await getBook.run(params.id);
-      return HttpNextResponse.ok(book.toPrimitives());
-    } catch (error) {
-      if (error instanceof BookNotFound) {
-        return HttpNextResponse.notFound(error.message);
-      }
-      throw error;
-    }
+
+    const book = await getBook.run(params.id);
+    return HttpNextResponse.ok(book.toPrimitives());
   });
 }
 
-export async function PUT(request: NextRequest, { params }: Params) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   return executeWithErrorHandling(async () => {
-    const body = await request.json();
-    
     const connection = await getConnection();
     const repository = new PostgresBookRepository(connection);
     const updateBook = new UpdateBook(repository);
     
-    try {
-      await updateBook.run({
-        id: params.id,
-        title: body.title,
-        author: body.author,
-        isbn: body.isbn
-      });
-      
-      return HttpNextResponse.ok();
-    } catch (error) {
-      if (error instanceof BookNotFound) {
-        return HttpNextResponse.notFound(error.message);
-      }
-      throw error;
+    const contentType = request.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      throw new ValidationError('Content-Type must be application/json');
     }
+
+    let data;
+    try {
+      const clone = request.clone();
+      const rawBody = await clone.json();
+      data = rawBody.data || rawBody;
+      if (!data || typeof data !== 'object') {
+        throw new ValidationError('Invalid request data format');
+      }
+    } catch (e) {
+      throw new ValidationError('Invalid request body');
+    }
+
+    const updatedBook = await updateBook.run({
+      id: params.id,
+      title: data.title,
+      author: data.author,
+      isbn: data.isbn
+    });
+
+    const primitives = {
+      ...updatedBook.toPrimitives(),
+    };
+    return HttpNextResponse.ok(primitives);
   });
 }
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  return executeWithErrorHandling(async () => {
+    const connection = await getConnection();
+    const repository = new PostgresBookRepository(connection);
+    const deleteBook = new DeleteBookAction(repository);
+
+    await deleteBook.run(params.id);
+    return HttpNextResponse.noContent();
+  });
+}
+
+// Asegurarse de que la conexión está lista al iniciar
+getConnection().catch(console.error);

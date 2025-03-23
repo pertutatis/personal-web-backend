@@ -15,7 +15,7 @@ describe('Book', () => {
     expect(book.id.toString()).toBeDefined();
     expect(book.title.toString()).toBe('Clean Code');
     expect(book.author.toString()).toBe('Robert C. Martin');
-    expect(book.isbn.toString()).toBe('978-0-13-235088-4');
+    expect(book.isbn.toFormattedString()).toBe('978-0-13-235088-4');
     expect(book.createdAt).toBe(now);
     expect(book.updatedAt).toBe(now);
   });
@@ -42,7 +42,7 @@ describe('Book', () => {
 
     expect(book.title.toString()).toBe('Updated Title');
     expect(book.author.toString()).toBe('Updated Author');
-    expect(book.isbn.toString()).toBe('978-0-06-231500-7');
+    expect(book.isbn.toFormattedString()).toBe('978-0-06-231500-7');
   });
 
   it('should create an updated event when updated', () => {

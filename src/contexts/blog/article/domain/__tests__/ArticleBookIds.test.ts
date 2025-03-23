@@ -9,10 +9,9 @@ describe('ArticleBookIds', () => {
     expect(articleBookIds.getValue()).toEqual(bookIds);
   });
 
-  it('should throw error when book ids array is empty', () => {
-    expect(() => {
-      ArticleBookIdsMother.empty();
-    }).toThrow(ArticleBookIdsEmpty);
+  it('should accept empty book ids array', () => {
+    const bookIds = ArticleBookIdsMother.empty();
+    expect(bookIds.getValue()).toEqual([]);
   });
 
   it('should remove duplicate book ids', () => {

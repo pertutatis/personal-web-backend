@@ -35,7 +35,7 @@ beforeAll(async () => {
   try {
     // Wait for databases to be ready
     await TestHelper.waitForDatabases();
-    console.log('✓ Database connections established');
+    // console.log('✓ Database connections established');
   } catch (error) {
     console.error('Failed to connect to databases:', error);
     throw error;
@@ -56,7 +56,7 @@ beforeEach(async () => {
 afterAll(async () => {
   try {
     await TestHelper.closeConnections();
-    console.log('✓ Database connections closed');
+    // console.log('✓ Database connections closed');
   } catch (error) {
     console.error('Failed to close database connections:', error);
     throw error;

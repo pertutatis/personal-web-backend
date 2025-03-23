@@ -11,23 +11,24 @@ export class UpdateBook {
 
   async run(request: {
     id: string;
-    title: string;
-    author: string;
+    title?: string;
+    author?: string;
     isbn?: string;
-  }): Promise<void> {
-    const bookId = new BookId(request.id);
-    const existingBook = await this.repository.findById(bookId);
+  }): Promise<Book> {
+    const bookId = BookId.create(request.id);
+    const existingBook = await this.repository.search(bookId);
+if (!existingBook) {
+  throw new BookNotFound(bookId);
+}
 
-    if (!existingBook) {
-      throw new BookNotFound(request.id);
-    }
+const book = existingBook;
+book.update({
+  title: request.title ? BookTitle.create(request.title) : book.title,
+  author: request.author ? BookAuthor.create(request.author) : book.author,
+  isbn: request.isbn ? BookIsbn.create(request.isbn) : book.isbn
+});
 
-    const updatedBook = existingBook.update(
-      new BookTitle(request.title),
-      new BookAuthor(request.author),
-      request.isbn ? new BookIsbn(request.isbn) : undefined
-    );
-
-    await this.repository.update(updatedBook);
+await this.repository.update(book);
+return book;
   }
 }

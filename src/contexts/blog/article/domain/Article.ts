@@ -24,11 +24,11 @@ type CreateArticleParams = {
   updatedAt: Date;
 };
 
-type UpdateArticleParams = {
+type UpdateArticleParams = Partial<{
   title: ArticleTitle;
   content: ArticleContent;
   bookIds: ArticleBookIds;
-};
+}>;
 
 export class Article extends AggregateRoot {
   readonly id: ArticleId;
@@ -62,36 +62,49 @@ export class Article extends AggregateRoot {
     return article;
   }
 
-  update(params: UpdateArticleParams): void {
+  update(params: Partial<UpdateArticleParams>): Article {
+    // Any update operation should result in a new timestamp
     const now = new Date();
-    
-    // Actualizamos directamente las propiedades en la instancia actual
-    Object.assign(this, {
-      title: params.title,
-      content: params.content,
-      bookIds: params.bookIds,
+    now.setMilliseconds(0); // Normalize milliseconds to avoid precision issues
+
+    // Determine new values
+    const newTitle = params.title !== undefined ? params.title : this.title;
+    const newContent = params.content !== undefined ? params.content : this.content;
+    const newBookIds = params.bookIds !== undefined ? params.bookIds : this.bookIds;
+
+    // Create new article with updated values
+    const updatedArticle = new Article({
+      id: this.id,
+      title: newTitle,
+      content: newContent,
+      bookIds: newBookIds,
+      createdAt: this.createdAt,
       updatedAt: now
     });
 
-    // Registramos el evento en la instancia actual
-    this.record(new ArticleUpdatedDomainEvent({
-      aggregateId: this.id.value,
-      title: params.title.value,
-      content: params.content.value,
-      bookIds: params.bookIds.getValue(),
-      updatedAt: now,
-      occurredOn: now
-    }));
+    // Record event if there are any params
+    if (Object.keys(params).length > 0) {
+      updatedArticle.record(new ArticleUpdatedDomainEvent({
+        aggregateId: this.id.value,
+        title: updatedArticle.title.value,
+        content: updatedArticle.content.value,
+        bookIds: updatedArticle.bookIds.getValue(),
+        updatedAt: now,
+        occurredOn: now
+      }));
+    }
+
+    return updatedArticle;
   }
 
-  toPrimitives(): ArticlePrimitives {
+  toPrimitives(): Omit<ArticlePrimitives, 'createdAt' | 'updatedAt'> & { createdAt: string; updatedAt: string } {
     return {
       id: this.id.value,
       title: this.title.value,
       content: this.content.value,
       bookIds: this.bookIds.getValue(),
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt
+      createdAt: this.createdAt.toISOString(),
+      updatedAt: this.updatedAt.toISOString()
     };
   }
 }

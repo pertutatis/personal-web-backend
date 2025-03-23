@@ -3,9 +3,9 @@ CREATE TABLE IF NOT EXISTS books (
     id VARCHAR(255) PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     author VARCHAR(255) NOT NULL,
-    isbn VARCHAR(13) NOT NULL UNIQUE,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    isbn VARCHAR(20) NOT NULL UNIQUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create index on title
@@ -40,4 +40,4 @@ CREATE TRIGGER update_books_updated_at
 ALTER TABLE books
     ADD CONSTRAINT books_title_not_empty CHECK (length(trim(title)) > 0),
     ADD CONSTRAINT books_author_not_empty CHECK (length(trim(author)) > 0),
-    ADD CONSTRAINT books_isbn_valid CHECK (length(isbn) = 13);
+    ADD CONSTRAINT books_isbn_valid CHECK (length(replace(replace(isbn, '-', ''), ' ', '')) IN (10, 13));

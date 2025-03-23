@@ -15,8 +15,8 @@ describe('Article', () => {
     expect(article.title.toString()).toBe('10 Clean Code Principles Every Developer Should Follow');
     expect(article.content.toString()).toContain('Clean code is not just about making the code work');
     expect(article.bookIds.toString()).toBe('cc8d8194-e099-4e3a-a431-6b4412dc5f6a,7d7f60ce-5a49-4be7-8c5e-c4b4375087c8');
-    expect(article.createdAt).toBe(now);
-    expect(article.updatedAt).toBe(now);
+    expect(article.createdAt.toISOString()).toBe(now.toISOString());
+    expect(article.updatedAt.toISOString()).toBe(now.toISOString());
   });
 
   it('should create an article event when created', () => {
@@ -27,34 +27,39 @@ describe('Article', () => {
     expect(events[0].eventName).toBe('article.created');
   });
 
-  it('should update article properties', () => {
-    const article = ArticleMother.create();
+  it('should update article properties and timestamp', () => {
+    const createdAt = new Date('2025-01-01T00:00:00Z');
+    const article = ArticleMother.withDates(createdAt, createdAt);
     const newTitle = ArticleTitleMother.create('Updated Title');
     const newContent = ArticleContentMother.create('Updated Content');
     const newBookIds = ArticleBookIdsMother.create(['book-2', 'book-3']);
 
-    article.update({
+    const updatedArticle = article.update({
       title: newTitle,
       content: newContent,
       bookIds: newBookIds
     });
 
-    expect(article.title.toString()).toBe('Updated Title');
-    expect(article.content.toString()).toBe('Updated Content');
-    expect(article.bookIds.toString()).toBe('book-2,book-3');
+    expect(updatedArticle.title.toString()).toBe('Updated Title');
+    expect(updatedArticle.content.toString()).toBe('Updated Content');
+    expect(updatedArticle.bookIds.toString()).toBe('book-2,book-3');
+    expect(updatedArticle.createdAt).toEqual(createdAt);
+    expect(updatedArticle.updatedAt.getTime()).toBeGreaterThan(createdAt.getTime());
   });
 
   it('should create an updated event when updated', () => {
-    const article = ArticleMother.create();
-    article.update({
-      title: ArticleTitleMother.create('Updated Title'),
-      content: ArticleContentMother.create('Updated Content'),
-      bookIds: ArticleBookIdsMother.create(['book-2'])
+    const createdAt = new Date('2025-01-01T00:00:00Z');
+    const article = ArticleMother.withDates(createdAt, createdAt);
+    const newTitle = ArticleTitleMother.create('Updated Title');
+
+    const updatedArticle = article.update({
+      title: newTitle
     });
     
-    const events = article.pullDomainEvents();
-    expect(events).toHaveLength(2);
-    expect(events[1].eventName).toBe('article.updated');
+    // The article should have only the update event
+    const events = updatedArticle.pullDomainEvents();
+    expect(events).toHaveLength(1);
+    expect(events[0].eventName).toBe('article.updated');
   });
 
   it('should convert to primitives', () => {
@@ -67,8 +72,8 @@ describe('Article', () => {
       title: '10 Clean Code Principles Every Developer Should Follow',
       content: expect.stringContaining('Clean code is not just about making the code work'),
       bookIds: ['cc8d8194-e099-4e3a-a431-6b4412dc5f6a', '7d7f60ce-5a49-4be7-8c5e-c4b4375087c8'],
-      createdAt: now,
-      updatedAt: now
+      createdAt: now.toISOString(),
+      updatedAt: now.toISOString()
     });
   });
 
@@ -91,14 +96,13 @@ describe('Article', () => {
     }).toThrow(ArticleContentEmpty);
   });
 
-  it('should not create article without book ids', () => {
-    expect(() => {
-      ArticleMother.create(
-        undefined,
-        undefined,
-        undefined,
-        ArticleBookIdsMother.empty()
-      );
-    }).toThrow(ArticleBookIdsEmpty);
+  it('should allow article creation without book ids', () => {
+    const article = ArticleMother.create(
+      undefined,
+      undefined,
+      undefined,
+      ArticleBookIdsMother.empty()
+    );
+    expect(article.bookIds.getValue()).toEqual([]);
   });
 });

@@ -1,8 +1,8 @@
-import { DomainError } from '@/contexts/shared/domain/DomainError';
+import { NotFoundError } from '@/contexts/shared/domain/NotFoundError';
 import { ArticleId } from '../domain/ArticleId';
 
-export class ArticleNotFound extends DomainError {
-  readonly type = 'ArticleNotFound';
+export class ArticleNotFound extends NotFoundError {
+  readonly type = 'NotFoundError';
 
   constructor(id: ArticleId) {
     super(`Article with id ${id.value} not found`);

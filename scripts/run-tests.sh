@@ -1,73 +1,81 @@
 #!/bin/bash
+set -e
 
-# Colors for output
-GREEN='\033[0;32m'
-RED='\033[0;31m'
-BLUE='\033[0;34m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+echo "🧹 Cleaning up previous environment..."
+pkill -f "next" || true
+rm -rf .next || true
+rm -rf test-results playwright-report || true
+find . -name "*.log" -type f -delete
 
-# Function to check command status
-check_status() {
-    if [ $? -ne 0 ]; then
-        echo -e "${RED}❌ $1 failed${NC}"
-        exit 1
-    fi
+echo "🔧 Setting up test environment..."
+NODE_ENV=test npm run test:clean
+NODE_ENV=test npm run test:verify
+
+# Asegurarnos de que tenemos las variables de entorno correctas
+echo "🔑 Setting up environment variables..."
+if [ ! -f ".env.test" ]; then
+  echo "❌ .env.test file not found"
+  exit 1
+fi
+
+cp .env.test .env.local
+
+echo "🏗️ Building application..."
+NODE_ENV=test NEXT_RUNTIME=nodejs npm run build
+
+echo "🚀 Starting server in development mode..."
+DEBUG=* NODE_ENV=test NODE_OPTIONS='--inspect' npm run dev > server.log 2>&1 &
+SERVER_PID=$!
+
+# Función para limpiar al salir
+cleanup() {
+  echo "🧹 Cleaning up..."
+  if [ -n "$SERVER_PID" ]; then
+    echo "Stopping server (PID: $SERVER_PID)..."
+    kill $SERVER_PID 2>/dev/null || true
+    wait $SERVER_PID 2>/dev/null || true
+  fi
+  rm -f server.log
+  rm -f .env.local
+  exit ${1:-0}
 }
 
-echo -e "${BLUE}Starting test suite...${NC}\n"
+trap cleanup EXIT INT TERM
 
-# Check Docker status
-echo -e "${BLUE}Checking Docker status...${NC}"
-if ! docker info > /dev/null 2>&1; then
-    echo -e "${RED}❌ Docker is not running. Please start Docker first.${NC}"
-    exit 1
+echo "⏳ Waiting for server to be ready..."
+MAX_RETRIES=30
+RETRY_COUNT=0
+
+while ! curl -s http://localhost:3000/api/blog/articles > /dev/null; do
+  if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+    echo "❌ Server failed to start after $MAX_RETRIES attempts"
+    echo "Last server logs:"
+    tail -n 50 server.log
+    cleanup 1
+  fi
+  echo "Waiting for server... ($(($RETRY_COUNT + 1))/$MAX_RETRIES)"
+  if [ $RETRY_COUNT -eq 0 ]; then
+    echo "Initial server logs:"
+    tail -n 10 server.log
+  fi
+  sleep 1
+  RETRY_COUNT=$((RETRY_COUNT + 1))
+done
+
+echo "✅ Server is ready!"
+
+echo "🧪 Running E2E tests..."
+PLAYWRIGHT_TEST_BASE_URL=http://localhost:3000 \
+NODE_ENV=test \
+DEBUG=pw:api \
+npx playwright test
+
+TEST_EXIT_CODE=$?
+
+if [ $TEST_EXIT_CODE -ne 0 ]; then
+  echo "❌ Tests failed"
+  echo "Last server logs:"
+  tail -n 50 server.log
 fi
 
-# Start containers if not running
-if ! docker ps | grep -q "articles-db\|books-db"; then
-    echo -e "${BLUE}Starting Docker containers...${NC}"
-    docker compose up -d
-    check_status "Docker compose"
-    
-    echo -e "${YELLOW}Waiting for containers to be ready...${NC}"
-    sleep 10
-fi
-
-# Initialize test environment
-echo -e "\n${BLUE}Initializing test environment...${NC}"
-npm run test:init
-check_status "Test environment initialization"
-echo -e "${GREEN}✅ Test environment initialized${NC}\n"
-
-# Run linting
-echo -e "${BLUE}Running linting...${NC}"
-npm run lint
-check_status "Linting"
-echo -e "${GREEN}✅ Linting passed${NC}\n"
-
-# Run unit tests
-echo -e "${BLUE}Running unit tests...${NC}"
-npm run test:unit
-check_status "Unit tests"
-echo -e "${GREEN}✅ Unit tests passed${NC}\n"
-
-# Run integration tests
-echo -e "${BLUE}Running integration tests...${NC}"
-npm run test:integration
-check_status "Integration tests"
-echo -e "${GREEN}✅ Integration tests passed${NC}\n"
-
-# Show coverage reports
-echo -e "${BLUE}Test Coverage Reports:${NC}"
-echo -e "${YELLOW}Unit Tests Coverage:${NC}"
-cat coverage/unit/lcov-report/index.html | grep -A 4 "fraction" || true
-echo -e "\n${YELLOW}Integration Tests Coverage:${NC}"
-cat coverage/integration/lcov-report/index.html | grep -A 4 "fraction" || true
-
-# Clean up
-echo -e "\n${BLUE}Cleaning up test environment...${NC}"
-node scripts/test-teardown.js
-check_status "Test environment cleanup"
-
-echo -e "\n${GREEN}✅ All tests completed successfully!${NC}"
+cleanup $TEST_EXIT_CODE

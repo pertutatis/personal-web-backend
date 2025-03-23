@@ -69,4 +69,15 @@ export class Collection<T> {
     const { limit, total } = this.pagination;
     return total === 0 ? 0 : Math.ceil(total / limit);
   }
+
+  toPrimitives<R>(): { items: R[]; total: number; page: number; limit: number } {
+    return {
+      items: this.items.map((item: any) =>
+        item.toPrimitives ? item.toPrimitives() : item
+      ),
+      total: this.pagination.total,
+      page: this.pagination.page,
+      limit: this.pagination.limit
+    };
+  }
 }

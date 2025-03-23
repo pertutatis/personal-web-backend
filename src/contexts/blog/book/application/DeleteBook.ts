@@ -1,12 +1,11 @@
-import { Book } from '../domain/Book';
 import { BookRepository } from '../domain/BookRepository';
 import { BookId } from '../domain/BookId';
 import { BookNotFound } from './BookNotFound';
 
-export class GetBook {
+export class DeleteBook {
   constructor(private readonly repository: BookRepository) {}
 
-  async run(id: string): Promise<Book> {
+  async run(id: string): Promise<void> {
     const bookId = BookId.create(id);
     const book = await this.repository.search(bookId);
 
@@ -14,6 +13,6 @@ export class GetBook {
       throw new BookNotFound(bookId);
     }
 
-    return book;
+    await this.repository.delete(bookId);
   }
 }

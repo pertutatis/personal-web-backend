@@ -9,6 +9,10 @@ export abstract class StringValueObject {
     return this.value;
   }
 
+  toJSON(): string {
+    return this.value;
+  }
+
   equals(other: StringValueObject): boolean {
     return other.constructor.name === this.constructor.name && other.toString() === this.toString();
   }
