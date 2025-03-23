@@ -8,6 +8,7 @@ import { getBooksConfig } from '@/contexts/shared/infrastructure/config/Database
 import { executeWithErrorHandling } from '@/contexts/shared/infrastructure/http/executeWithErrorHandling';
 import { HttpNextResponse } from '@/contexts/shared/infrastructure/http/HttpNextResponse';
 import { ValidationError } from '@/contexts/shared/domain/ValidationError';
+import { BookIsbn } from '@/contexts/blog/book/domain/BookIsbn';
 
 // Crear conexión como promesa para asegurar una única instancia
 const booksConnectionPromise = PostgresConnection.create(getBooksConfig());
@@ -63,7 +64,10 @@ export async function PUT(
       isbn: data.isbn
     });
 
-    return HttpNextResponse.ok(updatedBook.toPrimitives());
+    const primitives = {
+      ...updatedBook.toPrimitives(),
+    };
+    return HttpNextResponse.ok(primitives);
   });
 }
 

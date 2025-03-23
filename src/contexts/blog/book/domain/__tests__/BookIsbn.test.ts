@@ -5,12 +5,12 @@ import { BookIsbnMother } from './mothers/BookIsbnMother';
 describe('BookIsbn', () => {
   it('should create a valid ISBN-10', () => {
     const isbn = BookIsbnMother.isbn10();
-    expect(isbn.toString()).toBe('0-7475-3269-9');
+    expect(isbn.toFormattedString()).toBe('0-7475-3269-9');
   });
 
   it('should create a valid ISBN-13', () => {
     const isbn = BookIsbnMother.isbn13();
-    expect(isbn.toString()).toBe('978-0-74-753269-9');
+    expect(isbn.toFormattedString()).toBe('978-0-74-753269-9');
   });
 
   it('should fail with invalid ISBN-10', () => {
@@ -23,7 +23,7 @@ describe('BookIsbn', () => {
 
   it('should accept ISBN with hyphens', () => {
     const isbn = BookIsbnMother.withHyphens();
-    expect(isbn.toString()).toBe('0-7475-3269-9');
+    expect(isbn.toFormattedString()).toBe('0-7475-3269-9');
   });
 
   it('should fail with invalid format', () => {
@@ -46,8 +46,8 @@ describe('BookIsbn', () => {
 
     const expected = '0-7475-3269-9';
     
-    expect(withHyphens.toString()).toBe(expected);
-    expect(withSpaces.toString()).toBe(expected);
-    expect(withoutSeparators.toString()).toBe(expected);
+    expect(withHyphens.toFormattedString()).toBe(expected);
+    expect(withSpaces.toFormattedString()).toBe(expected);
+    expect(withoutSeparators.toFormattedString()).toBe(expected);
   });
 });

@@ -19,7 +19,8 @@ describe('GetArticle', () => {
       searchAll: jest.fn(),
       searchByPage: jest.fn(),
       searchByBookId: jest.fn(),
-      update: jest.fn()
+      update: jest.fn(),
+      delete: jest.fn()
     };
     getArticle = new GetArticle(repository);
   });
@@ -27,28 +28,28 @@ describe('GetArticle', () => {
   it('should throw ArticleNotFound when article does not exist', async () => {
     repository.search = jest.fn().mockResolvedValue(null);
     const id = ArticleId.create('non-existent-id');
+await expect(getArticle.run(id.value))
+  .rejects
+  .toThrow(ArticleNotFound);
+});
 
-    await expect(getArticle.run(id))
-      .rejects
-      .toThrow(ArticleNotFound);
-  });
+it('should return the article when it exists', async () => {
+const articleId = ArticleId.create('test-id');
+const article = Article.create({
+  id: articleId,
+  title: ArticleTitle.create('Test Article'),
+  content: ArticleContent.create('Test Content'),
+  bookIds: ArticleBookIds.create(['book-1']),
+  createdAt: now,
+  updatedAt: now
+});
 
-  it('should return the article when it exists', async () => {
-    const article = Article.create({
-      id: ArticleId.create('test-id'),
-      title: ArticleTitle.create('Test Article'),
-      content: ArticleContent.create('Test Content'),
-      bookIds: ArticleBookIds.create(['book-1']), // Add at least one book ID
-      createdAt: now,
-      updatedAt: now
-    });
-
-    repository.search = jest.fn().mockResolvedValue(article);
-    const id = ArticleId.create('test-id');
-
-    const result = await getArticle.run(id);
+repository.search = jest.fn().mockResolvedValue(article);
+const result = await getArticle.run(articleId.value);
 
     expect(result).toBe(article);
-    expect(repository.search).toHaveBeenCalledWith(id);
+    expect(repository.search).toHaveBeenCalledWith(expect.objectContaining({
+      value: 'test-id'
+    }));
   });
 });

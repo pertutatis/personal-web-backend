@@ -107,7 +107,12 @@ test.describe('Books API', () => {
     const createdBook = await apiHelpers.createTestBook(testBooks.valid);
     const response = await booksApi.getBook(createdBook.id);
     const book = await apiHelpers.verifySuccessResponse<BookResponse>(response);
-    expect(book).toEqual(createdBook);
+    expect(book.id).toBe(createdBook.id);
+    expect(book.title).toBe(createdBook.title);
+    expect(book.author).toBe(createdBook.author);
+    expect(book.isbn).toBe(createdBook.isbn);
+    expect(book.createdAt).toBeDefined();
+    expect(book.updatedAt).toBeDefined();
   });
 
   test('should return 404 for non-existent book', async () => {

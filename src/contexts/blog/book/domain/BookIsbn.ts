@@ -15,7 +15,7 @@ export class BookIsbn extends StringValueObject {
     this.originalFormat = value;
   }
 
-  private static normalizeISBN(isbn: string): string {
+  static normalizeISBN(isbn: string): string {
     return isbn.replace(/[-\s]/g, '').toUpperCase();
   }
 
@@ -71,10 +71,10 @@ export class BookIsbn extends StringValueObject {
   }
 
   toString(): string {
-  //   return this.value;
-  // }
-
-  // toFormattedString(): string {
+    return this.value;
+  }
+  
+  toFormattedString(): string {
     const isbn = this.value;
     
     // Mantener ISBN-10 con X sin guiones si ese era su formato original

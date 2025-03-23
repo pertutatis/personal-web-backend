@@ -118,7 +118,10 @@ export async function POST(request: NextRequest) {
 
     console.log('Creating book with data:', bookData);
     const book = await createBook.run(bookData);
-    return HttpNextResponse.created(book.toPrimitives());
+    const primitives = {
+      ...book.toPrimitives(),
+    };
+    return HttpNextResponse.created(primitives);
   });
 }
 

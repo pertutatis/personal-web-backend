@@ -2,43 +2,43 @@ export const testBooks = {
   valid: {
     title: 'Domain-Driven Design',
     author: 'Eric Evans',
-    isbn: '9780321125217'
+    isbn: '978-0-32-112521-7',
   },
   validSecond: {
     title: 'Clean Code',
     author: 'Robert C. Martin',
-    isbn: '9780132350884'
+    isbn: '978-0-13-235088-4',
   },
   invalid: {
     title: '',
     author: 'A'.repeat(256), // Excede el límite de longitud
-    isbn: '123-invalid'
+    isbn: '123-invalid',
   },
   invalidIsbn: {
     title: 'Test Book',
     author: 'Test Author',
-    isbn: 'invalid-isbn'
+    isbn: 'invalid-isbn',
   },
   invalidTitle: {
     title: '',
     author: 'Valid Author',
-    isbn: '9780132350884'
+    isbn: '978-0-13-235088-4',
   },
   invalidAuthor: {
     title: 'Valid Title',
     author: '',
-    isbn: '9780321125217'
+    isbn: '978-0-32-112521-7',
   },
   maxLengthTitle: {
     title: 'A'.repeat(255), // Máxima longitud permitida
     author: 'Test Author',
-    isbn: '9781449331818'
+    isbn: '978-1-44-933181-8',
   },
   maxLengthAuthor: {
     title: 'Test Title',
     author: 'A'.repeat(255), // Máxima longitud permitida
-    isbn: '9780123456789'
-  }
+    isbn: '978-0-12-345678-9',
+  },
 };
 
 export const testArticles = {
@@ -98,11 +98,10 @@ export interface TestArticle {
 
 export const generateValidIsbn = (index: number): string => {
   const baseIsbn = [
-    '9780321125217',
-    '9780132350884',
-    '9781449331818',
-    '9781617290541',
-    '9780134494166'
+    '978-0-32-112521-7',
+    '978-0-13-235088-4',
+    '0-7475-3269-9',
+    '978-0-74-753269-9',
   ];
   return baseIsbn[index % baseIsbn.length];
 };

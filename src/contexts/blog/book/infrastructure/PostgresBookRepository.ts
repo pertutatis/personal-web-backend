@@ -48,9 +48,10 @@ export class PostgresBookRepository implements BookRepository {
   }
 
   async searchByIsbn(isbn: string): Promise<Book | null> {
+    const normalizedIsbn = BookIsbn.normalizeISBN(isbn);
     const result = await this.connection.execute<BookRow>(
       'SELECT * FROM books WHERE isbn = $1',
-      [isbn]
+      [normalizedIsbn]
     );
 
     if (result.rows.length === 0) {
