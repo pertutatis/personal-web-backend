@@ -3,14 +3,6 @@ import { PostgresBookRepository } from '@/contexts/blog/book/infrastructure/Post
 import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection';
 import { CreateBook } from '@/contexts/blog/book/application/CreateBook';
 import { ListBooks } from '@/contexts/blog/book/application/ListBooks';
-import { GetBook } from '@/contexts/blog/book/application/GetBook';
-import { Book } from '@/contexts/blog/book/domain/Book';
-import { BookId } from '@/contexts/blog/book/domain/BookId';
-import { BookTitle } from '@/contexts/blog/book/domain/BookTitle';
-import { BookAuthor } from '@/contexts/blog/book/domain/BookAuthor';
-import { BookIsbn } from '@/contexts/blog/book/domain/BookIsbn';
-import { BookDescription } from '@/contexts/blog/book/domain/BookDescription';
-import { BookPurchaseLink } from '@/contexts/blog/book/domain/BookPurchaseLink';
 import { executeWithErrorHandling } from '@/contexts/shared/infrastructure/http/executeWithErrorHandling';
 import { HttpNextResponse } from '@/contexts/shared/infrastructure/http/HttpNextResponse';
 import { ValidationError } from '@/contexts/shared/domain/ValidationError';

@@ -4,92 +4,92 @@ export const testBooks = {
     author: 'Eric Evans',
     isbn: '978-0-32-112521-7',
     description: 'A comprehensive guide to DDD principles and patterns',
-    purchaseLink: 'https://example.com/ddd-book'
+    purchaseLink: 'https://example.com/ddd-book',
   },
   validSecond: {
     title: 'Clean Code',
     author: 'Robert C. Martin',
     isbn: '978-0-13-235088-4',
     description: 'A handbook of agile software craftsmanship',
-    purchaseLink: 'https://example.com/clean-code'
+    purchaseLink: 'https://example.com/clean-code',
   },
   validWithoutPurchaseLink: {
     title: 'Test Book Without Link',
     author: 'Test Author',
-    isbn: '978-0-32-112521-8',
+    isbn: '978-0-13-235088-4',
     description: 'A test book without purchase link',
-    purchaseLink: null
+    purchaseLink: null,
   },
   invalid: {
     title: '',
     author: 'A'.repeat(256), // Excede el límite de longitud
     isbn: '123-invalid',
     description: '',
-    purchaseLink: 'invalid-url'
+    purchaseLink: 'invalid-url',
   },
   invalidIsbn: {
     title: 'Test Book',
     author: 'Test Author',
     isbn: 'invalid-isbn',
     description: 'Valid description',
-    purchaseLink: 'https://example.com/book'
+    purchaseLink: 'https://example.com/book',
   },
   invalidTitle: {
     title: '',
     author: 'Valid Author',
     isbn: '978-0-13-235088-4',
     description: 'Valid description',
-    purchaseLink: 'https://example.com/book'
+    purchaseLink: 'https://example.com/book',
   },
   invalidAuthor: {
     title: 'Valid Title',
     author: '',
     isbn: '978-0-32-112521-7',
     description: 'Valid description',
-    purchaseLink: 'https://example.com/book'
+    purchaseLink: 'https://example.com/book',
   },
   invalidDescription: {
     title: 'Valid Title',
     author: 'Valid Author',
     isbn: '978-0-32-112521-7',
     description: '',
-    purchaseLink: 'https://example.com/book'
+    purchaseLink: 'https://example.com/book',
   },
   invalidPurchaseLink: {
     title: 'Valid Title',
     author: 'Valid Author',
     isbn: '978-0-32-112521-7',
     description: 'Valid description',
-    purchaseLink: 'not-a-valid-url'
+    purchaseLink: 'not-a-valid-url',
   },
   maxLengthTitle: {
     title: 'A'.repeat(255),
     author: 'Test Author',
     isbn: '978-1-44-933181-8',
     description: 'Valid description',
-    purchaseLink: 'https://example.com/book'
+    purchaseLink: 'https://example.com/book',
   },
   maxLengthAuthor: {
     title: 'Test Title',
     author: 'A'.repeat(255),
-    isbn: '978-0-12-345678-9',
+    isbn: '978-1-44-933181-8',
     description: 'Valid description',
-    purchaseLink: 'https://example.com/book'
+    purchaseLink: 'https://example.com/book',
   },
   maxLengthDescription: {
     title: 'Test Title',
     author: 'Test Author',
-    isbn: '978-0-12-345678-9',
+    isbn: '978-1-44-933181-8',
     description: 'A'.repeat(1000),
-    purchaseLink: 'https://example.com/book'
+    purchaseLink: 'https://example.com/book',
   },
   maxLengthPurchaseLink: {
     title: 'Test Title',
     author: 'Test Author',
-    isbn: '978-0-12-345678-9',
+    isbn: '978-1-44-933181-8',
     description: 'Valid description',
-    purchaseLink: `https://example.com/${'a'.repeat(1987)}`
-  }
+    purchaseLink: `https://example.com/${'a'.repeat(1980)}`,
+  },
 };
 
 export const testArticles = {
