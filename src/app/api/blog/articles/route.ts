@@ -34,11 +34,8 @@ export async function GET(request: NextRequest) {
     const listArticles = new ListArticles(repository);
 
     const collection = await listArticles.run(page, limit);
-    console.log('Fetched articles collection:', collection);
-    
     const response = collection.toPrimitives();
-    console.log('Transformed response:', response);
-    
+
     return HttpNextResponse.ok(response);
   });
 }
@@ -91,7 +88,6 @@ export async function POST(request: NextRequest) {
     }
 
     if (errors.length > 0) {
-      console.error('Validation errors:', { errors, receivedData: data });
       throw new ValidationError(errors.join(', '));
     }
 
@@ -103,18 +99,13 @@ export async function POST(request: NextRequest) {
         content: articleContent!,
         bookIds: bookIds
       };
-      console.log('Creating article with data:', articleData);
 
       const repository = new PostgresArticleRepository(articlesConnection, booksConnection);
       const createArticle = new CreateArticle(repository, uuidGenerator);
       
       const article = await createArticle.run(articleData);
-      const response = article.toPrimitives();
-      
-      console.log('Article created:', response);
-      return HttpNextResponse.created(response);
+      return HttpNextResponse.created(article.toPrimitives());
     } catch (error) {
-      console.error('Error creating article:', error);
       throw error;
     }
   });

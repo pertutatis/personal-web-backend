@@ -57,13 +57,10 @@ export class PostgresArticleRepository implements ArticleRepository {
 
   async save(article: Article): Promise<void> {
     const primitives = article.toPrimitives();
-    console.log('Saving article with primitives:', primitives);
-
     try {
       const bookIdsArray = Array.isArray(primitives.bookIds) ? primitives.bookIds : [];
       await this.validateBookIds(bookIdsArray);
       
-      console.log('Inserting article with book_ids:', bookIdsArray);
       await this.articlesConnection.execute(
         'INSERT INTO articles (id, title, excerpt, content, book_ids, created_at, updated_at) VALUES ($1, $2, $3, $4, $5::text[], $6, $7)',
         [
@@ -76,7 +73,6 @@ export class PostgresArticleRepository implements ArticleRepository {
           new Date(primitives.updatedAt)
         ]
       );
-      console.log('Article saved successfully');
     } catch (error) {
       console.error('Error saving article:', error);
       throw error;
@@ -84,8 +80,6 @@ export class PostgresArticleRepository implements ArticleRepository {
   }
 
   async search(id: ArticleId): Promise<Article | null> {
-    console.log('Searching for article with id:', id.value);
-
     try {
       const result = await this.articlesConnection.execute<ArticleRow>(
         'SELECT * FROM articles WHERE id = $1',
@@ -93,15 +87,11 @@ export class PostgresArticleRepository implements ArticleRepository {
       );
 
       if (result.rows.length === 0) {
-        console.log('Article not found');
         return null;
       }
 
       const articleRow = result.rows[0];
-      console.log('Found article row:', articleRow);
-      const article = this.createArticleFromRow(articleRow);
-      console.log('Created article:', article.toPrimitives());
-      return article;
+      return this.createArticleFromRow(articleRow);
     } catch (error) {
       console.error('Error searching for article:', error);
       throw error;
@@ -150,7 +140,6 @@ export class PostgresArticleRepository implements ArticleRepository {
 
   async update(article: Article): Promise<void> {
     const primitives = article.toPrimitives();
-    console.log('Updating article:', primitives);
 
     try {
       const existingArticle = await this.search(article.id);
@@ -158,15 +147,12 @@ export class PostgresArticleRepository implements ArticleRepository {
         throw new ValidationError('Article not found');
       }
 
-      // Get existing data
       const existingData = existingArticle.toPrimitives();
 
-      // Validate book IDs if they've been updated
       if (primitives.bookIds !== existingData.bookIds) {
         await this.validateBookIds(primitives.bookIds);
       }
 
-      // Execute the update query with all fields, ensuring updated_at is in UTC and greater than current timestamp
       await this.articlesConnection.execute(
         `UPDATE articles
          SET title = $1,
@@ -190,13 +176,10 @@ export class PostgresArticleRepository implements ArticleRepository {
         ]
       );
 
-      // Forzar recarga del artículo para obtener los timestamps actualizados
       const updatedArticle = await this.search(ArticleId.create(primitives.id));
       if (!updatedArticle) {
         throw new Error('Article not found after update');
       }
-
-      console.log('Article updated successfully');
     } catch (error) {
       console.error('Error updating article:', error);
       throw error;
@@ -205,16 +188,13 @@ export class PostgresArticleRepository implements ArticleRepository {
 
   async delete(id: ArticleId): Promise<void> {
     try {
-      console.log(`Attempting to delete article with ID: ${id.value}`);
       const result = await this.articlesConnection.execute(
         'DELETE FROM articles WHERE id = $1',
         [id.value]
       );
       if (result.rowCount === 0) {
-        console.log('No article found to delete');
         throw new Error('Article not found');
       }
-      console.log('Article deleted successfully');
     } catch (error) {
       console.error('Error deleting article:', error);
       throw error;
@@ -222,9 +202,8 @@ export class PostgresArticleRepository implements ArticleRepository {
   }
 
   private createArticleFromRow(row: ArticleRow): Article {
-    console.log('Creating article from row:', row);
     try {
-      const article = Article.create({
+      return Article.create({
         id: ArticleId.create(row.id),
         title: ArticleTitle.create(row.title),
         excerpt: ArticleExcerpt.create(row.excerpt),
@@ -233,8 +212,6 @@ export class PostgresArticleRepository implements ArticleRepository {
         createdAt: new Date(row.created_at),
         updatedAt: new Date(row.updated_at)
       });
-      console.log('Created article primitives:', article.toPrimitives());
-      return article;
     } catch (error) {
       console.error('Error creating article from row:', error);
       throw error;
