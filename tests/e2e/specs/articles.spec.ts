@@ -27,6 +27,7 @@ test.describe('Articles API', () => {
 
     expect(article).toMatchObject({
       title: testArticles.valid.title,
+      excerpt: testArticles.valid.excerpt,
       content: testArticles.valid.content,
       bookIds: []
     });
@@ -36,10 +37,8 @@ test.describe('Articles API', () => {
   });
 
   test('should create an article with referenced books', async () => {
-    // Crear libro primero
     const book = await apiHelpers.createTestBook(testBooks.valid);
 
-    // Crear artículo con referencia al libro
     const response = await articlesApi.createArticle({
       ...testArticles.valid,
       bookIds: [book.id]
@@ -56,13 +55,11 @@ test.describe('Articles API', () => {
   });
 
   test('should get an article by id', async () => {
-    // Crear artículo
     const createdArticle = await apiHelpers.createTestArticle({
       ...testArticles.valid,
       bookIds: []
     });
 
-    // Obtener artículo
     const response = await articlesApi.getArticle(createdArticle.id);
     const article = await apiHelpers.verifySuccessResponse<ArticleResponse>(response);
 
@@ -75,15 +72,14 @@ test.describe('Articles API', () => {
   });
 
   test('should update an article', async () => {
-    // Crear artículo
     const createdArticle = await apiHelpers.createTestArticle({
       ...testArticles.valid,
       bookIds: []
     });
 
-    // Actualizar artículo
     const updateData = {
       title: 'Updated Article Title',
+      excerpt: 'Updated article excerpt',
       content: 'Updated article content'
     };
     const updateResponse = await articlesApi.updateArticle(createdArticle.id, updateData);
@@ -98,16 +94,13 @@ test.describe('Articles API', () => {
   });
 
   test('should update article book references', async () => {
-    // Crear artículo sin libros
     const createdArticle = await apiHelpers.createTestArticle({
       ...testArticles.valid,
       bookIds: []
     });
 
-    // Crear libro
     const book = await apiHelpers.createTestBook(testBooks.valid);
 
-    // Actualizar artículo con referencia al libro
     const updateResponse = await articlesApi.updateArticle(createdArticle.id, {
       bookIds: [book.id]
     });
@@ -117,23 +110,19 @@ test.describe('Articles API', () => {
   });
 
   test('should delete an article', async () => {
-    // Crear artículo
     const createdArticle = await apiHelpers.createTestArticle({
       ...testArticles.valid,
       bookIds: []
     });
 
-    // Eliminar artículo
     const deleteResponse = await articlesApi.deleteArticle(createdArticle.id);
     expect(deleteResponse.status()).toBe(204);
 
-    // Verificar que el artículo ya no existe
     const getResponse = await articlesApi.getArticle(createdArticle.id);
     await apiHelpers.verifyErrorResponse(getResponse, 404);
   });
 
   test('should list articles with pagination', async () => {
-    // Crear múltiples artículos
     const articlesToCreate = [
       { ...testArticles.valid, bookIds: [] },
       { ...testArticles.validWithBooks, bookIds: [] }
@@ -143,7 +132,6 @@ test.describe('Articles API', () => {
       await apiHelpers.createTestArticle(article);
     }
 
-    // Obtener primera página
     const response = await articlesApi.listArticles({ page: 1, limit: 1 });
     const result = await apiHelpers.verifySuccessResponse<PaginatedResponse<ArticleResponse>>(response);
 
@@ -156,6 +144,7 @@ test.describe('Articles API', () => {
   test('should handle concurrent article creation', async () => {
     const concurrentArticles = Array(5).fill(null).map((_, index) => ({
       title: `Concurrent Article ${index}`,
+      excerpt: `Excerpt for concurrent article ${index}`,
       content: `Content for concurrent article ${index}`,
       bookIds: [] as string[]
     }));
@@ -174,7 +163,8 @@ test.describe('Articles API', () => {
   test('should handle article with maximum content length', async () => {
     const maxLengthArticle = {
       title: 'Max Length Article',
-      content: 'A'.repeat(10000), // Asumiendo que 10000 es el límite
+      excerpt: 'Test excerpt',
+      content: 'A'.repeat(10000),
       bookIds: [] as string[]
     };
 
@@ -186,7 +176,8 @@ test.describe('Articles API', () => {
   test('should handle article with content exceeding maximum length', async () => {
     const oversizedArticle = {
       title: 'Oversized Article',
-      content: 'A'.repeat(10001), // Excede el límite por 1
+      excerpt: 'Test excerpt',
+      content: 'A'.repeat(10001),
       bookIds: [] as string[]
     };
 
@@ -195,17 +186,26 @@ test.describe('Articles API', () => {
     expect(error.message).toContain('content');
   });
 
+  test('should handle article with maximum excerpt length', async () => {
+    const response = await articlesApi.createArticle(testArticles.maxLengthExcerpt);
+    const article = await apiHelpers.verifySuccessResponse<ArticleResponse>(response, 201);
+    expect(article.excerpt).toHaveLength(160);
+  });
+
+  test('should return 400 for article with excerpt exceeding maximum length', async () => {
+    const response = await articlesApi.createArticle(testArticles.invalidExcerpt);
+    const error = await apiHelpers.verifyErrorResponse(response, 400);
+    expect(error.message).toContain('excerpt');
+  });
+
   test('should maintain book references after book update', async () => {
-    // Crear libro y artículo
     const { book, article } = await apiHelpers.createTestBookWithArticle();
 
-    // Actualizar libro
     const updateResponse = await new BooksApi(apiHelpers['request']).updateBook(book.id, {
       title: 'Updated Book Title'
     });
     expect(updateResponse.status()).toBe(200);
 
-    // Verificar que el artículo mantiene la referencia
     const getArticleResponse = await articlesApi.getArticle(article.id);
     const updatedArticle = await apiHelpers.verifySuccessResponse<ArticleResponse>(getArticleResponse);
     expect(updatedArticle.bookIds).toContain(book.id);

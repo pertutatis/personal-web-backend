@@ -4,6 +4,7 @@ import { Article } from '../../domain/Article';
 import { ArticleId } from '../../domain/ArticleId';
 import { ArticleTitle } from '../../domain/ArticleTitle';
 import { ArticleContent } from '../../domain/ArticleContent';
+import { ArticleExcerpt } from '../../domain/ArticleExcerpt';
 import { ArticleBookIds } from '../../domain/ArticleBookIds';
 import { Collection } from '@/contexts/shared/domain/Collection';
 import { InvalidPaginationParams } from '../InvalidPaginationParams';
@@ -19,7 +20,8 @@ describe('ListArticles', () => {
       searchAll: jest.fn(),
       searchByPage: jest.fn(),
       searchByBookId: jest.fn(),
-      update: jest.fn()
+      update: jest.fn(),
+      delete: jest.fn()
     };
     listArticles = new ListArticles(repository);
   });
@@ -30,6 +32,7 @@ describe('ListArticles', () => {
       Article.create({
         id: ArticleId.create(`test-id-${i}`),
         title: ArticleTitle.create(`Test Article ${i}`),
+        excerpt: ArticleExcerpt.create(`Test Excerpt ${i}`),
         content: ArticleContent.create(`Test Content ${i}`),
         bookIds: ArticleBookIds.create(['book-1']), // Add at least one book ID
         createdAt: now,

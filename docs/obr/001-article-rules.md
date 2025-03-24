@@ -4,7 +4,7 @@
 
 ### 1. Create Article
 - **Primary Flow**:
-  1. Receive title, content, and book IDs
+  1. Receive title, content, excerpt, and book IDs
   2. Validate all inputs
   3. Create new article
   4. Return success
@@ -14,6 +14,8 @@
   - Title exceeds 150 characters → Return error
   - Content is empty → Return error
   - Content exceeds 10000 characters → Return error
+  - Excerpt is empty → Return error
+  - Excerpt exceeds 300 characters → Return error
   - Book IDs array is empty → Return error
   - Any book ID doesn't exist → Return error
   - Invalid UUID format → Return error
@@ -32,7 +34,7 @@
 ### 3. List Articles
 - **Primary Flow**:
   1. Receive optional pagination params
-  2. Return articles with complete book information
+  2. Return articles with complete book information (including excerpts)
   3. Sort by creation date (newest first)
 
 - **Edge Cases**:
@@ -55,6 +57,8 @@
   - Title exceeds 150 characters → Return error
   - Content is empty → Return error
   - Content exceeds 10000 characters → Return error
+  - Excerpt is empty → Return error
+  - Excerpt exceeds 300 characters → Return error
   - Book IDs array is empty → Return error
   - Any book ID doesn't exist → Return error
 
@@ -65,6 +69,7 @@
    - Creating valid article
    - Creating article with invalid title
    - Creating article with invalid content
+   - Creating article with invalid excerpt
    - Creating article with invalid book IDs
    - Updating article properties
    - Converting to primitives
@@ -72,6 +77,7 @@
 2. Value Objects:
    - ArticleTitle validation
    - ArticleContent validation
+   - ArticleExcerpt validation
    - ArticleBookIds validation
    - ArticleId format validation
 
@@ -84,13 +90,14 @@
    - Handling non-existent articles
    - Handling database connection errors
    - Verifying book data joins
+   - Verifying excerpt is saved and retrieved correctly
 
 ### E2E Tests
 1. API Endpoints:
-   - POST /api/blog/articles
-   - GET /api/blog/articles
-   - GET /api/blog/articles/:id
-   - PUT /api/blog/articles/:id
+   - POST /api/blog/articles (with excerpt)
+   - GET /api/blog/articles (verify excerpt in list)
+   - GET /api/blog/articles/:id (verify excerpt in detail)
+   - PUT /api/blog/articles/:id (update excerpt)
 
 ## Validation Rules
 
@@ -106,7 +113,15 @@
    - Max length: 10000 characters
    - Trimmed before validation
 
-3. Book References:
+3. Article Excerpt:
+   - Required
+   - Min length: 1 character
+   - Max length: 300 characters
+   - Plain text only (no HTML)
+   - Trimmed before validation
+   - No special formatting characters allowed
+
+4. Book References:
    - At least one book required
    - All referenced books must exist
    - No duplicate books allowed

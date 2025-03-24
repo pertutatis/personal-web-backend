@@ -64,7 +64,7 @@ describe('PostgresBookRepository', () => {
     book.update({
       title: BookTitle.create('Updated Title'),
       author: BookAuthor.create('Updated Author'),
-      isbn: BookIsbn.create('9780141036145')
+      isbn: BookIsbn.create('9780143039952')
     });
 
     await repository.update(book);
@@ -72,17 +72,25 @@ describe('PostgresBookRepository', () => {
     const updated = await repository.search(BookId.create('test-id'));
     expect(updated?.title.value).toBe('Updated Title');
     expect(updated?.author.value).toBe('Updated Author');
-    expect(updated?.isbn.value).toBe('9780141036145');
+    expect(updated?.isbn.value).toBe('9780143039952');
   });
 
   it('should list books with pagination', async () => {
     const now = new Date();
+    const validIsbns = [
+      '9780141036144',
+      '9780143039952',
+      '9780141439518',
+      '9780141442464',
+      '9780140449334'
+    ];
+    
     const books = Array.from({ length: 5 }, (_, i) => 
       Book.create({
         id: BookId.create(`test-id-${i}`),
         title: BookTitle.create(`Test Book ${i}`),
         author: BookAuthor.create(`Test Author ${i}`),
-        isbn: BookIsbn.create(`978014103614${i}`),
+        isbn: BookIsbn.create(validIsbns[i]),
         createdAt: now,
         updatedAt: now
       })

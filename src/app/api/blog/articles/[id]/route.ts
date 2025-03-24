@@ -67,6 +67,7 @@ export async function PUT(
     // Build update data only with changed fields
     const updateData: { id: string } & Partial<{
       title: string;
+      excerpt: string;
       content: string;
       bookIds: string[];
     }> = { id: params.id };
@@ -77,6 +78,20 @@ export async function PUT(
         throw new ValidationError('title cannot be empty');
       }
       updateData.title = data.title.trim();
+    }
+
+    if (data.excerpt !== undefined) {
+      if (typeof data.excerpt !== 'string') {
+        throw new ValidationError('excerpt must be a string');
+      }
+      const excerpt = data.excerpt.trim();
+      if (excerpt === '') {
+        throw new ValidationError('excerpt cannot be empty');
+      }
+      if (excerpt.length > 160) {
+        throw new ValidationError('excerpt exceeds maximum length of 160 characters');
+      }
+      updateData.excerpt = excerpt;
     }
 
     if (data.content !== undefined) {

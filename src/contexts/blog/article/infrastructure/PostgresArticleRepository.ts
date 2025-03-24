@@ -2,6 +2,7 @@ import { ArticleRepository } from '../domain/ArticleRepository';
 import { Article } from '../domain/Article';
 import { ArticleId } from '../domain/ArticleId';
 import { ArticleTitle } from '../domain/ArticleTitle';
+import { ArticleExcerpt } from '../domain/ArticleExcerpt';
 import { ArticleContent } from '../domain/ArticleContent';
 import { ArticleBookIds } from '../domain/ArticleBookIds';
 import { Collection } from '@/contexts/shared/domain/Collection';
@@ -16,6 +17,7 @@ import { BookIsbn } from '@/contexts/blog/book/domain/BookIsbn';
 interface ArticleRow {
   id: string;
   title: string;
+  excerpt: string;
   content: string;
   book_ids: string[];
   created_at: Date;
@@ -63,10 +65,11 @@ export class PostgresArticleRepository implements ArticleRepository {
       
       console.log('Inserting article with book_ids:', bookIdsArray);
       await this.articlesConnection.execute(
-        'INSERT INTO articles (id, title, content, book_ids, created_at, updated_at) VALUES ($1, $2, $3, $4::text[], $5, $6)',
+        'INSERT INTO articles (id, title, excerpt, content, book_ids, created_at, updated_at) VALUES ($1, $2, $3, $4, $5::text[], $6, $7)',
         [
           primitives.id,
           primitives.title,
+          primitives.excerpt,
           primitives.content,
           bookIdsArray,
           new Date(primitives.createdAt),
@@ -167,18 +170,20 @@ export class PostgresArticleRepository implements ArticleRepository {
       await this.articlesConnection.execute(
         `UPDATE articles
          SET title = $1,
-             content = $2,
-             book_ids = $3::text[],
+             excerpt = $2,
+             content = $3,
+             book_ids = $4::text[],
              updated_at = (
                SELECT GREATEST(
                  timezone('UTC', NOW()),
-                 (SELECT updated_at + interval '1 second' FROM articles WHERE id = $4)
+                 (SELECT updated_at + interval '1 second' FROM articles WHERE id = $5)
                )
              )
-         WHERE id = $4
-         RETURNING id, title, content, book_ids, created_at AT TIME ZONE 'UTC' as created_at, updated_at AT TIME ZONE 'UTC' as updated_at`,
+         WHERE id = $5
+         RETURNING id, title, excerpt, content, book_ids, created_at AT TIME ZONE 'UTC' as created_at, updated_at AT TIME ZONE 'UTC' as updated_at`,
         [
           primitives.title,
+          primitives.excerpt,
           primitives.content,
           primitives.bookIds,
           primitives.id
@@ -190,7 +195,6 @@ export class PostgresArticleRepository implements ArticleRepository {
       if (!updatedArticle) {
         throw new Error('Article not found after update');
       }
-
 
       console.log('Article updated successfully');
     } catch (error) {
@@ -223,6 +227,7 @@ export class PostgresArticleRepository implements ArticleRepository {
       const article = Article.create({
         id: ArticleId.create(row.id),
         title: ArticleTitle.create(row.title),
+        excerpt: ArticleExcerpt.create(row.excerpt),
         content: ArticleContent.create(row.content),
         bookIds: ArticleBookIds.create(row.book_ids || []),
         createdAt: new Date(row.created_at),

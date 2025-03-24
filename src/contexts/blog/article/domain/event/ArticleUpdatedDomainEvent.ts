@@ -4,9 +4,10 @@ export type ArticleUpdatedDomainEventProps = {
   aggregateId: string;
   title: string;
   content: string;
+  excerpt: string;
   bookIds: string[];
   updatedAt: Date;
-  occurredOn?: Date;
+  occurredOn: Date;
 };
 
 export class ArticleUpdatedDomainEvent extends DomainEvent {
@@ -14,32 +15,31 @@ export class ArticleUpdatedDomainEvent extends DomainEvent {
 
   readonly title: string;
   readonly content: string;
+  readonly excerpt: string;
   readonly bookIds: string[];
   readonly updatedAt: Date;
 
-  constructor({
-    aggregateId,
-    title,
-    content,
-    bookIds,
-    updatedAt,
-    occurredOn
-  }: ArticleUpdatedDomainEventProps) {
-    super(ArticleUpdatedDomainEvent.EVENT_NAME, aggregateId, occurredOn);
-    this.title = title;
-    this.content = content;
-    this.bookIds = bookIds;
-    this.updatedAt = updatedAt;
+  constructor(props: ArticleUpdatedDomainEventProps) {
+    super(
+      ArticleUpdatedDomainEvent.EVENT_NAME,
+      props.aggregateId,
+      props.occurredOn
+    );
+
+    this.title = props.title;
+    this.content = props.content;
+    this.excerpt = props.excerpt;
+    this.bookIds = props.bookIds;
+    this.updatedAt = props.updatedAt;
   }
 
-  toPrimitives(): ArticleUpdatedDomainEventProps {
+  toPrimitives() {
     return {
-      aggregateId: this.aggregateId,
       title: this.title,
       content: this.content,
+      excerpt: this.excerpt,
       bookIds: this.bookIds,
-      updatedAt: this.updatedAt,
-      occurredOn: this.occurredOn
+      updatedAt: this.updatedAt
     };
   }
 }

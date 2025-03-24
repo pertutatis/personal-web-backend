@@ -27,7 +27,7 @@ export async function GET(
     const getBook = new GetBook(repository);
 
     const book = await getBook.run(params.id);
-    return HttpNextResponse.ok(book.toPrimitives());
+    return HttpNextResponse.ok(book.toFormattedPrimitives());
   });
 }
 
@@ -64,9 +64,7 @@ export async function PUT(
       isbn: data.isbn
     });
 
-    const primitives = {
-      ...updatedBook.toPrimitives(),
-    };
+    const primitives = updatedBook.toFormattedPrimitives();
     return HttpNextResponse.ok(primitives);
   });
 }

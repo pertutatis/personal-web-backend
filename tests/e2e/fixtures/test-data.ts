@@ -44,32 +44,50 @@ export const testBooks = {
 export const testArticles = {
   valid: {
     title: 'Understanding Domain-Driven Design',
+    excerpt: 'A comprehensive guide to DDD concepts and patterns',
     content: 'This is a comprehensive guide about DDD...',
     bookIds: []
   },
   validWithBooks: {
     title: 'Clean Code Principles',
+    excerpt: 'Exploring the fundamentals of clean code',
     content: 'In this article we will explore clean code principles...',
     bookIds: []
   },
   invalid: {
     title: '',
+    excerpt: '',
     content: 'A'.repeat(10001), // Excede el límite
     bookIds: ['invalid-id']
   },
   invalidBookIds: {
     title: 'Test Article',
+    excerpt: 'Test excerpt',
     content: 'Test content',
     bookIds: ['non-existent-id']
   },
   maxLengthTitle: {
     title: 'A'.repeat(255),
+    excerpt: 'Valid excerpt',
     content: 'Valid content',
     bookIds: []
   },
   maxLengthContent: {
     title: 'Test Title',
+    excerpt: 'Test excerpt',
     content: 'A'.repeat(10000),
+    bookIds: []
+  },
+  maxLengthExcerpt: {
+    title: 'Test Title',
+    excerpt: 'A'.repeat(160),
+    content: 'Test content',
+    bookIds: []
+  },
+  invalidExcerpt: {
+    title: 'Test Title',
+    excerpt: 'A'.repeat(161),
+    content: 'Test content',
     bookIds: []
   }
 };
@@ -92,6 +110,7 @@ export interface TestBook {
 
 export interface TestArticle {
   title: string;
+  excerpt: string;
   content: string;
   bookIds: string[];
 }

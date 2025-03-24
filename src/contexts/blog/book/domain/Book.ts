@@ -80,25 +80,25 @@ export class Book extends AggregateRoot {
     }));
   }
 
-    toFormattedPrimitives(): BookPrimitives {
-      return {
-        id: this.id.value,
-        title: this.title.value,
-        author: this.author.value,
-        isbn: this.isbn.toFormattedString(),
-        createdAt: this.createdAt,
-        updatedAt: this.updatedAt
-      };
-    }
-  
-    toPrimitives(): BookPrimitives {
-      return {
-        id: this.id.value,
-        title: this.title.value,
-        author: this.author.value,
-        isbn: this.isbn.toFormattedString(),
-        createdAt: this.createdAt,
-        updatedAt: this.updatedAt,
-      };
-    }
+  toFormattedPrimitives(): BookPrimitives {
+    return {
+      id: this.id.value,
+      title: this.title.value,
+      author: this.author.value,
+      isbn: this.isbn.toFormattedString(),
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt
+    };
+  }
+
+  toPrimitives(): BookPrimitives {
+    return {
+      id: this.id.value,
+      title: this.title.value,
+      author: this.author.value,
+      isbn: this.isbn.value,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+    };
+  }
 }
