@@ -4,6 +4,8 @@ import { BookId } from '../domain/BookId';
 import { BookTitle } from '../domain/BookTitle';
 import { BookAuthor } from '../domain/BookAuthor';
 import { BookIsbn } from '../domain/BookIsbn';
+import { BookDescription } from '../domain/BookDescription';
+import { BookPurchaseLink } from '../domain/BookPurchaseLink';
 import { Collection } from '@/contexts/shared/domain/Collection';
 import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection';
 
@@ -12,6 +14,8 @@ interface BookRow {
   title: string;
   author: string;
   isbn: string;
+  description: string;
+  purchase_link: string | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -22,12 +26,14 @@ export class PostgresBookRepository implements BookRepository {
   async save(book: Book): Promise<void> {
     const primitives = book.toPrimitives();
     await this.connection.execute(
-      'INSERT INTO books (id, title, author, isbn, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6)',
+      'INSERT INTO books (id, title, author, isbn, description, purchase_link, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
       [
         primitives.id,
         primitives.title,
         primitives.author,
         primitives.isbn,
+        primitives.description,
+        primitives.purchaseLink,
         primitives.createdAt,
         primitives.updatedAt
       ]
@@ -93,11 +99,13 @@ export class PostgresBookRepository implements BookRepository {
   async update(book: Book): Promise<void> {
     const primitives = book.toPrimitives();
     await this.connection.execute(
-      'UPDATE books SET title = $1, author = $2, isbn = $3, updated_at = $4 WHERE id = $5',
+      'UPDATE books SET title = $1, author = $2, isbn = $3, description = $4, purchase_link = $5, updated_at = $6 WHERE id = $7',
       [
         primitives.title,
         primitives.author,
         primitives.isbn,
+        primitives.description,
+        primitives.purchaseLink,
         primitives.updatedAt,
         primitives.id
       ]
@@ -130,6 +138,8 @@ export class PostgresBookRepository implements BookRepository {
       title: BookTitle.create(row.title),
       author: BookAuthor.create(row.author),
       isbn: BookIsbn.create(row.isbn),
+      description: BookDescription.create(row.description),
+      purchaseLink: BookPurchaseLink.create(row.purchase_link),
       createdAt: row.created_at,
       updatedAt: row.updated_at
     });

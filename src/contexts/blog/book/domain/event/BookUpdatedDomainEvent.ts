@@ -5,8 +5,9 @@ export type BookUpdatedDomainEventProps = {
   title: string;
   author: string;
   isbn: string;
+  description: string;
+  purchaseLink: string | null;
   updatedAt: Date;
-  occurredOn?: Date;
 };
 
 export class BookUpdatedDomainEvent extends DomainEvent {
@@ -15,21 +16,19 @@ export class BookUpdatedDomainEvent extends DomainEvent {
   readonly title: string;
   readonly author: string;
   readonly isbn: string;
+  readonly description: string;
+  readonly purchaseLink: string | null;
   readonly updatedAt: Date;
 
-  constructor({
-    aggregateId,
-    title,
-    author,
-    isbn,
-    updatedAt,
-    occurredOn
-  }: BookUpdatedDomainEventProps) {
-    super(BookUpdatedDomainEvent.EVENT_NAME, aggregateId, occurredOn);
-    this.title = title;
-    this.author = author;
-    this.isbn = isbn;
-    this.updatedAt = updatedAt;
+  constructor(props: BookUpdatedDomainEventProps) {
+    super(BookUpdatedDomainEvent.EVENT_NAME, props.aggregateId);
+
+    this.title = props.title;
+    this.author = props.author;
+    this.isbn = props.isbn;
+    this.description = props.description;
+    this.purchaseLink = props.purchaseLink;
+    this.updatedAt = props.updatedAt;
   }
 
   toPrimitives(): BookUpdatedDomainEventProps {
@@ -38,8 +37,9 @@ export class BookUpdatedDomainEvent extends DomainEvent {
       title: this.title,
       author: this.author,
       isbn: this.isbn,
+      description: this.description,
+      purchaseLink: this.purchaseLink,
       updatedAt: this.updatedAt,
-      occurredOn: this.occurredOn
     };
   }
 }

@@ -10,6 +10,8 @@ export interface BookResponse {
   title: string;
   author: string;
   isbn: string;
+  description: string;
+  purchaseLink: string | null;
   createdAt: string;
   updatedAt: string;
 }

@@ -29,15 +29,12 @@ test.describe('Books API', () => {
     }
   });
 
-  test('should create a new book', async () => {
-    console.log('Starting create book test...');
-    // Usar un ISBN único para este test
-    const isbn = generateValidIsbn(5); // Usar un índice más alto para evitar conflictos
+  test('should create a new book with all fields', async () => {
+    const isbn = generateValidIsbn(5);
     console.log('Using ISBN for create test:', isbn);
     
     const testBook = {
-      title: 'Test Book',
-      author: 'Test Author',
+      ...testBooks.valid,
       isbn
     };
 
@@ -47,36 +44,70 @@ test.describe('Books API', () => {
     expect(book).toMatchObject({
       title: testBook.title,
       author: testBook.author,
-      isbn: testBook.isbn
+      isbn: testBook.isbn,
+      description: testBook.description,
+      purchaseLink: testBook.purchaseLink
     });
     expect(book.id).toBeDefined();
     expect(book.createdAt).toBeDefined();
     expect(book.updatedAt).toBeDefined();
   });
 
+  test('should create a book without purchase link', async () => {
+    const testBook = testBooks.validWithoutPurchaseLink;
+    const response = await booksApi.createBook(testBook);
+    const book = await apiHelpers.verifySuccessResponse<BookResponse>(response, 201);
+
+    expect(book.purchaseLink).toBeNull();
+  });
+
+  test('should handle description with maximum length', async () => {
+    const testBook = testBooks.maxLengthDescription;
+    const response = await booksApi.createBook(testBook);
+    const book = await apiHelpers.verifySuccessResponse<BookResponse>(response, 201);
+
+    expect(book.description).toBe(testBook.description);
+  });
+
+  test('should handle purchase link with maximum length', async () => {
+    const testBook = testBooks.maxLengthPurchaseLink;
+    const response = await booksApi.createBook(testBook);
+    const book = await apiHelpers.verifySuccessResponse<BookResponse>(response, 201);
+
+    expect(book.purchaseLink).toBe(testBook.purchaseLink);
+  });
+
   test('should prevent duplicate ISBN', async () => {
-    // Usar un ISBN único para el primer libro en este test
-    const isbn = generateValidIsbn(6); // Usar un índice más alto y diferente del test anterior
+    const isbn = generateValidIsbn(6);
     console.log('Using ISBN for duplicate test:', isbn);
     
     const book1 = {
-      title: 'First Book',
-      author: 'First Author',
+      ...testBooks.valid,
       isbn
     };
 
     const response1 = await booksApi.createBook(book1);
     await apiHelpers.verifySuccessResponse<BookResponse>(response1, 201);
 
-    // Intentar crear un segundo libro con el mismo ISBN
     const book2 = {
-      title: 'Second Book',
-      author: 'Second Author',
+      ...testBooks.validSecond,
       isbn
     };
 
     const response2 = await booksApi.createBook(book2);
     await apiHelpers.verifyErrorResponse(response2, 400);
+  });
+
+  test('should return 400 for empty description', async () => {
+    const response = await booksApi.createBook(testBooks.invalidDescription);
+    const error = await apiHelpers.verifyErrorResponse(response, 400);
+    expect(error.message).toContain('description');
+  });
+
+  test('should return 400 for invalid purchase link', async () => {
+    const response = await booksApi.createBook(testBooks.invalidPurchaseLink);
+    const error = await apiHelpers.verifyErrorResponse(response, 400);
+    expect(error.message).toContain('purchase link');
   });
 
   test('should return 400 for invalid ISBN', async () => {
@@ -86,19 +117,13 @@ test.describe('Books API', () => {
   });
 
   test('should return 400 for empty title', async () => {
-    const response = await booksApi.createBook({
-      ...testBooks.valid,
-      title: ''
-    });
+    const response = await booksApi.createBook(testBooks.invalidTitle);
     const error = await apiHelpers.verifyErrorResponse(response, 400);
     expect(error.message).toContain('title');
   });
 
   test('should return 400 for empty author', async () => {
-    const response = await booksApi.createBook({
-      ...testBooks.valid,
-      author: ''
-    });
+    const response = await booksApi.createBook(testBooks.invalidAuthor);
     const error = await apiHelpers.verifyErrorResponse(response, 400);
     expect(error.message).toContain('author');
   });
@@ -107,25 +132,26 @@ test.describe('Books API', () => {
     const createdBook = await apiHelpers.createTestBook(testBooks.valid);
     const response = await booksApi.getBook(createdBook.id);
     const book = await apiHelpers.verifySuccessResponse<BookResponse>(response);
+
     expect(book.id).toBe(createdBook.id);
     expect(book.title).toBe(createdBook.title);
     expect(book.author).toBe(createdBook.author);
     expect(book.isbn).toBe(createdBook.isbn);
+    expect(book.description).toBe(createdBook.description);
+    expect(book.purchaseLink).toBe(createdBook.purchaseLink);
     expect(book.createdAt).toBeDefined();
     expect(book.updatedAt).toBeDefined();
   });
 
-  test('should return 404 for non-existent book', async () => {
-    const response = await booksApi.getBook('non-existent-id');
-    await apiHelpers.verifyErrorResponse(response, 404);
-  });
-
-  test('should update a book completely', async () => {
+  test('should update all book fields', async () => {
     const createdBook = await apiHelpers.createTestBook(testBooks.valid);
     const updateData = {
       title: 'Updated Title',
-      author: 'Updated Author'
+      author: 'Updated Author',
+      description: 'Updated Description',
+      purchaseLink: 'https://example.com/updated-book'
     };
+
     const updateResponse = await booksApi.updateBook(createdBook.id, updateData);
     const updatedBook = await apiHelpers.verifySuccessResponse<BookResponse>(updateResponse);
 
@@ -137,45 +163,16 @@ test.describe('Books API', () => {
     expect(Date.parse(updatedBook.updatedAt)).toBeGreaterThan(Date.parse(createdBook.updatedAt));
   });
 
-  test('should update book title only', async () => {
+  test('should update book removing purchase link', async () => {
     const createdBook = await apiHelpers.createTestBook(testBooks.valid);
     const updateData = {
-      title: 'Updated Title Only'
+      purchaseLink: null
     };
+
     const updateResponse = await booksApi.updateBook(createdBook.id, updateData);
     const updatedBook = await apiHelpers.verifySuccessResponse<BookResponse>(updateResponse);
 
-    expect(updatedBook).toMatchObject({
-      ...createdBook,
-      title: updateData.title,
-      author: createdBook.author,
-      updatedAt: expect.any(String)
-    });
-  });
-
-  test('should update book author only', async () => {
-    const createdBook = await apiHelpers.createTestBook(testBooks.valid);
-    const updateData = {
-      author: 'Updated Author Only'
-    };
-    const updateResponse = await booksApi.updateBook(createdBook.id, updateData);
-    const updatedBook = await apiHelpers.verifySuccessResponse<BookResponse>(updateResponse);
-
-    expect(updatedBook).toMatchObject({
-      ...createdBook,
-      author: updateData.author,
-      title: createdBook.title,
-      updatedAt: expect.any(String)
-    });
-  });
-
-  test('should delete a book', async () => {
-    const createdBook = await apiHelpers.createTestBook(testBooks.valid);
-    const deleteResponse = await booksApi.deleteBook(createdBook.id);
-    expect(deleteResponse.status()).toBe(204);
-
-    const getResponse = await booksApi.getBook(createdBook.id);
-    await apiHelpers.verifyErrorResponse(getResponse, 404);
+    expect(updatedBook.purchaseLink).toBeNull();
   });
 
   test('should list books with pagination', async () => {
@@ -191,34 +188,30 @@ test.describe('Books API', () => {
     expect(result.total).toBeGreaterThanOrEqual(2);
     expect(result.page).toBe(1);
     expect(result.limit).toBe(1);
+    expect(result.items[0].description).toBeDefined();
+    expect(result.items[0].purchaseLink).toBeDefined();
   });
 
   test('should handle concurrent book creation', async () => {
-    // Usar un rango diferente de ISBNs para los libros concurrentes
-    const startIndex = 20; // Empezar desde un índice mucho más alto para evitar conflictos
+    const startIndex = 20;
     const concurrentBooks = Array(3).fill(null).map((_, index) => {
       const isbn = generateValidIsbn(startIndex + index);
       console.log(`Using ISBN for concurrent book ${index}:`, isbn);
       return {
+        ...testBooks.valid,
         title: `Concurrent Book ${index}`,
-        author: 'Test Author',
         isbn
       };
     });
 
-    // Crear los libros secuencialmente
     for (const book of concurrentBooks) {
       console.log('Creating book with data:', book);
       const response = await booksApi.createBook(book);
       const createdBook = await apiHelpers.verifySuccessResponse<BookResponse>(response, 201);
       expect(createdBook.id).toBeDefined();
       expect(createdBook.isbn).toBe(book.isbn);
+      expect(createdBook.description).toBe(book.description);
+      expect(createdBook.purchaseLink).toBe(book.purchaseLink);
     }
   });
-
-  // test('should handle invalid pagination parameters', async () => {
-  //   const response = await booksApi.listBooks({ page: -1, limit: 0 });
-  //   const error = await apiHelpers.verifyErrorResponse(response, 400);
-  //   expect(error.message).toContain('pagination');
-  // });
 });

@@ -4,6 +4,8 @@ CREATE TABLE IF NOT EXISTS books (
     title VARCHAR(255) NOT NULL,
     author VARCHAR(255) NOT NULL,
     isbn VARCHAR(20) NOT NULL UNIQUE,
+    description TEXT NOT NULL,
+    purchase_link TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -40,4 +42,11 @@ CREATE TRIGGER update_books_updated_at
 ALTER TABLE books
     ADD CONSTRAINT books_title_not_empty CHECK (length(trim(title)) > 0),
     ADD CONSTRAINT books_author_not_empty CHECK (length(trim(author)) > 0),
-    ADD CONSTRAINT books_isbn_valid CHECK (length(replace(replace(isbn, '-', ''), ' ', '')) IN (10, 13));
+    ADD CONSTRAINT books_isbn_valid CHECK (length(replace(replace(isbn, '-', ''), ' ', '')) IN (10, 13)),
+    ADD CONSTRAINT books_description_not_empty CHECK (length(trim(description)) > 0),
+    ADD CONSTRAINT books_description_length CHECK (length(description) <= 1000),
+    ADD CONSTRAINT books_purchase_link_length CHECK (purchase_link IS NULL OR length(purchase_link) <= 2000),
+    ADD CONSTRAINT books_purchase_link_format CHECK (
+        purchase_link IS NULL OR 
+        purchase_link ~* '^https?://[^\s/$.?#].[^\s]*$'
+    );
