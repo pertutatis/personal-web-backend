@@ -3,12 +3,6 @@ import { PostgresBookRepository } from '@/contexts/blog/book/infrastructure/Post
 import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection';
 import { CreateBook } from '@/contexts/blog/book/application/CreateBook';
 import { ListBooks } from '@/contexts/blog/book/application/ListBooks';
-import { GetBook } from '@/contexts/blog/book/application/GetBook';
-import { Book } from '@/contexts/blog/book/domain/Book';
-import { BookId } from '@/contexts/blog/book/domain/BookId';
-import { BookTitle } from '@/contexts/blog/book/domain/BookTitle';
-import { BookAuthor } from '@/contexts/blog/book/domain/BookAuthor';
-import { BookIsbn } from '@/contexts/blog/book/domain/BookIsbn';
 import { executeWithErrorHandling } from '@/contexts/shared/infrastructure/http/executeWithErrorHandling';
 import { HttpNextResponse } from '@/contexts/shared/infrastructure/http/HttpNextResponse';
 import { ValidationError } from '@/contexts/shared/domain/ValidationError';
@@ -74,7 +68,9 @@ export async function POST(request: NextRequest) {
       console.log('Raw input validation:', {
         title: { value: data.title, type: typeof data.title },
         author: { value: data.author, type: typeof data.author },
-        isbn: { value: data.isbn, type: typeof data.isbn }
+        isbn: { value: data.isbn, type: typeof data.isbn },
+        description: { value: data.description, type: typeof data.description },
+        purchaseLink: { value: data.purchaseLink, type: typeof data.purchaseLink }
       });
 
       // Validación estricta de campos
@@ -86,8 +82,17 @@ export async function POST(request: NextRequest) {
         throw new ValidationError('author must be a string');
       }
 
+      if (typeof data.description !== 'string') {
+        throw new ValidationError('description must be a string');
+      }
+
+      if (data.purchaseLink !== null && data.purchaseLink !== undefined && typeof data.purchaseLink !== 'string') {
+        throw new ValidationError('purchaseLink must be a string or null');
+      }
+
       const title = data.title.trim();
       const author = data.author.trim();
+      const description = data.description.trim();
       
       if (title === '') {
         throw new ValidationError('title cannot be empty');
@@ -97,11 +102,21 @@ export async function POST(request: NextRequest) {
         throw new ValidationError('author cannot be empty');
       }
 
+      if (description === '') {
+        throw new ValidationError('description cannot be empty');
+      }
+
       if (!data.isbn) {
         throw new ValidationError('isbn is required');
       }
 
-      bookData = { title, author, isbn: data.isbn };
+      bookData = {
+        title,
+        author,
+        isbn: data.isbn,
+        description,
+        purchaseLink: data.purchaseLink
+      };
       console.log('Validation successful:', bookData);
     } catch (e) {
       if (e instanceof ValidationError) {

@@ -53,7 +53,35 @@ export async function PUT(
       if (!data || typeof data !== 'object') {
         throw new ValidationError('Invalid request data format');
       }
+
+      // Validar tipos de datos
+      if (data.title !== undefined && typeof data.title !== 'string') {
+        throw new ValidationError('title must be a string');
+      }
+      if (data.author !== undefined && typeof data.author !== 'string') {
+        throw new ValidationError('author must be a string');
+      }
+      if (data.description !== undefined && typeof data.description !== 'string') {
+        throw new ValidationError('description must be a string');
+      }
+      if (data.purchaseLink !== undefined && data.purchaseLink !== null && typeof data.purchaseLink !== 'string') {
+        throw new ValidationError('purchaseLink must be a string or null');
+      }
+
+      // Validar valores vacíos
+      if (data.title === '') {
+        throw new ValidationError('title cannot be empty');
+      }
+      if (data.author === '') {
+        throw new ValidationError('author cannot be empty');
+      }
+      if (data.description === '') {
+        throw new ValidationError('description cannot be empty');
+      }
     } catch (e) {
+      if (e instanceof ValidationError) {
+        throw e;
+      }
       throw new ValidationError('Invalid request body');
     }
 
@@ -61,7 +89,9 @@ export async function PUT(
       id: params.id,
       title: data.title,
       author: data.author,
-      isbn: data.isbn
+      isbn: data.isbn,
+      description: data.description,
+      purchaseLink: data.purchaseLink
     });
 
     const primitives = updatedBook.toFormattedPrimitives();

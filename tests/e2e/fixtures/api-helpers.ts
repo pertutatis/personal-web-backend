@@ -137,7 +137,9 @@ export class ApiHelpers {
     const book = await this.createTestBook({
       title: 'Test Book for Article',
       author: 'Test Author',
-      isbn: '9780321125217'
+      isbn: '9780321125217',
+      description: 'A test book for article reference',
+      purchaseLink: 'https://example.com/test-book'
     });
 
     const article = await this.createTestArticle({

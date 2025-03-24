@@ -3,6 +3,8 @@ import { BookId } from './BookId';
 import { BookTitle } from './BookTitle';
 import { BookAuthor } from './BookAuthor';
 import { BookIsbn } from './BookIsbn';
+import { BookDescription } from './BookDescription';
+import { BookPurchaseLink } from './BookPurchaseLink';
 import { BookCreatedDomainEvent } from './event/BookCreatedDomainEvent';
 import { BookUpdatedDomainEvent } from './event/BookUpdatedDomainEvent';
 
@@ -11,6 +13,8 @@ type BookPrimitives = {
   title: string;
   author: string;
   isbn: string;
+  description: string;
+  purchaseLink: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -20,6 +24,8 @@ type CreateBookParams = {
   title: BookTitle;
   author: BookAuthor;
   isbn: BookIsbn;
+  description: BookDescription;
+  purchaseLink: BookPurchaseLink;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -28,6 +34,8 @@ type UpdateBookParams = {
   title: BookTitle;
   author: BookAuthor;
   isbn: BookIsbn;
+  description: BookDescription;
+  purchaseLink: BookPurchaseLink;
 };
 
 export class Book extends AggregateRoot {
@@ -35,6 +43,8 @@ export class Book extends AggregateRoot {
   title: BookTitle;
   author: BookAuthor;
   isbn: BookIsbn;
+  description: BookDescription;
+  purchaseLink: BookPurchaseLink;
   readonly createdAt: Date;
   updatedAt: Date;
 
@@ -44,6 +54,8 @@ export class Book extends AggregateRoot {
     this.title = params.title;
     this.author = params.author;
     this.isbn = params.isbn;
+    this.description = params.description;
+    this.purchaseLink = params.purchaseLink;
     this.createdAt = params.createdAt;
     this.updatedAt = params.updatedAt;
   }
@@ -55,6 +67,8 @@ export class Book extends AggregateRoot {
       title: params.title.value,
       author: params.author.value,
       isbn: params.isbn.value,
+      description: params.description.value,
+      purchaseLink: params.purchaseLink.value,
       createdAt: params.createdAt,
       updatedAt: params.updatedAt
     }));
@@ -68,6 +82,8 @@ export class Book extends AggregateRoot {
       title: params.title,
       author: params.author,
       isbn: params.isbn,
+      description: params.description,
+      purchaseLink: params.purchaseLink,
       updatedAt: now,
     });
 
@@ -76,6 +92,8 @@ export class Book extends AggregateRoot {
       title: params.title.value,
       author: params.author.value,
       isbn: params.isbn.value,
+      description: params.description.value,
+      purchaseLink: params.purchaseLink.value,
       updatedAt: now
     }));
   }
@@ -86,6 +104,8 @@ export class Book extends AggregateRoot {
       title: this.title.value,
       author: this.author.value,
       isbn: this.isbn.toFormattedString(),
+      description: this.description.value,
+      purchaseLink: this.purchaseLink.value,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     };
@@ -97,6 +117,8 @@ export class Book extends AggregateRoot {
       title: this.title.value,
       author: this.author.value,
       isbn: this.isbn.value,
+      description: this.description.value,
+      purchaseLink: this.purchaseLink.value,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
     };
