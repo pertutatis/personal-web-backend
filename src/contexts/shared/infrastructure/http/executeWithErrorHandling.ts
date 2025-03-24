@@ -22,8 +22,6 @@ export async function executeWithErrorHandling(action: () => Promise<NextRespons
       details: error instanceof DomainError ? error.toJSON() : undefined
     };
 
-    console.error('Error details:', JSON.stringify(errorInfo, null, 2));
-
     if (error instanceof NotFoundError) {
       return HttpNextResponse.notFound({
         type: error.type,

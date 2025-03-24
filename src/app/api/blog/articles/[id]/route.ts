@@ -116,15 +116,11 @@ export async function PUT(
     }
 
     // Execute update only with changed fields
-    console.log('Updating article:', updateData);
     await updateArticle.run(updateData);
 
     // Get the updated article
     const updatedArticle = await articleFinder.run(params.id);
-    const response = updatedArticle.toPrimitives();
-
-    console.log('Article updated successfully:', response);
-    return HttpNextResponse.ok(response);
+    return HttpNextResponse.ok(updatedArticle.toPrimitives());
   });
 }
 
