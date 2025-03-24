@@ -2,6 +2,7 @@ import { AggregateRoot } from '@/contexts/shared/domain/AggregateRoot';
 import { ArticleId } from './ArticleId';
 import { ArticleTitle } from './ArticleTitle';
 import { ArticleContent } from './ArticleContent';
+import { ArticleExcerpt } from './ArticleExcerpt';
 import { ArticleBookIds } from './ArticleBookIds';
 import { ArticleCreatedDomainEvent } from './event/ArticleCreatedDomainEvent';
 import { ArticleUpdatedDomainEvent } from './event/ArticleUpdatedDomainEvent';
@@ -9,6 +10,7 @@ import { ArticleUpdatedDomainEvent } from './event/ArticleUpdatedDomainEvent';
 type ArticlePrimitives = {
   id: string;
   title: string;
+  excerpt: string;
   content: string;
   bookIds: string[];
   createdAt: Date;
@@ -18,6 +20,7 @@ type ArticlePrimitives = {
 type CreateArticleParams = {
   id: ArticleId;
   title: ArticleTitle;
+  excerpt: ArticleExcerpt;
   content: ArticleContent;
   bookIds: ArticleBookIds;
   createdAt: Date;
@@ -26,6 +29,7 @@ type CreateArticleParams = {
 
 type UpdateArticleParams = Partial<{
   title: ArticleTitle;
+  excerpt: ArticleExcerpt;
   content: ArticleContent;
   bookIds: ArticleBookIds;
 }>;
@@ -33,6 +37,7 @@ type UpdateArticleParams = Partial<{
 export class Article extends AggregateRoot {
   readonly id: ArticleId;
   readonly title: ArticleTitle;
+  readonly excerpt: ArticleExcerpt;
   readonly content: ArticleContent;
   readonly bookIds: ArticleBookIds;
   readonly createdAt: Date;
@@ -42,6 +47,7 @@ export class Article extends AggregateRoot {
     super();
     this.id = params.id;
     this.title = params.title;
+    this.excerpt = params.excerpt;
     this.content = params.content;
     this.bookIds = params.bookIds;
     this.createdAt = params.createdAt;
@@ -53,6 +59,7 @@ export class Article extends AggregateRoot {
     article.record(new ArticleCreatedDomainEvent({
       aggregateId: params.id.value,
       title: params.title.value,
+      excerpt: params.excerpt.value,
       content: params.content.value,
       bookIds: params.bookIds.getValue(),
       createdAt: params.createdAt,
@@ -69,6 +76,7 @@ export class Article extends AggregateRoot {
 
     // Determine new values
     const newTitle = params.title !== undefined ? params.title : this.title;
+    const newExcerpt = params.excerpt !== undefined ? params.excerpt : this.excerpt;
     const newContent = params.content !== undefined ? params.content : this.content;
     const newBookIds = params.bookIds !== undefined ? params.bookIds : this.bookIds;
 
@@ -76,6 +84,7 @@ export class Article extends AggregateRoot {
     const updatedArticle = new Article({
       id: this.id,
       title: newTitle,
+      excerpt: newExcerpt,
       content: newContent,
       bookIds: newBookIds,
       createdAt: this.createdAt,
@@ -87,6 +96,7 @@ export class Article extends AggregateRoot {
       updatedArticle.record(new ArticleUpdatedDomainEvent({
         aggregateId: this.id.value,
         title: updatedArticle.title.value,
+        excerpt: updatedArticle.excerpt.value,
         content: updatedArticle.content.value,
         bookIds: updatedArticle.bookIds.getValue(),
         updatedAt: now,
@@ -101,6 +111,7 @@ export class Article extends AggregateRoot {
     return {
       id: this.id.value,
       title: this.title.value,
+      excerpt: this.excerpt.value,
       content: this.content.value,
       bookIds: this.bookIds.getValue(),
       createdAt: this.createdAt.toISOString(),

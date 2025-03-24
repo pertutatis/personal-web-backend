@@ -114,8 +114,6 @@ export class ApiHelpers {
         
         for (const book of books.items) {
           try {
-            console.log(`Attempting to delete book with id: ${book.id}`);
-            console.log(`Attempting to delete book with id: "${book.id}" (${typeof book.id})`);
             const deleteResponse = await this.booksApi.deleteBook(book.id.toString());
             if (!deleteResponse.ok()) {
               console.error(`Failed to delete book ${book.id}:`, await deleteResponse.text());
@@ -131,7 +129,7 @@ export class ApiHelpers {
       console.log('Test data cleanup completed');
     } catch (error) {
       console.error('Critical error during cleanup:', error);
-      throw error; // Propagar el error para que las pruebas fallen si la limpieza no se puede completar
+      throw error;
     }
   }
 
@@ -144,6 +142,7 @@ export class ApiHelpers {
 
     const article = await this.createTestArticle({
       title: 'Test Article with Book',
+      excerpt: 'Test article excerpt with book reference',
       content: 'Test content with book reference',
       bookIds: [book.id]
     });

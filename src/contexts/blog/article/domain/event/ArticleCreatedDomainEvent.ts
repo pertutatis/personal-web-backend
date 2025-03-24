@@ -4,10 +4,11 @@ export type ArticleCreatedDomainEventProps = {
   aggregateId: string;
   title: string;
   content: string;
+  excerpt: string;
   bookIds: string[];
   createdAt: Date;
   updatedAt: Date;
-  occurredOn?: Date;
+  occurredOn: Date;
 };
 
 export class ArticleCreatedDomainEvent extends DomainEvent {
@@ -15,36 +16,34 @@ export class ArticleCreatedDomainEvent extends DomainEvent {
 
   readonly title: string;
   readonly content: string;
+  readonly excerpt: string;
   readonly bookIds: string[];
   readonly createdAt: Date;
   readonly updatedAt: Date;
 
-  constructor({
-    aggregateId,
-    title,
-    content,
-    bookIds,
-    createdAt,
-    updatedAt,
-    occurredOn
-  }: ArticleCreatedDomainEventProps) {
-    super(ArticleCreatedDomainEvent.EVENT_NAME, aggregateId, occurredOn);
-    this.title = title;
-    this.content = content;
-    this.bookIds = bookIds;
-    this.createdAt = createdAt;
-    this.updatedAt = updatedAt;
+  constructor(props: ArticleCreatedDomainEventProps) {
+    super(
+      ArticleCreatedDomainEvent.EVENT_NAME,
+      props.aggregateId,
+      props.occurredOn
+    );
+
+    this.title = props.title;
+    this.content = props.content;
+    this.excerpt = props.excerpt;
+    this.bookIds = props.bookIds;
+    this.createdAt = props.createdAt;
+    this.updatedAt = props.updatedAt;
   }
 
-  toPrimitives(): ArticleCreatedDomainEventProps {
+  toPrimitives() {
     return {
-      aggregateId: this.aggregateId,
       title: this.title,
       content: this.content,
+      excerpt: this.excerpt,
       bookIds: this.bookIds,
       createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
-      occurredOn: this.occurredOn
+      updatedAt: this.updatedAt
     };
   }
 }

@@ -2,6 +2,7 @@
 CREATE TABLE IF NOT EXISTS articles (
     id VARCHAR(255) PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
+    excerpt TEXT NOT NULL,
     content TEXT NOT NULL,
     book_ids TEXT[] DEFAULT '{}',
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -10,6 +11,9 @@ CREATE TABLE IF NOT EXISTS articles (
 
 -- Create index on title
 CREATE INDEX IF NOT EXISTS articles_title_idx ON articles (title);
+
+-- Create index on excerpt for searching
+CREATE INDEX IF NOT EXISTS articles_excerpt_idx ON articles (excerpt);
 
 -- Create index on created_at for pagination
 CREATE INDEX IF NOT EXISTS articles_created_at_idx ON articles (created_at DESC);
@@ -29,3 +33,6 @@ CREATE TRIGGER update_articles_updated_at
     BEFORE UPDATE ON articles
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
+
+-- Add comment to document excerpt column's purpose
+COMMENT ON COLUMN articles.excerpt IS 'A brief summary or preview of the article content';

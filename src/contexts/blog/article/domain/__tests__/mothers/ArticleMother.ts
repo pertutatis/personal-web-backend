@@ -2,12 +2,15 @@ import { Article } from "../../Article";
 import { ArticleIdMother } from "./ArticleIdMother";
 import { ArticleTitleMother } from "./ArticleTitleMother";
 import { ArticleContentMother } from "./ArticleContentMother";
+import { ArticleExcerptMother } from "./ArticleExcerptMother";
 import { ArticleBookIdsMother } from "./ArticleBookIdsMother";
+import { ArticleExcerpt } from "../../ArticleExcerpt";
 
 export class ArticleMother {
   static create(
     id = ArticleIdMother.create(),
     title = ArticleTitleMother.create(),
+    excerpt = ArticleExcerptMother.create('A guide to writing clean, maintainable code'),
     content = ArticleContentMother.create(),
     bookIds = ArticleBookIdsMother.create(),
     createdAt = new Date(),
@@ -16,6 +19,7 @@ export class ArticleMother {
     return Article.create({
       id,
       title,
+      excerpt,
       content,
       bookIds,
       createdAt,
@@ -28,6 +32,7 @@ export class ArticleMother {
     return Article.create({
       id: ArticleIdMother.random(),
       title: ArticleTitleMother.random(),
+      excerpt: ArticleExcerptMother.random(),
       content: ArticleContentMother.random(),
       bookIds: ArticleBookIdsMother.random(),
       createdAt: now,
@@ -48,8 +53,17 @@ export class ArticleMother {
     );
   }
 
+  static withExcerpt(excerpt: string): Article {
+    return this.create(
+      undefined,
+      undefined,
+      ArticleExcerpt.create(excerpt)
+    );
+  }
+
   static withContent(content: string): Article {
     return this.create(
+      undefined,
       undefined,
       undefined,
       ArticleContentMother.create(content)
@@ -58,6 +72,7 @@ export class ArticleMother {
 
   static withBookIds(bookIds: string[]): Article {
     return this.create(
+      undefined,
       undefined,
       undefined,
       undefined,
@@ -70,12 +85,14 @@ export class ArticleMother {
       undefined,
       undefined,
       undefined,
+      undefined,
       ArticleBookIdsMother.withOne()
     );
   }
 
   static withManyBooks(count: number = 5): Article {
     return this.create(
+      undefined,
       undefined,
       undefined,
       undefined,
@@ -89,6 +106,7 @@ export class ArticleMother {
       undefined,
       undefined,
       undefined,
+      undefined,
       createdAt,
       updatedAt
     );
@@ -98,6 +116,7 @@ export class ArticleMother {
     return this.create(
       ArticleIdMother.invalid(),
       ArticleTitleMother.empty(),
+      ArticleExcerpt.create(ArticleExcerptMother.empty()),
       ArticleContentMother.empty(),
       ArticleBookIdsMother.empty()
     );

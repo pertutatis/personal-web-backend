@@ -61,7 +61,7 @@ describe('Book', () => {
   it('should convert to primitives', () => {
     const now = new Date();
     const book = BookMother.withDates(now, now);
-    const primitives = book.toPrimitives();
+    const primitives = book.toFormattedPrimitives();
 
     expect(primitives).toEqual({
       id: book.id.toString(),

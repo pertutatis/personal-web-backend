@@ -1,13 +1,16 @@
-import { ArticleRepository } from '../domain/ArticleRepository';
+import { Article } from '../domain/Article';
 import { ArticleId } from '../domain/ArticleId';
+import { ArticleNotFound } from './ArticleNotFound';
 import { ArticleTitle } from '../domain/ArticleTitle';
+import { ArticleExcerpt } from '../domain/ArticleExcerpt';
 import { ArticleContent } from '../domain/ArticleContent';
 import { ArticleBookIds } from '../domain/ArticleBookIds';
-import { ArticleNotFound } from './ArticleNotFound';
+import { ArticleRepository } from '../domain/ArticleRepository';
 
 export type UpdateArticleRequest = {
   id: string;
   title?: string;
+  excerpt?: string;
   content?: string;
   bookIds?: string[];
 };
@@ -15,7 +18,7 @@ export type UpdateArticleRequest = {
 export class UpdateArticle {
   constructor(private readonly repository: ArticleRepository) {}
 
-  async run(request: UpdateArticleRequest): Promise<void> {
+  async run(request: UpdateArticleRequest): Promise<Article> {
     const articleId = ArticleId.create(request.id);
     const article = await this.repository.search(articleId);
 
@@ -23,23 +26,27 @@ export class UpdateArticle {
       throw new ArticleNotFound(articleId);
     }
 
-    const updateData: Partial<{
-      title: ArticleTitle;
-      content: ArticleContent;
-      bookIds: ArticleBookIds;
-    }> = {};
+    const updateParams: any = {};
 
     if (request.title !== undefined) {
-      updateData.title = ArticleTitle.create(request.title);
-    }
-    if (request.content !== undefined) {
-      updateData.content = ArticleContent.create(request.content);
-    }
-    if (request.bookIds !== undefined) {
-      updateData.bookIds = ArticleBookIds.create(request.bookIds);
+      updateParams.title = ArticleTitle.create(request.title);
     }
 
-    const updatedArticle = article.update(updateData);
+    if (request.excerpt !== undefined) {
+      updateParams.excerpt = ArticleExcerpt.create(request.excerpt);
+    }
+
+    if (request.content !== undefined) {
+      updateParams.content = ArticleContent.create(request.content);
+    }
+
+    if (request.bookIds !== undefined) {
+      updateParams.bookIds = ArticleBookIds.create(request.bookIds);
+    }
+
+    const updatedArticle = article.update(updateParams);
     await this.repository.update(updatedArticle);
+
+    return updatedArticle;
   }
 }

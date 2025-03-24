@@ -67,12 +67,20 @@ export async function POST(request: NextRequest) {
 
     // Validate fields
     const title = typeof data.title === 'string' ? data.title.trim() : null;
+    const excerpt = typeof data.excerpt === 'string' ? data.excerpt.trim() : null;
     const articleContent = typeof data.content === 'string' ? data.content.trim() : null;
     const bookIds = Array.isArray(data.bookIds) ? data.bookIds : [];
 
     // Validate title
     if (!title) {
       errors.push('title cannot be empty');
+    }
+
+    // Validate excerpt
+    if (!excerpt) {
+      errors.push('excerpt cannot be empty');
+    } else if (excerpt.length > 160) {
+      errors.push('excerpt exceeds maximum length of 160 characters');
     }
 
     // Validate content
@@ -91,6 +99,7 @@ export async function POST(request: NextRequest) {
       // Create article with validated data
       const articleData = {
         title: title!,
+        excerpt: excerpt!,
         content: articleContent!,
         bookIds: bookIds
       };

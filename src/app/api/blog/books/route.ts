@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     const books = await listBooks.run(page, limit);
 
     return HttpNextResponse.ok({
-      items: books.items.map(book => book.toPrimitives()),
+      items: books.items.map(book => book.toFormattedPrimitives()),
       page: books.pagination.page,
       limit: books.pagination.limit,
       total: books.pagination.total
@@ -118,9 +118,7 @@ export async function POST(request: NextRequest) {
 
     console.log('Creating book with data:', bookData);
     const book = await createBook.run(bookData);
-    const primitives = {
-      ...book.toPrimitives(),
-    };
+    const primitives = book.toFormattedPrimitives();
     return HttpNextResponse.created(primitives);
   });
 }
