@@ -24,9 +24,12 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  return  (async () => {
+  return executeWithErrorHandling(async () => {
     const { articlesConnection, booksConnection } = await getConnections();
-    const repository = new PostgresArticleRepository(articlesConnection, booksConnection);
+    const repository = new PostgresArticleRepository(
+      articlesConnection,
+      booksConnection
+    );
     const getArticle = new GetArticle(repository);
 
     const article = await getArticle.run(params.id);
