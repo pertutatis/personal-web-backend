@@ -4,10 +4,11 @@
 
 ### 1. Create Article
 - **Primary Flow**:
-  1. Receive title, content, excerpt, and book IDs
-  2. Validate all inputs
-  3. Create new article
-  4. Return success
+  1. Receive title, content, excerpt, book IDs, and optional related links
+  2. Generate slug from title
+  3. Validate all inputs
+  4. Create new article
+  5. Return success
 
 - **Edge Cases**:
   - Title is empty → Return error
@@ -19,12 +20,19 @@
   - Book IDs array is empty → Return error
   - Any book ID doesn't exist → Return error
   - Invalid UUID format → Return error
+  - Related link text empty → Return error
+  - Related link text exceeds 100 characters → Return error
+  - Related link URL invalid → Return error
+  - Related link URL exceeds 2000 characters → Return error
+  - Related links exceed maximum (10) → Return error
+  - Duplicate URLs in related links → Return error
+  - Generated slug exceeds 100 characters → Return error with suggestion to shorten title
 
 ### 2. Get Article by ID
 - **Primary Flow**:
   1. Receive article ID
   2. Find article
-  3. Return article with complete book information
+  3. Return article with complete book information, related links, and slug
 
 - **Edge Cases**:
   - Article not found → Return 404
@@ -34,7 +42,7 @@
 ### 3. List Articles
 - **Primary Flow**:
   1. Receive optional pagination params
-  2. Return articles with complete book information (including excerpts)
+  2. Return articles with complete book information (including excerpts, related links, and slugs)
   3. Sort by creation date (newest first)
 
 - **Edge Cases**:
@@ -46,9 +54,10 @@
 ### 4. Update Article
 - **Primary Flow**:
   1. Receive article ID and updated data
-  2. Validate all inputs
-  3. Update article
-  4. Return success
+  2. If title changes, generate new slug
+  3. Validate all inputs
+  4. Update article
+  5. Return success
 
 - **Edge Cases**:
   - Article not found → Return 404
@@ -61,6 +70,13 @@
   - Excerpt exceeds 300 characters → Return error
   - Book IDs array is empty → Return error
   - Any book ID doesn't exist → Return error
+  - Related link text empty → Return error
+  - Related link text exceeds 100 characters → Return error
+  - Related link URL invalid → Return error
+  - Related link URL exceeds 2000 characters → Return error
+  - Related links exceed maximum (10) → Return error
+  - Duplicate URLs in related links → Return error
+  - Generated slug exceeds 100 characters → Return error with suggestion to shorten title
 
 ## Test Scenarios
 
@@ -71,6 +87,8 @@
    - Creating article with invalid content
    - Creating article with invalid excerpt
    - Creating article with invalid book IDs
+   - Creating article with invalid related links
+   - Verifying slug generation
    - Updating article properties
    - Converting to primitives
 
@@ -80,24 +98,30 @@
    - ArticleExcerpt validation
    - ArticleBookIds validation
    - ArticleId format validation
+   - ArticleRelatedLink validation
+   - ArticleRelatedLinks collection validation
+   - ArticleSlug validation and generation
 
 ### Integration Tests
 1. PostgresArticleRepository:
-   - Saving new article
-   - Finding article by ID with book data
+   - Saving new article with related links
+   - Finding article by ID with book data and related links
    - Listing articles with pagination
-   - Updating existing article
+   - Updating existing article and related links
    - Handling non-existent articles
    - Handling database connection errors
    - Verifying book data joins
    - Verifying excerpt is saved and retrieved correctly
+   - Verifying related links are saved and retrieved correctly
+   - Verifying slug is saved and retrieved correctly
 
 ### E2E Tests
 1. API Endpoints:
-   - POST /api/blog/articles (with excerpt)
-   - GET /api/blog/articles (verify excerpt in list)
-   - GET /api/blog/articles/:id (verify excerpt in detail)
-   - PUT /api/blog/articles/:id (update excerpt)
+   - POST /api/blog/articles (with related links)
+   - GET /api/blog/articles (verify related links and slug in list)
+   - GET /api/blog/articles/:id (verify related links and slug in detail)
+   - PUT /api/blog/articles/:id (update related links)
+   - Verify article accessible via slug URL
 
 ## Validation Rules
 
@@ -126,3 +150,28 @@
    - All referenced books must exist
    - No duplicate books allowed
    - Books must be retrieved and included in article responses
+
+5. Related Links:
+   - Optional
+   - Maximum 10 links
+   - No duplicate URLs allowed
+   - Link text:
+     - Required when link provided
+     - Min length: 1 character
+     - Max length: 100 characters
+     - Trimmed before validation
+   - Link URL:
+     - Required when link provided
+     - Must be valid URL format
+     - Max length: 2000 characters
+     - Trimmed before validation
+
+6. Slug:
+   - Auto-generated from title
+   - Required
+   - Min length: 1 character
+   - Max length: 100 characters
+   - Only lowercase letters, numbers, and hyphens
+   - No consecutive hyphens
+   - No leading/trailing hyphens
+   - Must be unique for active articles

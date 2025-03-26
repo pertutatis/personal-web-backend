@@ -9,6 +9,8 @@ import { HttpNextResponse } from '@/contexts/shared/infrastructure/http/HttpNext
 import { ValidationError } from '@/contexts/shared/domain/ValidationError';
 import { getArticlesConfig, getBooksConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
 import { OfficialUuidGenerator } from '@/contexts/shared/infrastructure/OfficialUuidGenerator';
+import { validateRelatedLinks } from '@/contexts/shared/infrastructure/validation/validateRelatedLinks';
+import type { RelatedLink } from '@/contexts/shared/infrastructure/validation/validateRelatedLinks';
 
 // Crear conexiones como promesas para asegurar una única instancia
 const articlesConnectionPromise = PostgresConnection.create(getArticlesConfig());
@@ -67,6 +69,7 @@ export async function POST(request: NextRequest) {
     const excerpt = typeof data.excerpt === 'string' ? data.excerpt.trim() : null;
     const articleContent = typeof data.content === 'string' ? data.content.trim() : null;
     const bookIds = Array.isArray(data.bookIds) ? data.bookIds : [];
+    const relatedLinks = Array.isArray(data.relatedLinks) ? data.relatedLinks as RelatedLink[] : [];
 
     // Validate title
     if (!title) {
@@ -91,23 +94,26 @@ export async function POST(request: NextRequest) {
       throw new ValidationError(errors.join(', '));
     }
 
-    try {
-      // Create article with validated data
-      const articleData = {
-        title: title!,
-        excerpt: excerpt!,
-        content: articleContent!,
-        bookIds: bookIds
-      };
+    // Validate related links
+    validateRelatedLinks(relatedLinks);
 
-      const repository = new PostgresArticleRepository(articlesConnection, booksConnection);
-      const createArticle = new CreateArticle(repository, uuidGenerator);
-      
-      const article = await createArticle.run(articleData);
-      return HttpNextResponse.created(article.toPrimitives());
-    } catch (error) {
-      throw error;
-    }
+    // Create article with validated data
+    const articleData = {
+      title: title!,
+      excerpt: excerpt!,
+      content: articleContent!,
+      bookIds: bookIds,
+      relatedLinks: relatedLinks.map((link: RelatedLink) => ({
+        text: link.text.trim(),
+        url: link.url.trim()
+      }))
+    };
+
+    const repository = new PostgresArticleRepository(articlesConnection, booksConnection);
+    const createArticle = new CreateArticle(repository, uuidGenerator);
+    
+    const article = await createArticle.run(articleData);
+    return HttpNextResponse.created(article.toPrimitives());
   });
 }
 

@@ -5,14 +5,13 @@ import { ArticleTitle } from '../domain/ArticleTitle';
 import { ArticleExcerpt } from '../domain/ArticleExcerpt';
 import { ArticleContent } from '../domain/ArticleContent';
 import { ArticleBookIds } from '../domain/ArticleBookIds';
+import { ArticleRelatedLinks } from '../domain/ArticleRelatedLinks';
+import { ArticleRelatedLink } from '../domain/ArticleRelatedLink';
+import { ArticleSlug } from '../domain/ArticleSlug';
 import { Collection } from '@/contexts/shared/domain/Collection';
 import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection';
 import { ValidationError } from '@/contexts/shared/domain/ValidationError';
-import { Book } from '@/contexts/blog/book/domain/Book';
 import { BookId } from '@/contexts/blog/book/domain/BookId';
-import { BookTitle } from '@/contexts/blog/book/domain/BookTitle';
-import { BookAuthor } from '@/contexts/blog/book/domain/BookAuthor';
-import { BookIsbn } from '@/contexts/blog/book/domain/BookIsbn';
 
 interface ArticleRow {
   id: string;
@@ -20,15 +19,8 @@ interface ArticleRow {
   excerpt: string;
   content: string;
   book_ids: string[];
-  created_at: Date;
-  updated_at: Date;
-}
-
-interface BookRow {
-  id: string;
-  title: string;
-  author: string;
-  isbn: string;
+  related_links: Array<{ text: string; url: string }>;
+  slug: string;
   created_at: Date;
   updated_at: Date;
 }
@@ -62,13 +54,19 @@ export class PostgresArticleRepository implements ArticleRepository {
       await this.validateBookIds(bookIdsArray);
       
       await this.articlesConnection.execute(
-        'INSERT INTO articles (id, title, excerpt, content, book_ids, created_at, updated_at) VALUES ($1, $2, $3, $4, $5::text[], $6, $7)',
+        `INSERT INTO articles (
+          id, title, excerpt, content, book_ids, related_links, slug, created_at, updated_at
+        ) VALUES (
+          $1, $2, $3, $4, $5::text[], $6::jsonb, $7, $8, $9
+        )`,
         [
           primitives.id,
           primitives.title,
           primitives.excerpt,
           primitives.content,
           bookIdsArray,
+          JSON.stringify(primitives.relatedLinks || []),
+          primitives.slug,
           new Date(primitives.createdAt),
           new Date(primitives.updatedAt)
         ]
@@ -77,6 +75,15 @@ export class PostgresArticleRepository implements ArticleRepository {
       console.error('Error saving article:', error);
       throw error;
     }
+  }
+
+  async searchByBookId(bookId: BookId): Promise<Article[]> {
+    const result = await this.articlesConnection.execute<ArticleRow>(
+      'SELECT * FROM articles WHERE $1 = ANY(book_ids)',
+      [bookId.value]
+    );
+
+    return result.rows.map(row => this.createArticleFromRow(row));
   }
 
   async search(id: ArticleId): Promise<Article | null> {
@@ -94,6 +101,25 @@ export class PostgresArticleRepository implements ArticleRepository {
       return this.createArticleFromRow(articleRow);
     } catch (error) {
       console.error('Error searching for article:', error);
+      throw error;
+    }
+  }
+
+  async searchBySlug(slug: string): Promise<Article | null> {
+    try {
+      const result = await this.articlesConnection.execute<ArticleRow>(
+        'SELECT * FROM articles WHERE slug = $1',
+        [slug]
+      );
+
+      if (result.rows.length === 0) {
+        return null;
+      }
+
+      const articleRow = result.rows[0];
+      return this.createArticleFromRow(articleRow);
+    } catch (error) {
+      console.error('Error searching for article by slug:', error);
       throw error;
     }
   }
@@ -129,15 +155,6 @@ export class PostgresArticleRepository implements ArticleRepository {
     });
   }
 
-  async searchByBookId(bookId: BookId): Promise<Article[]> {
-    const result = await this.articlesConnection.execute<ArticleRow>(
-      'SELECT * FROM articles WHERE $1 = ANY(book_ids)',
-      [bookId.value]
-    );
-
-    return result.rows.map(row => this.createArticleFromRow(row));
-  }
-
   async update(article: Article): Promise<void> {
     const primitives = article.toPrimitives();
 
@@ -159,19 +176,22 @@ export class PostgresArticleRepository implements ArticleRepository {
              excerpt = $2,
              content = $3,
              book_ids = $4::text[],
+             related_links = $5::jsonb,
+             slug = $6,
              updated_at = (
                SELECT GREATEST(
                  timezone('UTC', NOW()),
-                 (SELECT updated_at + interval '1 second' FROM articles WHERE id = $5)
+                 (SELECT updated_at + interval '1 second' FROM articles WHERE id = $7)
                )
              )
-         WHERE id = $5
-         RETURNING id, title, excerpt, content, book_ids, created_at AT TIME ZONE 'UTC' as created_at, updated_at AT TIME ZONE 'UTC' as updated_at`,
+         WHERE id = $7`,
         [
           primitives.title,
           primitives.excerpt,
           primitives.content,
           primitives.bookIds,
+          JSON.stringify(primitives.relatedLinks || []),
+          primitives.slug,
           primitives.id
         ]
       );
@@ -203,12 +223,24 @@ export class PostgresArticleRepository implements ArticleRepository {
 
   private createArticleFromRow(row: ArticleRow): Article {
     try {
+      let relatedLinks: Array<{ text: string; url: string }> = [];
+      // Asegurarse de que row.related_links es un array o convertirlo de JSON si es necesario
+      if (typeof row.related_links === 'string') {
+        relatedLinks = JSON.parse(row.related_links);
+      } else if (Array.isArray(row.related_links)) {
+        relatedLinks = row.related_links;
+      }
+
       return Article.create({
         id: ArticleId.create(row.id),
         title: ArticleTitle.create(row.title),
         excerpt: ArticleExcerpt.create(row.excerpt),
         content: ArticleContent.create(row.content),
         bookIds: ArticleBookIds.create(row.book_ids || []),
+        relatedLinks: ArticleRelatedLinks.create(
+          relatedLinks.map(link => ArticleRelatedLink.create(link.text, link.url))
+        ),
+        slug: new ArticleSlug(row.slug),
         createdAt: new Date(row.created_at),
         updatedAt: new Date(row.updated_at)
       });

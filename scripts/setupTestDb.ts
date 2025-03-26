@@ -28,18 +28,26 @@ async function setupTestDatabases() {
     await articlesPool.query('CREATE DATABASE test_articles');
     await articlesPool.end();
 
-    // Inicializar esquema de artículos
-    const articlesSchema = readFileSync(
-      join(__dirname, '../databases/articles.sql'),
-      'utf-8'
-    );
-    
+    // Configurar la base de datos de artículos
     const articlesDbPool = new Pool({
       ...TEST_CONFIG_ARTICLES,
       database: 'test_articles'
     });
 
+    // Inicializar esquema base
+    const articlesSchema = readFileSync(
+      join(__dirname, '../databases/articles.sql'),
+      'utf-8'
+    );
     await articlesDbPool.query(articlesSchema);
+
+    // Añadir related_links y slug
+    const relatedLinksAndSlugMigration = readFileSync(
+      join(__dirname, '../databases/migrations/004-add-related-links-and-slug-to-articles.sql'),
+      'utf-8'
+    );
+    await articlesDbPool.query(relatedLinksAndSlugMigration);
+
     await articlesDbPool.end();
 
     // Inicializar base de datos de libros

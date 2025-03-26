@@ -4,7 +4,10 @@ import { ArticleTitleMother } from "./ArticleTitleMother";
 import { ArticleContentMother } from "./ArticleContentMother";
 import { ArticleExcerptMother } from "./ArticleExcerptMother";
 import { ArticleBookIdsMother } from "./ArticleBookIdsMother";
+import { ArticleRelatedLinksMother } from "./ArticleRelatedLinksMother";
 import { ArticleExcerpt } from "../../ArticleExcerpt";
+import { ArticleRelatedLink } from "../../ArticleRelatedLink";
+import { ArticleRelatedLinks } from "../../ArticleRelatedLinks";
 
 export class ArticleMother {
   static create(
@@ -13,6 +16,7 @@ export class ArticleMother {
     excerpt = ArticleExcerptMother.create('A guide to writing clean, maintainable code'),
     content = ArticleContentMother.create(),
     bookIds = ArticleBookIdsMother.create(),
+    relatedLinks = ArticleRelatedLinksMother.create(),
     createdAt = new Date(),
     updatedAt = new Date()
   ): Article {
@@ -22,6 +26,7 @@ export class ArticleMother {
       excerpt,
       content,
       bookIds,
+      relatedLinks,
       createdAt,
       updatedAt
     });
@@ -35,6 +40,7 @@ export class ArticleMother {
       excerpt: ArticleExcerptMother.random(),
       content: ArticleContentMother.random(),
       bookIds: ArticleBookIdsMother.random(),
+      relatedLinks: ArticleRelatedLinksMother.create(2),
       createdAt: now,
       updatedAt: now
     });
@@ -80,6 +86,42 @@ export class ArticleMother {
     );
   }
 
+  static withRelatedLinks(links: Array<{ text: string; url: string }>): Article {
+    const relatedLinks = links.map(link =>
+      ArticleRelatedLink.create(link.text, link.url)
+    );
+    return this.create(
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      ArticleRelatedLinks.create(relatedLinks)
+    );
+  }
+
+  static withNoRelatedLinks(): Article {
+    return this.create(
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      ArticleRelatedLinksMother.empty()
+    );
+  }
+
+  static withMaxRelatedLinks(): Article {
+    return this.create(
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      ArticleRelatedLinksMother.maxLinks()
+    );
+  }
+
   static withSingleBook(): Article {
     return this.create(
       undefined,
@@ -107,6 +149,7 @@ export class ArticleMother {
       undefined,
       undefined,
       undefined,
+      undefined,
       createdAt,
       updatedAt
     );
@@ -118,7 +161,8 @@ export class ArticleMother {
       ArticleTitleMother.empty(),
       ArticleExcerpt.create(ArticleExcerptMother.empty()),
       ArticleContentMother.empty(),
-      ArticleBookIdsMother.empty()
+      ArticleBookIdsMother.empty(),
+      undefined
     );
   }
 }

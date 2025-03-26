@@ -4,6 +4,8 @@ import { ArticleTitle } from './ArticleTitle';
 import { ArticleContent } from './ArticleContent';
 import { ArticleExcerpt } from './ArticleExcerpt';
 import { ArticleBookIds } from './ArticleBookIds';
+import { ArticleSlug } from './ArticleSlug';
+import { ArticleRelatedLinks } from './ArticleRelatedLinks';
 import { ArticleCreatedDomainEvent } from './event/ArticleCreatedDomainEvent';
 import { ArticleUpdatedDomainEvent } from './event/ArticleUpdatedDomainEvent';
 
@@ -13,6 +15,8 @@ type ArticlePrimitives = {
   excerpt: string;
   content: string;
   bookIds: string[];
+  relatedLinks: Array<{ text: string; url: string }>;
+  slug: string;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -23,8 +27,10 @@ type CreateArticleParams = {
   excerpt: ArticleExcerpt;
   content: ArticleContent;
   bookIds: ArticleBookIds;
+  relatedLinks?: ArticleRelatedLinks;
   createdAt: Date;
   updatedAt: Date;
+  slug?: ArticleSlug;
 };
 
 type UpdateArticleParams = Partial<{
@@ -32,6 +38,7 @@ type UpdateArticleParams = Partial<{
   excerpt: ArticleExcerpt;
   content: ArticleContent;
   bookIds: ArticleBookIds;
+  relatedLinks: ArticleRelatedLinks;
 }>;
 
 export class Article extends AggregateRoot {
@@ -40,6 +47,8 @@ export class Article extends AggregateRoot {
   readonly excerpt: ArticleExcerpt;
   readonly content: ArticleContent;
   readonly bookIds: ArticleBookIds;
+  readonly relatedLinks: ArticleRelatedLinks;
+  readonly slug: ArticleSlug;
   readonly createdAt: Date;
   readonly updatedAt: Date;
 
@@ -50,6 +59,8 @@ export class Article extends AggregateRoot {
     this.excerpt = params.excerpt;
     this.content = params.content;
     this.bookIds = params.bookIds;
+    this.relatedLinks = params.relatedLinks ?? ArticleRelatedLinks.create([]);
+    this.slug = params.slug ?? ArticleSlug.fromTitle(params.title.value);
     this.createdAt = params.createdAt;
     this.updatedAt = params.updatedAt;
   }
@@ -62,6 +73,8 @@ export class Article extends AggregateRoot {
       excerpt: params.excerpt.value,
       content: params.content.value,
       bookIds: params.bookIds.getValue(),
+      relatedLinks: params.relatedLinks?.toPrimitives() ?? [],
+      slug: article.slug.value,
       createdAt: params.createdAt,
       updatedAt: params.updatedAt,
       occurredOn: new Date()
@@ -69,7 +82,7 @@ export class Article extends AggregateRoot {
     return article;
   }
 
-  update(params: Partial<UpdateArticleParams>): Article {
+  update(params: UpdateArticleParams): Article {
     // Any update operation should result in a new timestamp
     const now = new Date();
     now.setMilliseconds(0); // Normalize milliseconds to avoid precision issues
@@ -79,6 +92,7 @@ export class Article extends AggregateRoot {
     const newExcerpt = params.excerpt !== undefined ? params.excerpt : this.excerpt;
     const newContent = params.content !== undefined ? params.content : this.content;
     const newBookIds = params.bookIds !== undefined ? params.bookIds : this.bookIds;
+    const newRelatedLinks = params.relatedLinks !== undefined ? params.relatedLinks : this.relatedLinks;
 
     // Create new article with updated values
     const updatedArticle = new Article({
@@ -87,8 +101,11 @@ export class Article extends AggregateRoot {
       excerpt: newExcerpt,
       content: newContent,
       bookIds: newBookIds,
+      relatedLinks: newRelatedLinks,
       createdAt: this.createdAt,
-      updatedAt: now
+      updatedAt: now,
+      // Regenerar el slug solo si el título ha cambiado
+      slug: params.title !== undefined ? ArticleSlug.fromTitle(newTitle.value) : this.slug
     });
 
     // Record event if there are any params
@@ -99,6 +116,8 @@ export class Article extends AggregateRoot {
         excerpt: updatedArticle.excerpt.value,
         content: updatedArticle.content.value,
         bookIds: updatedArticle.bookIds.getValue(),
+        relatedLinks: updatedArticle.relatedLinks.toPrimitives(),
+        slug: updatedArticle.slug.value,
         updatedAt: now,
         occurredOn: now
       }));
@@ -114,6 +133,8 @@ export class Article extends AggregateRoot {
       excerpt: this.excerpt.value,
       content: this.content.value,
       bookIds: this.bookIds.getValue(),
+      relatedLinks: this.relatedLinks.toPrimitives(),
+      slug: this.slug.value,
       createdAt: this.createdAt.toISOString(),
       updatedAt: this.updatedAt.toISOString()
     };

@@ -4,6 +4,8 @@ import { ArticleTitle } from '../../domain/ArticleTitle';
 import { ArticleExcerpt } from '../../domain/ArticleExcerpt';
 import { ArticleContent } from '../../domain/ArticleContent';
 import { ArticleBookIds } from '../../domain/ArticleBookIds';
+import { ArticleRelatedLinks } from '../../domain/ArticleRelatedLinks';
+import { ArticleRelatedLink } from '../../domain/ArticleRelatedLink';
 import { PostgresArticleRepository } from '../PostgresArticleRepository';
 import { TestDatabase } from '@/contexts/shared/infrastructure/__tests__/TestDatabase';
 
@@ -28,6 +30,7 @@ describe('PostgresArticleRepository', () => {
       excerpt: ArticleExcerpt.create('Test Excerpt'),
       content: ArticleContent.create('Test Content'),
       bookIds: ArticleBookIds.create([]),
+      relatedLinks: ArticleRelatedLinks.create([]),
       createdAt: now,
       updatedAt: now
     });
@@ -44,6 +47,8 @@ describe('PostgresArticleRepository', () => {
       excerpt: 'Test Excerpt',
       content: 'Test Content',
       bookIds: [],
+      relatedLinks: [],
+      slug: 'test-article',
       createdAt: expect.any(String),
       updatedAt: expect.any(String)
     });
@@ -66,6 +71,7 @@ describe('PostgresArticleRepository', () => {
       excerpt: ArticleExcerpt.create('Test Excerpt'),
       content: ArticleContent.create('Test Content'),
       bookIds: ArticleBookIds.create([]),
+      relatedLinks: ArticleRelatedLinks.create([]),
       createdAt: now,
       updatedAt: now
     });
@@ -76,7 +82,10 @@ describe('PostgresArticleRepository', () => {
       title: ArticleTitle.create('Updated Title'),
       excerpt: ArticleExcerpt.create('Updated Excerpt'),
       content: ArticleContent.create('Updated Content'),
-      bookIds: ArticleBookIds.create([])
+      bookIds: ArticleBookIds.create([]),
+      relatedLinks: ArticleRelatedLinks.create([
+        ArticleRelatedLink.create('Test Link', 'https://example.com')
+      ])
     });
 
     await repository.update(updated);
@@ -86,6 +95,10 @@ describe('PostgresArticleRepository', () => {
     expect(retrieved?.excerpt.value).toBe('Updated Excerpt');
     expect(retrieved?.content.value).toBe('Updated Content');
     expect(retrieved?.bookIds.getValue()).toEqual([]);
+    expect(retrieved?.relatedLinks.toPrimitives()).toEqual([
+      { text: 'Test Link', url: 'https://example.com' }
+    ]);
+    expect(retrieved?.slug.value).toBe('updated-title');
   });
 
   it('should update only the excerpt', async () => {
@@ -96,6 +109,7 @@ describe('PostgresArticleRepository', () => {
       excerpt: ArticleExcerpt.create('Test Excerpt'),
       content: ArticleContent.create('Test Content'),
       bookIds: ArticleBookIds.create([]),
+      relatedLinks: ArticleRelatedLinks.create([]),
       createdAt: now,
       updatedAt: now
     });
@@ -113,6 +127,8 @@ describe('PostgresArticleRepository', () => {
     expect(retrieved?.excerpt.value).toBe('Updated Excerpt Only');
     expect(retrieved?.content.value).toBe('Test Content');
     expect(retrieved?.bookIds.getValue()).toEqual([]);
+    expect(retrieved?.relatedLinks.toPrimitives()).toEqual([]);
+    expect(retrieved?.slug.value).toBe('test-article');
   });
 
   it('should list articles with pagination', async () => {
@@ -124,6 +140,7 @@ describe('PostgresArticleRepository', () => {
         excerpt: ArticleExcerpt.create(`Test Excerpt ${i}`),
         content: ArticleContent.create(`Test Content ${i}`),
         bookIds: ArticleBookIds.create([]),
+        relatedLinks: ArticleRelatedLinks.create([]),
         createdAt: now,
         updatedAt: now
       })
@@ -139,8 +156,10 @@ describe('PostgresArticleRepository', () => {
     expect(page2.items).toHaveLength(2);
     expect(page3.items).toHaveLength(1);
 
-    // Verify excerpt is present in paginated results
+    // Verify excerpt and slug are present in paginated results
     expect(page1.items[0].excerpt.value).toMatch(/Test Excerpt/);
+    expect(page1.items[0].slug.value).toMatch(/test-article/);
     expect(page1.items[1].excerpt.value).toMatch(/Test Excerpt/);
+    expect(page1.items[1].slug.value).toMatch(/test-article/);
   });
 });

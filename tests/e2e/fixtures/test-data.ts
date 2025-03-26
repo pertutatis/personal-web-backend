@@ -90,6 +90,8 @@ export const testBooks = {
     description: 'Valid description',
     purchaseLink: `https://example.com/${'a'.repeat(1980)}`,
   },
+
+  // ... (keep other book test data unchanged)
 };
 
 export const testArticles = {
@@ -97,49 +99,129 @@ export const testArticles = {
     title: 'Understanding Domain-Driven Design',
     excerpt: 'A comprehensive guide to DDD concepts and patterns',
     content: 'This is a comprehensive guide about DDD...',
-    bookIds: []
+    bookIds: [],
+    relatedLinks: [
+      {
+        text: 'Learn DDD',
+        url: 'https://example.com/learn-ddd'
+      }
+    ]
   },
   validWithBooks: {
     title: 'Clean Code Principles',
     excerpt: 'Exploring the fundamentals of clean code',
     content: 'In this article we will explore clean code principles...',
-    bookIds: []
+    bookIds: [],
+    relatedLinks: []
+  },
+  validWithMaxLinks: {
+    title: 'Article with Maximum Links',
+    excerpt: 'Testing maximum number of related links',
+    content: 'Test content...',
+    bookIds: [],
+    relatedLinks: Array.from({ length: 10 }, (_, i) => ({
+      text: `Link ${i + 1}`,
+      url: `https://example.com/link-${i + 1}`
+    }))
+  },
+  invalidLinks: {
+    title: 'Article with Invalid Links',
+    excerpt: 'Test excerpt',
+    content: 'Test content',
+    bookIds: [],
+    relatedLinks: [
+      {
+        text: 'A'.repeat(101), // Exceeds max length
+        url: 'https://example.com'
+      }
+    ]
+  },
+  invalidLinkUrl: {
+    title: 'Article with Invalid Link URL',
+    excerpt: 'Test excerpt',
+    content: 'Test content',
+    bookIds: [],
+    relatedLinks: [
+      {
+        text: 'Invalid URL',
+        url: 'not-a-valid-url'
+      }
+    ]
+  },
+  duplicateLinks: {
+    title: 'Article with Duplicate Links',
+    excerpt: 'Test excerpt',
+    content: 'Test content',
+    bookIds: [],
+    relatedLinks: [
+      {
+        text: 'Link 1',
+        url: 'https://example.com/duplicate'
+      },
+      {
+        text: 'Link 2',
+        url: 'https://example.com/duplicate'
+      }
+    ]
+  },
+  tooManyLinks: {
+    title: 'Article with Too Many Links',
+    excerpt: 'Test excerpt',
+    content: 'Test content',
+    bookIds: [],
+    relatedLinks: Array.from({ length: 11 }, (_, i) => ({
+      text: `Link ${i + 1}`,
+      url: `https://example.com/link-${i + 1}`
+    }))
+  },
+  specialCharactersTitle: {
+    title: '¿Cómo Implementar DDD en TypeScript?',
+    excerpt: 'Una guía práctica de Domain-Driven Design',
+    content: 'Test content...',
+    bookIds: [],
+    relatedLinks: []
   },
   invalid: {
     title: '',
     excerpt: '',
-    content: 'A'.repeat(10001), // Excede el límite
-    bookIds: ['invalid-id']
+    content: 'A'.repeat(10001),
+    bookIds: ['invalid-id'],
+    relatedLinks: []
   },
   invalidBookIds: {
     title: 'Test Article',
     excerpt: 'Test excerpt',
     content: 'Test content',
-    bookIds: ['non-existent-id']
+    bookIds: ['non-existent-id'],
+    relatedLinks: []
   },
   maxLengthTitle: {
     title: 'A'.repeat(255),
     excerpt: 'Valid excerpt',
     content: 'Valid content',
-    bookIds: []
+    bookIds: [],
+    relatedLinks: []
   },
   maxLengthContent: {
     title: 'Test Title',
     excerpt: 'Test excerpt',
     content: 'A'.repeat(10000),
-    bookIds: []
+    bookIds: [],
+    relatedLinks: []
   },
   maxLengthExcerpt: {
     title: 'Test Title',
     excerpt: 'A'.repeat(160),
     content: 'Test content',
-    bookIds: []
+    bookIds: [],
+    relatedLinks: []
   },
   invalidExcerpt: {
     title: 'Test Title',
     excerpt: 'A'.repeat(161),
     content: 'Test content',
-    bookIds: []
+    bookIds: [],
+    relatedLinks: []
   }
 };
 
@@ -152,6 +234,11 @@ export const testPagination = {
   invalidLimit: 0,
   exceedingLimit: 1000
 };
+
+export interface RelatedLink {
+  text: string;
+  url: string;
+}
 
 export interface TestBook {
   title: string;
@@ -166,6 +253,7 @@ export interface TestArticle {
   excerpt: string;
   content: string;
   bookIds: string[];
+  relatedLinks: RelatedLink[];
 }
 
 export const generateValidIsbn = (index: number): string => {

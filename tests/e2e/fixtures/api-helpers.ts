@@ -146,7 +146,13 @@ export class ApiHelpers {
       title: 'Test Article with Book',
       excerpt: 'Test article excerpt with book reference',
       content: 'Test content with book reference',
-      bookIds: [book.id]
+      bookIds: [book.id],
+      relatedLinks: [
+        {
+          text: 'Related Test Link',
+          url: 'https://example.com/test-related'
+        }
+      ]
     });
 
     return { book, article };

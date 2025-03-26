@@ -8,6 +8,8 @@ import { getArticlesConfig, getBooksConfig } from '@/contexts/shared/infrastruct
 import { executeWithErrorHandling } from '@/contexts/shared/infrastructure/http/executeWithErrorHandling';
 import { HttpNextResponse } from '@/contexts/shared/infrastructure/http/HttpNextResponse';
 import { ValidationError } from '@/contexts/shared/domain/ValidationError';
+import { validateRelatedLinks } from '@/contexts/shared/infrastructure/validation/validateRelatedLinks';
+import type { RelatedLink } from '@/contexts/shared/infrastructure/validation/validateRelatedLinks';
 
 const articlesConnectionPromise = PostgresConnection.create(getArticlesConfig());
 const booksConnectionPromise = PostgresConnection.create(getBooksConfig());
@@ -68,12 +70,14 @@ export async function PUT(
     const existingData = existingArticle.toPrimitives();
 
     // Build update data only with changed fields
-    const updateData: { id: string } & Partial<{
-      title: string;
-      excerpt: string;
-      content: string;
-      bookIds: string[];
-    }> = { id: params.id };
+    const updateData: {
+      id: string;
+      title?: string;
+      excerpt?: string;
+      content?: string;
+      bookIds?: string[];
+      relatedLinks?: RelatedLink[];
+    } = { id: params.id };
 
     // Process and validate only provided fields
     if (data.title !== undefined) {
@@ -116,6 +120,15 @@ export async function PUT(
         throw new ValidationError('bookIds must be an array');
       }
       updateData.bookIds = data.bookIds;
+    }
+
+    if (data.relatedLinks !== undefined) {
+      const links = Array.isArray(data.relatedLinks) ? data.relatedLinks as RelatedLink[] : [];
+      validateRelatedLinks(links);
+      updateData.relatedLinks = links.map((link: RelatedLink) => ({
+        text: link.text.trim(),
+        url: link.url.trim()
+      }));
     }
 
     // Execute update only with changed fields

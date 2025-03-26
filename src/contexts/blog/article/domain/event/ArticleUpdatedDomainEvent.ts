@@ -6,6 +6,8 @@ export type ArticleUpdatedDomainEventProps = {
   content: string;
   excerpt: string;
   bookIds: string[];
+  relatedLinks: Array<{ text: string; url: string }>;
+  slug: string;
   updatedAt: Date;
   occurredOn: Date;
 };
@@ -17,6 +19,8 @@ export class ArticleUpdatedDomainEvent extends DomainEvent {
   readonly content: string;
   readonly excerpt: string;
   readonly bookIds: string[];
+  readonly relatedLinks: Array<{ text: string; url: string }>;
+  readonly slug: string;
   readonly updatedAt: Date;
 
   constructor(props: ArticleUpdatedDomainEventProps) {
@@ -30,6 +34,8 @@ export class ArticleUpdatedDomainEvent extends DomainEvent {
     this.content = props.content;
     this.excerpt = props.excerpt;
     this.bookIds = props.bookIds;
+    this.relatedLinks = props.relatedLinks;
+    this.slug = props.slug;
     this.updatedAt = props.updatedAt;
   }
 
@@ -39,6 +45,8 @@ export class ArticleUpdatedDomainEvent extends DomainEvent {
       content: this.content,
       excerpt: this.excerpt,
       bookIds: this.bookIds,
+      relatedLinks: this.relatedLinks,
+      slug: this.slug,
       updatedAt: this.updatedAt
     };
   }
