@@ -101,10 +101,16 @@ export async function POST(request: NextRequest) {
         purchaseLink: data.purchaseLink
       };
     } catch (e) {
+      console.log(e);
+      
       if (e instanceof ValidationError) {
         throw e;
       }
-      throw new ValidationError('Invalid request data');
+      if (e instanceof SyntaxError) {
+        throw new ValidationError('Invalid JSON format');
+      }
+      const message = e instanceof Error ? e.message : 'Invalid request data';
+      throw new ValidationError(message);
     }
 
     const connection = await getConnection();

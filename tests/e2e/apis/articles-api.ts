@@ -39,6 +39,10 @@ export class ArticlesApi {
     return this.request.get(`/api/blog/articles/${articleId}`);
   }
 
+  async getArticleBySlug(slug: string) {
+    return this.request.get(`/api/blog/articles/by-slug/${slug}`);
+  }
+
   async updateArticle(id: string | object, article: Partial<TestArticle>) {
     const articleId = this.getIdValue(id);
     return this.request.put(`/api/blog/articles/${articleId}`, {
@@ -68,6 +72,11 @@ export class ArticlesApi {
   // Helper methods para obtener datos tipados
   async getArticleTyped(id: string): Promise<ArticleResponse> {
     const response = await this.getArticle(id);
+    return response.json();
+  }
+
+  async getArticleBySlugTyped(slug: string): Promise<ArticleResponse> {
+    const response = await this.getArticleBySlug(slug);
     return response.json();
   }
 

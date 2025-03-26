@@ -16,12 +16,19 @@ export interface BookResponse {
   updatedAt: string;
 }
 
+export interface RelatedLinkResponse {
+  text: string;
+  url: string;
+}
+
 export interface ArticleResponse {
   id: string;
   title: string;
   excerpt: string;
   content: string;
   bookIds: string[];
+  relatedLinks: RelatedLinkResponse[];
+  slug: string;
   createdAt: string;
   updatedAt: string;
 }

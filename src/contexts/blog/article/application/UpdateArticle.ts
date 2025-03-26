@@ -6,6 +6,8 @@ import { ArticleExcerpt } from '../domain/ArticleExcerpt';
 import { ArticleContent } from '../domain/ArticleContent';
 import { ArticleBookIds } from '../domain/ArticleBookIds';
 import { ArticleRepository } from '../domain/ArticleRepository';
+import { ArticleRelatedLinks } from '../domain/ArticleRelatedLinks';
+import { ArticleRelatedLink } from '../domain/ArticleRelatedLink';
 
 export type UpdateArticleRequest = {
   id: string;
@@ -13,6 +15,7 @@ export type UpdateArticleRequest = {
   excerpt?: string;
   content?: string;
   bookIds?: string[];
+  relatedLinks?: Array<{ text: string; url: string }>;
 };
 
 export class UpdateArticle {
@@ -42,6 +45,13 @@ export class UpdateArticle {
 
     if (request.bookIds !== undefined) {
       updateParams.bookIds = ArticleBookIds.create(request.bookIds);
+    }
+
+    if (request.relatedLinks !== undefined) {
+      const relatedLinks = request.relatedLinks.map(link => 
+        ArticleRelatedLink.create(link.text, link.url)
+      );
+      updateParams.relatedLinks = ArticleRelatedLinks.create(relatedLinks);
     }
 
     const updatedArticle = article.update(updateParams);

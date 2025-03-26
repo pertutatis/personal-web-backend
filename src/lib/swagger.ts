@@ -106,22 +106,22 @@ const openApiDocument = {
       }
     },
     '/blog/articles/{id}': {
-      parameters: [
-        {
-          name: 'id',
-          in: 'path',
-          required: true,
-          description: 'ID del artículo',
-          schema: {
-            type: 'string',
-            format: 'uuid'
-          }
-        }
-      ],
       get: {
         tags: ['Articles'],
         summary: 'Obtener artículo',
         description: 'Obtiene un artículo por su ID',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            description: 'ID del artículo',
+            schema: {
+              type: 'string',
+              format: 'uuid'
+            }
+          }
+        ],
         responses: {
           '200': {
             description: 'Artículo encontrado',
@@ -149,6 +149,18 @@ const openApiDocument = {
         tags: ['Articles'],
         summary: 'Actualizar artículo',
         description: 'Actualiza un artículo existente',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            description: 'ID del artículo',
+            schema: {
+              type: 'string',
+              format: 'uuid'
+            }
+          }
+        ],
         requestBody: {
           required: true,
           content: {
@@ -186,9 +198,61 @@ const openApiDocument = {
         tags: ['Articles'],
         summary: 'Eliminar artículo',
         description: 'Elimina un artículo existente',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            description: 'ID del artículo',
+            schema: {
+              type: 'string',
+              format: 'uuid'
+            }
+          }
+        ],
         responses: {
           '204': {
             description: 'Artículo eliminado correctamente'
+          },
+          '404': {
+            description: 'Artículo no encontrado',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/Error'
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/blog/articles/by-slug/{slug}': {
+      get: {
+        tags: ['Articles'],
+        summary: 'Obtener artículo por slug',
+        description: 'Obtiene un artículo por su slug',
+        parameters: [
+          {
+            name: 'slug',
+            in: 'path',
+            required: true,
+            description: 'Slug del artículo',
+            schema: {
+              type: 'string'
+            }
+          }
+        ],
+        responses: {
+          '200': {
+            description: 'Artículo encontrado',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/Article'
+                }
+              }
+            }
           },
           '404': {
             description: 'Artículo no encontrado',
@@ -285,22 +349,22 @@ const openApiDocument = {
       }
     },
     '/blog/books/{id}': {
-      parameters: [
-        {
-          name: 'id',
-          in: 'path',
-          required: true,
-          description: 'ID del libro',
-          schema: {
-            type: 'string',
-            format: 'uuid'
-          }
-        }
-      ],
       get: {
         tags: ['Books'],
         summary: 'Obtener libro',
         description: 'Obtiene un libro por su ID',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            description: 'ID del libro',
+            schema: {
+              type: 'string',
+              format: 'uuid'
+            }
+          }
+        ],
         responses: {
           '200': {
             description: 'Libro encontrado',
@@ -328,6 +392,18 @@ const openApiDocument = {
         tags: ['Books'],
         summary: 'Actualizar libro',
         description: 'Actualiza un libro existente',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            description: 'ID del libro',
+            schema: {
+              type: 'string',
+              format: 'uuid'
+            }
+          }
+        ],
         requestBody: {
           required: true,
           content: {
@@ -365,6 +441,18 @@ const openApiDocument = {
         tags: ['Books'],
         summary: 'Eliminar libro',
         description: 'Elimina un libro existente',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            description: 'ID del libro',
+            schema: {
+              type: 'string',
+              format: 'uuid'
+            }
+          }
+        ],
         responses: {
           '204': {
             description: 'Libro eliminado correctamente'
@@ -649,7 +737,7 @@ const openApiDocument = {
   }
 };
 
-// @ts-ignore - next-swagger-doc tiene problemas con los tipos
+// @ts-ignore - Los tipos de next-swagger-doc son incompatibles con OpenAPI 3.0
 export const getApiDocs = () => {
   return createSwaggerSpec({
     apiFolder: 'src/app/api',
