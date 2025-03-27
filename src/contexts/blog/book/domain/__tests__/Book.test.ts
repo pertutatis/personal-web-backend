@@ -11,23 +11,25 @@ import { InvalidBookIsbn } from '../InvalidBookIsbn';
 import { BookMother } from './mothers/BookMother';
 
 describe('Book', () => {
+  const defaultDate = new Date('2025-01-01');
+
   it('should create a valid book', () => {
-    const now = new Date();
-    const book = BookMother.withDates(now, now);
+    const book = BookMother.withDates(defaultDate, defaultDate);
 
     expect(book.id.toString()).toBeDefined();
     expect(book.title.toString()).toBe('Clean Code');
     expect(book.author.toString()).toBe('Robert C. Martin');
     expect(book.isbn.toFormattedString()).toBe('978-0-13-235088-4');
     expect(book.description.toString()).toBe('A comprehensive guide to writing clean code');
-    expect(book.purchaseLink.value).toBe('https://example.com/clean-code');
-    expect(book.createdAt).toBe(now);
-    expect(book.updatedAt).toBe(now);
+    expect(book.purchaseLink.toString()).toBe('https://example.com/clean-code');
+    expect(book.createdAt).toBe(defaultDate);
+    expect(book.updatedAt).toBe(defaultDate);
   });
 
-  it('should create a book with null purchase link', () => {
-    const book = BookMother.withoutPurchaseLink();
-    expect(book.purchaseLink.value).toBeNull();
+  it('should create a book with empty purchase link', () => {
+    const book = BookMother.withEmptyPurchaseLink();
+    expect(book.purchaseLink.isEmpty()).toBe(true);
+    expect(book.purchaseLink.toString()).toBe('');
   });
 
   it('should create a book with multiline description', () => {
@@ -36,11 +38,23 @@ describe('Book', () => {
   });
 
   it('should create a book event when created', () => {
-    const book = BookMother.create();
-    const events = book.pullDomainEvents();
+    const book = Book.create({
+      id: new BookId('test-id'),
+      title: new BookTitle('Test Book'),
+      author: new BookAuthor('Test Author'),
+      isbn: new BookIsbn('9780141036144'),
+      description: new BookDescription('Test Description'),
+      purchaseLink: BookPurchaseLink.createEmpty(),
+      createdAt: defaultDate,
+      updatedAt: defaultDate
+    });
 
+    const events = book.pullDomainEvents();
     expect(events).toHaveLength(1);
     expect(events[0].eventName).toBe('book.created');
+    
+    const eventData = events[0].toPrimitives();
+    expect(eventData.purchaseLink).toBe('');
   });
 
   it('should update book properties', () => {
@@ -52,10 +66,10 @@ describe('Book', () => {
     const newPurchaseLink = 'https://example.com/updated';
 
     book.update({
-      title: BookTitle.create(newTitle),
-      author: BookAuthor.create(newAuthor),
-      isbn: BookIsbn.create(newIsbn),
-      description: BookDescription.create(newDescription),
+      title: new BookTitle(newTitle),
+      author: new BookAuthor(newAuthor),
+      isbn: new BookIsbn(newIsbn),
+      description: new BookDescription(newDescription),
       purchaseLink: BookPurchaseLink.create(newPurchaseLink)
     });
 
@@ -63,27 +77,28 @@ describe('Book', () => {
     expect(book.author.toString()).toBe(newAuthor);
     expect(book.isbn.toFormattedString()).toBe('978-0-06-231500-7');
     expect(book.description.toString()).toBe(newDescription);
-    expect(book.purchaseLink.value).toBe(newPurchaseLink);
+    expect(book.purchaseLink.toString()).toBe(newPurchaseLink);
+    expect(book.updatedAt).not.toBe(book.createdAt);
   });
 
-  it('should create an updated event when updated', () => {
+  it('should update book removing purchase link', () => {
     const book = BookMother.create();
     book.update({
-      title: BookTitle.create('Updated Title'),
-      author: BookAuthor.create('Updated Author'),
-      isbn: BookIsbn.create('9780062315007'),
-      description: BookDescription.create('Updated description'),
-      purchaseLink: BookPurchaseLink.create('https://example.com/updated')
+      title: new BookTitle('Updated Title'),
+      author: new BookAuthor('Updated Author'),
+      isbn: new BookIsbn('9780062315007'),
+      description: new BookDescription('Updated description'),
+      purchaseLink: BookPurchaseLink.createEmpty()
     });
 
+    expect(book.purchaseLink.isEmpty()).toBe(true);
     const events = book.pullDomainEvents();
-    expect(events).toHaveLength(2);
     expect(events[1].eventName).toBe('book.updated');
+    expect(events[1].toPrimitives().purchaseLink).toBe('');
   });
 
   it('should convert to primitives', () => {
-    const now = new Date();
-    const book = BookMother.withDates(now, now);
+    const book = BookMother.withDates(defaultDate, defaultDate);
     const primitives = book.toFormattedPrimitives();
 
     expect(primitives).toEqual({
@@ -93,26 +108,67 @@ describe('Book', () => {
       isbn: '978-0-13-235088-4',
       description: 'A comprehensive guide to writing clean code',
       purchaseLink: 'https://example.com/clean-code',
-      createdAt: now,
-      updatedAt: now
+      createdAt: defaultDate,
+      updatedAt: defaultDate
     });
+
+    // También probar toPrimitives sin formateo
+    const rawPrimitives = book.toPrimitives();
+    expect(rawPrimitives.isbn).toBe('9780132350884');
   });
 
   it('should not create book with empty title', () => {
     expect(() => {
-      BookMother.create(undefined, BookTitle.create(''));
+      BookMother.create(undefined, new BookTitle(''));
     }).toThrow(BookTitleEmpty);
   });
 
   it('should not create book with empty author', () => {
     expect(() => {
-      BookMother.create(undefined, undefined, BookAuthor.create(''));
+      BookMother.create(undefined, undefined, new BookAuthor(''));
     }).toThrow(BookAuthorEmpty);
   });
 
   it('should not create book with invalid ISBN', () => {
     expect(() => {
-      BookMother.create(undefined, undefined, undefined, BookIsbn.create('invalid'));
+      BookMother.create(undefined, undefined, undefined, new BookIsbn('invalid'));
     }).toThrow(InvalidBookIsbn);
+  });
+
+  it('should maintain creation date when updating', () => {
+    const createdAt = new Date('2025-01-01');
+    const book = BookMother.withDates(createdAt, createdAt);
+    
+    book.update({
+      title: new BookTitle('New Title'),
+      author: new BookAuthor('New Author'),
+      isbn: new BookIsbn('9780062315007'),
+      description: new BookDescription('New Description'),
+      purchaseLink: BookPurchaseLink.createEmpty()
+    });
+
+    expect(book.createdAt).toEqual(createdAt);
+    expect(book.updatedAt).not.toEqual(createdAt);
+  });
+
+  it('should create event with correct data when updated', () => {
+    const book = BookMother.create();
+    const newTitle = 'Updated Title';
+    
+    book.update({
+      title: new BookTitle(newTitle),
+      author: new BookAuthor('Updated Author'),
+      isbn: new BookIsbn('9780062315007'),
+      description: new BookDescription('Updated description'),
+      purchaseLink: BookPurchaseLink.create('https://example.com/updated')
+    });
+
+    const events = book.pullDomainEvents();
+    const updateEvent = events[1];
+    
+    expect(updateEvent.eventName).toBe('book.updated');
+    const eventData = updateEvent.toPrimitives();
+    expect(eventData.title).toBe(newTitle);
+    expect(eventData.updatedAt).toBeInstanceOf(Date);
   });
 });

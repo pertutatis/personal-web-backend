@@ -5,25 +5,25 @@ import { BookDescriptionLengthExceeded } from '../BookDescriptionLengthExceeded'
 describe('BookDescription', () => {
   it('should create a valid book description', () => {
     const description = 'A valid book description';
-    const bookDescription = BookDescription.create(description);
+    const bookDescription = new BookDescription(description);
 
     expect(bookDescription.value).toBe(description);
   });
 
   it('should allow multiline descriptions', () => {
     const description = 'Line 1\nLine 2\nLine 3';
-    const bookDescription = BookDescription.create(description);
+    const bookDescription = new BookDescription(description);
 
     expect(bookDescription.value).toBe(description);
   });
 
   it('should fail when description is empty', () => {
     expect(() => {
-      BookDescription.create('');
+      new BookDescription('');
     }).toThrow(BookDescriptionEmpty);
 
     expect(() => {
-      BookDescription.create('   ');
+      new BookDescription('   ');
     }).toThrow(BookDescriptionEmpty);
   });
 
@@ -31,20 +31,20 @@ describe('BookDescription', () => {
     const description = 'a'.repeat(1001);
     
     expect(() => {
-      BookDescription.create(description);
+      new BookDescription(description);
     }).toThrow(BookDescriptionLengthExceeded);
   });
 
   it('should create with maximum length', () => {
     const description = 'a'.repeat(1000);
-    const bookDescription = BookDescription.create(description);
+    const bookDescription = new BookDescription(description);
 
     expect(bookDescription.value).toBe(description);
   });
 
   it('should trim spaces', () => {
     const description = '  A description with spaces  ';
-    const bookDescription = BookDescription.create(description);
+    const bookDescription = new BookDescription(description);
 
     expect(bookDescription.value).toBe(description.trim());
   });

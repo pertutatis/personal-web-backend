@@ -5,46 +5,72 @@ import { ArticleRelatedLinkUrlInvalid } from './ArticleRelatedLinkUrlInvalid';
 import { ArticleRelatedLinkUrlLengthExceeded } from './ArticleRelatedLinkUrlLengthExceeded';
 
 export class ArticleRelatedLink {
-  constructor(
+  static readonly TEXT_MAX_LENGTH = 100;
+  static readonly URL_MAX_LENGTH = 255;
+
+  readonly parsedUrl: URL;
+  readonly protocol: string;
+  readonly host: string;
+
+  private constructor(
     private readonly _text: string,
     private readonly _url: string
-  ) {}
-
-  static create(text: string, url: string): ArticleRelatedLink {
-    const trimmedText = text.trim();
-    const trimmedUrl = url.trim();
-
-    if (trimmedText.length === 0) {
-      throw new ArticleRelatedLinkTextEmpty();
-    }
-
-    if (trimmedText.length > 100) {
-      throw new ArticleRelatedLinkTextLengthExceeded();
-    }
-
-    if (trimmedUrl.length === 0) {
-      throw new ArticleRelatedLinkUrlEmpty();
-    }
-
-    if (trimmedUrl.length > 2000) {
-      throw new ArticleRelatedLinkUrlLengthExceeded();
-    }
+  ) {
+    this.validateText(_text);
+    this.validateUrl(_url);
 
     try {
-      new URL(trimmedUrl);
-    } catch {
-      throw new ArticleRelatedLinkUrlInvalid();
+      this.parsedUrl = new URL(_url);
+      this.protocol = this.parsedUrl.protocol;
+      this.host = this.parsedUrl.host;
+    } catch (error) {
+      throw new ArticleRelatedLinkUrlInvalid(_url);
     }
 
-    return new ArticleRelatedLink(trimmedText, trimmedUrl);
+    Object.freeze(this);
   }
 
-  get text(): string {
+  static create(text: string, url: string): ArticleRelatedLink {
+    return new ArticleRelatedLink(text.trim(), url.trim());
+  }
+
+  private validateText(text: string): void {
+    const trimmedText = text.trim();
+    if (!trimmedText) {
+      throw new ArticleRelatedLinkTextEmpty();
+    }
+    if (trimmedText.length > ArticleRelatedLink.TEXT_MAX_LENGTH) {
+      throw new ArticleRelatedLinkTextLengthExceeded();
+    }
+  }
+
+  private validateUrl(url: string): void {
+    const trimmedUrl = url.trim();
+    if (!trimmedUrl) {
+      throw new ArticleRelatedLinkUrlEmpty();
+    }
+    if (trimmedUrl.length > ArticleRelatedLink.URL_MAX_LENGTH) {
+      throw new ArticleRelatedLinkUrlLengthExceeded();
+    }
+  }
+
+  getText(): string {
     return this._text;
   }
 
-  get url(): string {
+  getUrl(): string {
     return this._url;
+  }
+
+  equals(other: ArticleRelatedLink | null): boolean {
+    if (!other) {
+      return false;
+    }
+    return this._text === other._text && this._url === other._url;
+  }
+
+  toString(): string {
+    return `${this._text} (${this._url})`;
   }
 
   toPrimitives(): { text: string; url: string } {
@@ -54,13 +80,7 @@ export class ArticleRelatedLink {
     };
   }
 
-  toString(): string {
-    return `${this._text} (${this._url})`;
-  }
-
-  equals(other: ArticleRelatedLink): boolean {
-    return other.constructor.name === this.constructor.name && 
-           other.text === this.text &&
-           other.url === this.url;
+  toJSON(): { text: string; url: string } {
+    return this.toPrimitives();
   }
 }

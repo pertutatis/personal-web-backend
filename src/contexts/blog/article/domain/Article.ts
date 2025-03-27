@@ -9,7 +9,7 @@ import { ArticleRelatedLinks } from './ArticleRelatedLinks';
 import { ArticleCreatedDomainEvent } from './event/ArticleCreatedDomainEvent';
 import { ArticleUpdatedDomainEvent } from './event/ArticleUpdatedDomainEvent';
 
-type ArticlePrimitives = {
+type PrimitiveArticle = {
   id: string;
   title: string;
   excerpt: string;
@@ -17,8 +17,8 @@ type ArticlePrimitives = {
   bookIds: string[];
   relatedLinks: Array<{ text: string; url: string }>;
   slug: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 };
 
 type CreateArticleParams = {
@@ -83,32 +83,21 @@ export class Article extends AggregateRoot {
   }
 
   update(params: UpdateArticleParams): Article {
-    // Any update operation should result in a new timestamp
     const now = new Date();
-    now.setMilliseconds(0); // Normalize milliseconds to avoid precision issues
 
-    // Determine new values
-    const newTitle = params.title !== undefined ? params.title : this.title;
-    const newExcerpt = params.excerpt !== undefined ? params.excerpt : this.excerpt;
-    const newContent = params.content !== undefined ? params.content : this.content;
-    const newBookIds = params.bookIds !== undefined ? params.bookIds : this.bookIds;
-    const newRelatedLinks = params.relatedLinks !== undefined ? params.relatedLinks : this.relatedLinks;
-
-    // Create new article with updated values
     const updatedArticle = new Article({
       id: this.id,
-      title: newTitle,
-      excerpt: newExcerpt,
-      content: newContent,
-      bookIds: newBookIds,
-      relatedLinks: newRelatedLinks,
+      title: params.title ?? this.title,
+      excerpt: params.excerpt ?? this.excerpt,
+      content: params.content ?? this.content,
+      bookIds: params.bookIds ?? this.bookIds,
+      relatedLinks: params.relatedLinks ?? this.relatedLinks,
       createdAt: this.createdAt,
       updatedAt: now,
       // Regenerar el slug solo si el título ha cambiado
-      slug: params.title !== undefined ? ArticleSlug.fromTitle(newTitle.value) : this.slug
+      slug: params.title ? ArticleSlug.fromTitle(params.title.value) : this.slug
     });
 
-    // Record event if there are any params
     if (Object.keys(params).length > 0) {
       updatedArticle.record(new ArticleUpdatedDomainEvent({
         aggregateId: this.id.value,
@@ -126,7 +115,7 @@ export class Article extends AggregateRoot {
     return updatedArticle;
   }
 
-  toPrimitives(): Omit<ArticlePrimitives, 'createdAt' | 'updatedAt'> & { createdAt: string; updatedAt: string } {
+  toPrimitives(): PrimitiveArticle {
     return {
       id: this.id.value,
       title: this.title.value,

@@ -1,20 +1,20 @@
 import { Article } from '../domain/Article';
 import { ArticleId } from '../domain/ArticleId';
 import { ArticleTitle } from '../domain/ArticleTitle';
-import { ArticleExcerpt } from '../domain/ArticleExcerpt';
+import { ArticleSlug } from '../domain/ArticleSlug';
 import { ArticleContent } from '../domain/ArticleContent';
+import { ArticleExcerpt } from '../domain/ArticleExcerpt';
 import { ArticleBookIds } from '../domain/ArticleBookIds';
+import { ArticleRelatedLinks } from '../domain/ArticleRelatedLinks';
 import { ArticleRepository } from '../domain/ArticleRepository';
 import { UuidGenerator } from '@/contexts/shared/domain/UuidGenerator';
-import { ArticleRelatedLinks } from '../domain/ArticleRelatedLinks';
-import { ArticleRelatedLink } from '../domain/ArticleRelatedLink';
 
 export type CreateArticleRequest = {
   title: string;
   excerpt: string;
   content: string;
   bookIds: string[];
-  relatedLinks?: Array<{ text: string; url: string }>;
+  relatedLinks: Array<{ text: string; url: string }>;
 };
 
 export class CreateArticle {
@@ -24,21 +24,19 @@ export class CreateArticle {
   ) {}
 
   async run(request: CreateArticleRequest): Promise<Article> {
-    const articleId = await this.uuidGenerator.generate();
-
-    const relatedLinks = (request.relatedLinks || []).map(link => 
-      ArticleRelatedLink.create(link.text, link.url)
-    );
+    const articleId = new ArticleId(await this.uuidGenerator.generate());
+    const now = new Date();
 
     const article = Article.create({
-      id: ArticleId.create(articleId),
-      title: ArticleTitle.create(request.title),
-      excerpt: ArticleExcerpt.create(request.excerpt),
-      content: ArticleContent.create(request.content),
+      id: articleId,
+      title: new ArticleTitle(request.title),
+      excerpt: new ArticleExcerpt(request.excerpt),
+      content: new ArticleContent(request.content),
       bookIds: ArticleBookIds.create(request.bookIds),
-      relatedLinks: ArticleRelatedLinks.create(relatedLinks),
-      createdAt: new Date(),
-      updatedAt: new Date()
+      relatedLinks: ArticleRelatedLinks.create(request.relatedLinks),
+      slug: ArticleSlug.fromTitle(request.title),
+      createdAt: now,
+      updatedAt: now
     });
 
     await this.repository.save(article);

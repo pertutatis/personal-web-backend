@@ -21,7 +21,7 @@ export class ArticleContentMother {
 
     Read more about these principles in Clean Code by Robert C. Martin.
   `.trim()): ArticleContent {
-    return ArticleContent.create(value);
+    return new ArticleContent(value);
   }
 
   static random(): ArticleContent {
@@ -53,7 +53,7 @@ export class ArticleContentMother {
     const randomTopic = topics[Math.floor(Math.random() * topics.length)];
     const randomPoint = mainPoints[Math.floor(Math.random() * mainPoints.length)];
 
-    return ArticleContent.create(`
+    return new ArticleContent(`
       ${randomIntro} ${randomTopic}.
 
       ${randomPoint}:
@@ -69,28 +69,26 @@ export class ArticleContentMother {
   }
 
   static tooLong(): ArticleContent {
-    // Max length for ArticleContent is 10000 characters
-    return ArticleContent.create("a".repeat(10001));
+    return new ArticleContent("a".repeat(10001));
   }
 
   static maxLength(): ArticleContent {
-    // Exactly 10000 characters
-    return ArticleContent.create("a".repeat(10000));
+    return new ArticleContent("a".repeat(10000));
   }
 
   static empty(): ArticleContent {
-    return ArticleContent.create("");
+    return new ArticleContent("");
   }
 
   static withSpacesOnly(): ArticleContent {
-    return ArticleContent.create("   ");
+    return new ArticleContent("   ");
   }
 
   static withWhitespace(): ArticleContent {
-    return ArticleContent.create("  Content with spaces  ");
+    return new ArticleContent("  Content with spaces  ");
   }
 
   static fromValue(value: string): ArticleContent {
-    return ArticleContent.create(value);
+    return new ArticleContent(value);
   }
 }

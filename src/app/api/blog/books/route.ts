@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     const repository = new PostgresBookRepository(connection);
     const listBooks = new ListBooks(repository);
 
-    const books = await listBooks.run(page, limit);
+    const books = await listBooks.run({page, limit});
 
     return HttpNextResponse.ok({
       items: books.items.map(book => book.toFormattedPrimitives()),

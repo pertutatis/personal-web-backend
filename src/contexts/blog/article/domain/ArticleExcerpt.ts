@@ -4,22 +4,32 @@ import { ArticleExcerptLengthExceeded } from './ArticleExcerptLengthExceeded';
 import { ArticleExcerptContainsHtml } from './ArticleExcerptContainsHtml';
 
 export class ArticleExcerpt extends StringValueObject {
-  static create(value: string): ArticleExcerpt {
+  static readonly MAX_LENGTH = 300;
+
+  constructor(value: string) {
     const trimmedValue = value.trim();
-    
-    if (trimmedValue.length === 0) {
+    ArticleExcerpt.validateEmpty(trimmedValue);
+    ArticleExcerpt.validateLength(trimmedValue);
+    ArticleExcerpt.validateNoHtml(trimmedValue);
+    super(trimmedValue);
+  }
+
+  private static validateEmpty(value: string): void {
+    if (value.length === 0) {
       throw new ArticleExcerptEmpty();
     }
+  }
 
-    if (trimmedValue.length > 300) {
+  private static validateLength(value: string): void {
+    if (value.length > ArticleExcerpt.MAX_LENGTH) {
       throw new ArticleExcerptLengthExceeded();
     }
+  }
 
-    if (this.containsHtml(trimmedValue)) {
+  private static validateNoHtml(value: string): void {
+    if (ArticleExcerpt.containsHtml(value)) {
       throw new ArticleExcerptContainsHtml();
     }
-
-    return new ArticleExcerpt(trimmedValue);
   }
 
   private static containsHtml(value: string): boolean {

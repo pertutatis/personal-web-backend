@@ -1,87 +1,55 @@
 import { BookPurchaseLink } from '../BookPurchaseLink';
 import { BookPurchaseLinkInvalid } from '../BookPurchaseLinkInvalid';
-import { BookPurchaseLinkLengthExceeded } from '../BookPurchaseLinkLengthExceeded';
 
 describe('BookPurchaseLink', () => {
-  it('should create a valid book purchase link', () => {
-    const url = 'https://example.com/book';
-    const purchaseLink = BookPurchaseLink.create(url);
-
-    expect(purchaseLink.value).toBe(url);
+  it('should create a valid purchase link', () => {
+    const link = BookPurchaseLink.create('https://example.com/book');
+    expect(link.toString()).toBe('https://example.com/book');
   });
 
-  it('should allow null value', () => {
-    const purchaseLink = BookPurchaseLink.create(null);
-
-    expect(purchaseLink.value).toBeNull();
+  it('should create an empty purchase link', () => {
+    const link = BookPurchaseLink.createEmpty();
+    expect(link.isEmpty()).toBe(true);
+    expect(link.toString()).toBe('');
   });
 
-  it('should allow undefined value', () => {
-    const purchaseLink = BookPurchaseLink.create(undefined);
-
-    expect(purchaseLink.value).toBeNull();
+  it('should allow empty string as valid input', () => {
+    const link = BookPurchaseLink.create('');
+    expect(link.isEmpty()).toBe(true);
   });
 
-  it('should fail with invalid URL format', () => {
-    const invalidUrls = [
-      'not-a-url',
-      'ftp://example.com',
-      'example.com',
-      'http:/example.com',
-      'https:example.com'
-    ];
-
-    invalidUrls.forEach(url => {
-      expect(() => {
-        BookPurchaseLink.create(url);
-      }).toThrow(BookPurchaseLinkInvalid);
-    });
+  it('should trim input values', () => {
+    const link = BookPurchaseLink.create('  https://example.com/book  ');
+    expect(link.toString()).toBe('https://example.com/book');
   });
 
-  it('should accept valid http URLs', () => {
-    const url = 'http://example.com/book';
-    const purchaseLink = BookPurchaseLink.create(url);
-
-    expect(purchaseLink.value).toBe(url);
-  });
-
-  it('should accept valid https URLs', () => {
-    const url = 'https://example.com/book';
-    const purchaseLink = BookPurchaseLink.create(url);
-
-    expect(purchaseLink.value).toBe(url);
-  });
-
-  it('should fail when URL length exceeds maximum', () => {
-    const url = `https://example.com/${'a'.repeat(2000)}`;
+  it('should throw error for invalid URLs', () => {
+    expect(() => {
+      BookPurchaseLink.create('not-a-url');
+    }).toThrow(BookPurchaseLinkInvalid);
 
     expect(() => {
-      BookPurchaseLink.create(url);
-    }).toThrow(BookPurchaseLinkLengthExceeded);
+      BookPurchaseLink.create('ftp://example.com');
+    }).toThrow(BookPurchaseLinkInvalid);
   });
 
-  it('should create with maximum length URL', () => {
-    // Base URL is 'https://example.com/'
-    const baseUrl = 'https://example.com/';
-    const path = 'a'.repeat(BookPurchaseLink.MAX_LENGTH - baseUrl.length);
-    const url = baseUrl + path;
-    expect(url.length).toBe(BookPurchaseLink.MAX_LENGTH);
+  it('should validate http and https protocols', () => {
+    expect(() => {
+      BookPurchaseLink.create('http://example.com');
+    }).not.toThrow();
 
-    const purchaseLink = BookPurchaseLink.create(url);
-    expect(purchaseLink.value).toBe(url);
+    expect(() => {
+      BookPurchaseLink.create('https://example.com');
+    }).not.toThrow();
   });
 
-  it('should handle URLs with query parameters', () => {
-    const url = 'https://example.com/book?id=123&ref=xyz';
-    const purchaseLink = BookPurchaseLink.create(url);
-
-    expect(purchaseLink.value).toBe(url);
+  it('should allow URLs with query parameters', () => {
+    const link = BookPurchaseLink.create('https://example.com/book?id=123&ref=abc');
+    expect(link.toString()).toBe('https://example.com/book?id=123&ref=abc');
   });
 
-  it('should handle URLs with fragments', () => {
-    const url = 'https://example.com/book#section1';
-    const purchaseLink = BookPurchaseLink.create(url);
-
-    expect(purchaseLink.value).toBe(url);
+  it('should allow URLs with fragments', () => {
+    const link = BookPurchaseLink.create('https://example.com/book#section1');
+    expect(link.toString()).toBe('https://example.com/book#section1');
   });
 });

@@ -1,8 +1,31 @@
 export abstract class StringValueObject {
-  constructor(private readonly _value: string) {}
+  constructor(private readonly _value: string) {
+    Object.defineProperty(this, '_value', {
+      value: _value,
+      enumerable: true,
+      writable: false,
+      configurable: false
+    });
+  }
 
   get value(): string {
     return this._value;
+  }
+
+  equals(other: unknown): boolean {
+    if (!other) {
+      return false;
+    }
+
+    if (!(other instanceof StringValueObject)) {
+      return false;
+    }
+
+    if (other.constructor.name !== this.constructor.name) {
+      return false;
+    }
+
+    return other.value === this.value;
   }
 
   toString(): string {
@@ -11,9 +34,5 @@ export abstract class StringValueObject {
 
   toJSON(): string {
     return this.value;
-  }
-
-  equals(other: StringValueObject): boolean {
-    return other.constructor.name === this.constructor.name && other.toString() === this.toString();
   }
 }

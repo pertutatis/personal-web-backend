@@ -1,40 +1,45 @@
-import { ArticleBookIds } from "../../ArticleBookIds";
-import { BookIdMother } from "@/contexts/blog/book/domain/__tests__/mothers/BookIdMother";
+import { ArticleBookIds } from '../../ArticleBookIds';
+import { v4 as uuidv4 } from 'uuid';
 
 export class ArticleBookIdsMother {
-  static create(value: string[] = [
-    "cc8d8194-e099-4e3a-a431-6b4412dc5f6a",
-    "7d7f60ce-5a49-4be7-8c5e-c4b4375087c8"
-  ]): ArticleBookIds {
-    return ArticleBookIds.create(value);
+  static create(ids: string[] = ['cc8d8194-e099-4e3a-a431-6b4412dc5f6a']): ArticleBookIds {
+    return ArticleBookIds.create(ids);
   }
 
   static random(count: number = 2): ArticleBookIds {
-    const bookIds: string[] = [];
-    for (let i = 0; i < count; i++) {
-      bookIds.push(BookIdMother.random().value);
-    }
-    return ArticleBookIds.create(bookIds);
-  }
-
-  static withOne(): ArticleBookIds {
-    return ArticleBookIds.create([BookIdMother.random().value]);
-  }
-
-  static withMany(count: number = 5): ArticleBookIds {
-    return this.random(count);
-  }
-
-  static withDuplicates(): ArticleBookIds {
-    const id = BookIdMother.random().value;
-    return ArticleBookIds.create([id, id]);
+    return ArticleBookIds.create(
+      Array.from({ length: count }, () => uuidv4())
+    );
   }
 
   static empty(): ArticleBookIds {
     return ArticleBookIds.create([]);
   }
 
-  static fromValues(values: string[]): ArticleBookIds {
-    return ArticleBookIds.create(values);
+  static single(): ArticleBookIds {
+    return this.create([uuidv4()]);
+  }
+
+  static withInvalidId(): ArticleBookIds {
+    return this.create(['invalid-id']);
+  }
+
+  static withDuplicates(): ArticleBookIds {
+    const id = uuidv4();
+    return this.create([id, id]);
+  }
+
+  static withMaxItems(): ArticleBookIds {
+    return this.random(10);
+  }
+
+  static exceedingMaxItems(): ArticleBookIds {
+    return this.random(11);
+  }
+
+  static sequence(count: number): ArticleBookIds {
+    return ArticleBookIds.create(
+      Array.from({ length: count }, (_, i) => `book-${i + 1}`)
+    );
   }
 }

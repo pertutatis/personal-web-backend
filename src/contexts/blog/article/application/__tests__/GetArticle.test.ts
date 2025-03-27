@@ -3,55 +3,52 @@ import { ArticleRepository } from '../../domain/ArticleRepository';
 import { Article } from '../../domain/Article';
 import { ArticleId } from '../../domain/ArticleId';
 import { ArticleTitle } from '../../domain/ArticleTitle';
-import { ArticleContent } from '../../domain/ArticleContent';
 import { ArticleExcerpt } from '../../domain/ArticleExcerpt';
+import { ArticleContent } from '../../domain/ArticleContent';
 import { ArticleBookIds } from '../../domain/ArticleBookIds';
+import { ArticleRelatedLinks } from '../../domain/ArticleRelatedLinks';
 import { ArticleNotFound } from '../ArticleNotFound';
+import { ArticleIdMother } from '../../domain/__tests__/mothers/ArticleIdMother';
+import { ArticleBookIdsMother } from '../../domain/__tests__/mothers/ArticleBookIdsMother';
+import { ArticleRelatedLinksMother } from '../../domain/__tests__/mothers/ArticleRelatedLinksMother';
 
 describe('GetArticle', () => {
-  let repository: ArticleRepository;
+  let repository: jest.Mocked<ArticleRepository>;
   let getArticle: GetArticle;
-  const now = new Date();
 
   beforeEach(() => {
     repository = {
-      save: jest.fn(),
       search: jest.fn(),
-      searchAll: jest.fn(),
-      searchByPage: jest.fn(),
-      searchByBookId: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn()
-    };
+    } as unknown as jest.Mocked<ArticleRepository>;
     getArticle = new GetArticle(repository);
   });
 
   it('should throw ArticleNotFound when article does not exist', async () => {
     repository.search = jest.fn().mockResolvedValue(null);
-    const id = ArticleId.create('non-existent-id');
+    const id = ArticleIdMother.sequence(1);
+
     await expect(getArticle.run(id.value))
       .rejects
       .toThrow(ArticleNotFound);
   });
 
   it('should return the article when it exists', async () => {
-    const articleId = ArticleId.create('test-id');
     const article = Article.create({
-      id: articleId,
-      title: ArticleTitle.create('Test Article'),
-      excerpt: ArticleExcerpt.create('Test Excerpt'),
-      content: ArticleContent.create('Test Content'),
-      bookIds: ArticleBookIds.create(['book-1']),
-      createdAt: now,
-      updatedAt: now
+      id: ArticleIdMother.sequence(1),
+      title: new ArticleTitle('Test Article'),
+      excerpt: new ArticleExcerpt('Test Excerpt'),
+      content: new ArticleContent('Test Content'),
+      bookIds: ArticleBookIdsMother.create(['book-1']),
+      relatedLinks: ArticleRelatedLinksMother.empty(),
+      createdAt: new Date(),
+      updatedAt: new Date()
     });
 
     repository.search = jest.fn().mockResolvedValue(article);
-    const result = await getArticle.run(articleId.value);
+
+    const result = await getArticle.run(article.id.value);
 
     expect(result).toBe(article);
-    expect(repository.search).toHaveBeenCalledWith(expect.objectContaining({
-      value: 'test-id'
-    }));
+    expect(repository.search).toHaveBeenCalledWith(article.id);
   });
 });

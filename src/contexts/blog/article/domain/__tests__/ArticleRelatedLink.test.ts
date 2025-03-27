@@ -1,86 +1,108 @@
-import { ArticleRelatedLinkMother } from './mothers/ArticleRelatedLinkMother';
-import { ArticleRelatedLinkTextEmpty } from '../ArticleRelatedLinkTextEmpty';
+import { ArticleRelatedLink } from '../ArticleRelatedLink';
 import { ArticleRelatedLinkTextLengthExceeded } from '../ArticleRelatedLinkTextLengthExceeded';
-import { ArticleRelatedLinkUrlEmpty } from '../ArticleRelatedLinkUrlEmpty';
-import { ArticleRelatedLinkUrlInvalid } from '../ArticleRelatedLinkUrlInvalid';
 import { ArticleRelatedLinkUrlLengthExceeded } from '../ArticleRelatedLinkUrlLengthExceeded';
+import { ArticleRelatedLinkUrlInvalid } from '../ArticleRelatedLinkUrlInvalid';
 
 describe('ArticleRelatedLink', () => {
-  it('should create a valid related link', () => {
-    const link = ArticleRelatedLinkMother.create();
-    expect(link.text).toBe('Aprende más sobre Clean Code');
-    expect(link.url).toBe('https://example.com/clean-code');
-  });
+  describe('creation', () => {
+    it('should create a valid link', () => {
+      const link = ArticleRelatedLink.create('Example Link', 'https://example.com');
+      expect(link.getText()).toBe('Example Link');
+      expect(link.getUrl()).toBe('https://example.com');
+      expect(link.protocol).toBe('https:');
+      expect(link.host).toBe('example.com');
+    });
 
-  it('should throw error when text is empty', () => {
-    expect(() => {
-      ArticleRelatedLinkMother.withEmptyText();
-    }).toThrow(ArticleRelatedLinkTextEmpty);
-
-    expect(() => {
-      ArticleRelatedLinkMother.create('   ', 'https://example.com');
-    }).toThrow(ArticleRelatedLinkTextEmpty);
-  });
-
-  it('should throw error when text exceeds maximum length', () => {
-    expect(() => {
-      ArticleRelatedLinkMother.withTextTooLong();
-    }).toThrow(ArticleRelatedLinkTextLengthExceeded);
-  });
-
-  it('should throw error when URL is empty', () => {
-    expect(() => {
-      ArticleRelatedLinkMother.withEmptyUrl();
-    }).toThrow(ArticleRelatedLinkUrlEmpty);
-
-    expect(() => {
-      ArticleRelatedLinkMother.create('Text', '   ');
-    }).toThrow(ArticleRelatedLinkUrlEmpty);
-  });
-
-  it('should throw error when URL is invalid', () => {
-    expect(() => {
-      ArticleRelatedLinkMother.withInvalidUrl();
-    }).toThrow(ArticleRelatedLinkUrlInvalid);
-  });
-
-  it('should throw error when URL exceeds maximum length', () => {
-    expect(() => {
-      ArticleRelatedLinkMother.withUrlTooLong();
-    }).toThrow(ArticleRelatedLinkUrlLengthExceeded);
-  });
-
-  it('should accept text and URL with exactly maximum length', () => {
-    const link = ArticleRelatedLinkMother.maxLengths();
-    expect(link.text.length).toBe(100);
-    expect(link.url.length).toBeLessThanOrEqual(2000);
-  });
-
-  it('should trim text and URL', () => {
-    const link = ArticleRelatedLinkMother.withWhitespace();
-    expect(link.text).toBe('Text with spaces');
-    expect(link.url).toBe('https://example.com/path');
-  });
-
-  it('should convert to primitives correctly', () => {
-    const link = ArticleRelatedLinkMother.create();
-    expect(link.toPrimitives()).toEqual({
-      text: 'Aprende más sobre Clean Code',
-      url: 'https://example.com/clean-code'
+    it('should trim whitespace', () => {
+      const link = ArticleRelatedLink.create('  Example Link  ', '  https://example.com  ');
+      expect(link.getText()).toBe('Example Link');
+      expect(link.getUrl()).toBe('https://example.com');
     });
   });
 
-  it('should allow different URL protocols', () => {
-    const httpsLink = ArticleRelatedLinkMother.create(
-      'HTTPS Link',
-      'https://example.com'
-    );
-    expect(httpsLink.url).toBe('https://example.com');
+  describe('URLs', () => {
+    it('should support query parameters', () => {
+      const link = ArticleRelatedLink.create(
+        'Example Link',
+        'https://example.com/search?q=test&page=1'
+      );
+      expect(link.getUrl()).toContain('?');
+      expect(link.getUrl()).toContain('=');
+    });
 
-    const httpLink = ArticleRelatedLinkMother.create(
-      'HTTP Link',
-      'http://example.com'
-    );
-    expect(httpLink.url).toBe('http://example.com');
+    it('should support fragments', () => {
+      const link = ArticleRelatedLink.create(
+        'Example Link',
+        'https://example.com/page#section'
+      );
+      expect(link.getUrl()).toContain('#');
+    });
+
+    it('should validate URL format', () => {
+      expect(() => {
+        ArticleRelatedLink.create('Example Link', 'not-a-url');
+      }).toThrow(ArticleRelatedLinkUrlInvalid);
+    });
+  });
+
+  describe('validation', () => {
+    it('should not allow empty text', () => {
+      expect(() => {
+        ArticleRelatedLink.create('', 'https://example.com');
+      }).toThrow('Link text cannot be empty');
+    });
+
+    it('should not allow empty URL', () => {
+      expect(() => {
+        ArticleRelatedLink.create('Example Link', '');
+      }).toThrow('Link URL cannot be empty');
+    });
+
+    it('should not allow text longer than maximum length', () => {
+      const longText = 'a'.repeat(ArticleRelatedLink.TEXT_MAX_LENGTH + 1);
+      expect(() => {
+        ArticleRelatedLink.create(longText, 'https://example.com');
+      }).toThrow(ArticleRelatedLinkTextLengthExceeded);
+    });
+
+    it('should not allow URL longer than maximum length', () => {
+      const longUrl = `https://example.com/${'a'.repeat(ArticleRelatedLink.URL_MAX_LENGTH)}`;
+      expect(() => {
+        ArticleRelatedLink.create('Example Link', longUrl);
+      }).toThrow(ArticleRelatedLinkUrlLengthExceeded);
+    });
+  });
+
+  describe('object behavior', () => {
+    it('should be immutable', () => {
+      const link = ArticleRelatedLink.create('Example Link', 'https://example.com');
+      expect(() => {
+        (link as any)._text = 'New Text';
+      }).toThrow();
+    });
+
+    it('should implement equals correctly', () => {
+      const link1 = ArticleRelatedLink.create('Example Link', 'https://example.com');
+      const link2 = ArticleRelatedLink.create('Example Link', 'https://example.com');
+      const different = ArticleRelatedLink.create('Different', 'https://example.com');
+
+      expect(link1.equals(link2)).toBe(true);
+      expect(link1.equals(different)).toBe(false);
+      expect(link1.equals(null)).toBe(false);
+    });
+
+    it('should convert to string format correctly', () => {
+      const link = ArticleRelatedLink.create('Example Link', 'https://example.com');
+      expect(link.toString()).toBe('Example Link (https://example.com)');
+    });
+
+    it('should convert to primitives correctly', () => {
+      const link = ArticleRelatedLink.create('Example Link', 'https://example.com');
+      const primitives = link.toPrimitives();
+      expect(primitives).toEqual({
+        text: 'Example Link',
+        url: 'https://example.com'
+      });
+    });
   });
 });

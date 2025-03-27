@@ -3,17 +3,24 @@ import { ArticleContentEmpty } from './ArticleContentEmpty';
 import { ArticleContentLengthExceeded } from './ArticleContentLengthExceeded';
 
 export class ArticleContent extends StringValueObject {
-  static create(value: string): ArticleContent {
+  static readonly MAX_LENGTH = 10000;
+
+  constructor(value: string) {
     const trimmedValue = value.trim();
-    
-    if (trimmedValue.length === 0) {
+    ArticleContent.validateEmpty(trimmedValue);
+    ArticleContent.validateLength(trimmedValue);
+    super(trimmedValue);
+  }
+
+  private static validateEmpty(value: string): void {
+    if (value.length === 0) {
       throw new ArticleContentEmpty();
     }
+  }
 
-    if (trimmedValue.length > 10000) {
+  private static validateLength(value: string): void {
+    if (value.length > ArticleContent.MAX_LENGTH) {
       throw new ArticleContentLengthExceeded();
     }
-
-    return new ArticleContent(trimmedValue);
   }
 }

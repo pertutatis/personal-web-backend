@@ -5,6 +5,10 @@ export class ArticleSlugMother {
     return ArticleSlug.fromTitle(title);
   }
 
+  static fromValidSlug(slug: string = "10-clean-code-principles-every-developer-should-follow"): ArticleSlug {
+    return new ArticleSlug(slug);
+  }
+
   static fromSpanishTitle(): ArticleSlug {
     return ArticleSlug.fromTitle(
       "Cómo Implementar Patrones de Diseño en JavaScript"
@@ -30,9 +34,7 @@ export class ArticleSlugMother {
   }
 
   static maxLength(): ArticleSlug {
-    return ArticleSlug.fromTitle(
-      "a".repeat(100)
-    );
+    return new ArticleSlug("a".repeat(100));
   }
 
   static empty(): ArticleSlug {
@@ -52,6 +54,20 @@ export class ArticleSlugMother {
   static withConsecutiveDashes(): ArticleSlug {
     return ArticleSlug.fromTitle(
       "Clean---Code---Principles"
+    );
+  }
+
+  static withInvalidFormat(): ArticleSlug {
+    return new ArticleSlug("Invalid Slug Format");
+  }
+
+  static withInvalidDashes(): ArticleSlug {
+    return new ArticleSlug("-invalid-dashes-");
+  }
+
+  static random(): ArticleSlug {
+    return ArticleSlug.fromTitle(
+      `Random Article Title ${Math.random().toString(36).substring(7)}`
     );
   }
 }

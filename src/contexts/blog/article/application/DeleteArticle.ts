@@ -6,7 +6,7 @@ export class DeleteArticle {
   constructor(private readonly repository: ArticleRepository) {}
 
   async run(id: string): Promise<void> {
-    const articleId = ArticleId.create(id);
+    const articleId = new ArticleId(id);
     const article = await this.repository.search(articleId);
 
     if (!article) {

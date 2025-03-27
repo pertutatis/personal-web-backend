@@ -66,10 +66,6 @@ export class BookIsbn extends StringValueObject {
     return this.isValidISBN10(normalized) || this.isValidISBN13(normalized);
   }
 
-  static create(value: string): BookIsbn {
-    return new BookIsbn(value);
-  }
-
   toString(): string {
     return this.value;
   }

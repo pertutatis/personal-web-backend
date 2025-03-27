@@ -1,7 +1,11 @@
 import { ValidationError } from '@/contexts/shared/domain/ValidationError';
+import { ArticleRelatedLink } from './ArticleRelatedLink';
 
 export class ArticleRelatedLinkTextLengthExceeded extends ValidationError {
   constructor() {
-    super('El texto del enlace relacionado no puede exceder los 100 caracteres');
+    super(
+      'ArticleRelatedLinkTextLengthExceeded',
+      `Link text cannot exceed ${ArticleRelatedLink.TEXT_MAX_LENGTH} characters`
+    );
   }
 }

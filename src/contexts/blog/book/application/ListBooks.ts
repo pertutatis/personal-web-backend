@@ -1,19 +1,21 @@
-import { Collection } from '@/contexts/shared/domain/Collection';
-import { BookRepository } from '../domain/BookRepository';
-import { InvalidPaginationParams } from './InvalidPaginationParams';
 import { Book } from '../domain/Book';
+import { BookRepository } from '../domain/BookRepository';
+import { Collection } from '@/contexts/shared/domain/Collection';
+import { InvalidPaginationParams } from './InvalidPaginationParams';
+
+type PaginationParams = {
+  page: number;
+  limit: number;
+};
 
 export class ListBooks {
   constructor(private readonly repository: BookRepository) {}
 
-  async run(page: number, limit: number): Promise<Collection<Book>> {
-    this.ensureValidPagination(page, limit);
-    return this.repository.searchByPage(page, limit);
-  }
-
-  private ensureValidPagination(page: number, limit: number): void {
+  async run({ page, limit }: PaginationParams): Promise<Collection<Book>> {
     if (page <= 0 || limit <= 0) {
       throw new InvalidPaginationParams();
     }
+
+    return this.repository.searchByPage(page, limit);
   }
 }

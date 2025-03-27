@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     const repository = new PostgresArticleRepository(articlesConnection, booksConnection);
     const listArticles = new ListArticles(repository);
 
-    const collection = await listArticles.run(page, limit);
+    const collection = await listArticles.run({page, limit});
     const response = collection.toPrimitives();
 
     return HttpNextResponse.ok(response);

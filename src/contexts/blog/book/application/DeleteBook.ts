@@ -6,7 +6,7 @@ export class DeleteBook {
   constructor(private readonly repository: BookRepository) {}
 
   async run(id: string): Promise<void> {
-    const bookId = BookId.create(id);
+    const bookId = new BookId(id);
     const book = await this.repository.search(bookId);
 
     if (!book) {

@@ -2,27 +2,31 @@ import { BookDescription } from '../../BookDescription';
 
 export class BookDescriptionMother {
   static create(value: string = 'A test book description'): BookDescription {
-    return BookDescription.create(value);
+    return new BookDescription(value);
   }
 
   static random(): BookDescription {
     const randomText = `Book description ${Math.random().toString(36).substring(7)}`;
-    return BookDescription.create(randomText);
+    return new BookDescription(randomText);
   }
 
-  static tooLong(): string {
-    return 'a'.repeat(1001);
+  static tooLong(): BookDescription {
+    return new BookDescription('a'.repeat(1001));
   }
 
-  static empty(): string {
-    return '';
+  static empty(): BookDescription {
+    return new BookDescription('');
   }
 
   static withMultipleLines(): BookDescription {
-    return BookDescription.create('Line 1\nLine 2\nLine 3');
+    return new BookDescription('Line 1\nLine 2\nLine 3');
   }
 
   static atMaxLength(): BookDescription {
-    return BookDescription.create('a'.repeat(1000));
+    return new BookDescription('a'.repeat(1000));
+  }
+
+  static withWhitespace(): BookDescription {
+    return new BookDescription('  Description with spaces  ');
   }
 }

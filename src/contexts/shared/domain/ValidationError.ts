@@ -1,10 +1,13 @@
-import { DomainError } from './DomainError';
-
-export class ValidationError extends DomainError {
-  readonly type = 'ValidationError';
-
-  constructor(message: string) {
+export abstract class ValidationError extends Error {
+  constructor(
+    readonly code: string,
+    readonly message: string = code
+  ) {
     super(message);
-    this.name = 'ValidationError';
+    this.name = this.constructor.name;
+  }
+
+  toString(): string {
+    return `[${this.code}] ${this.message}`;
   }
 }

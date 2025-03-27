@@ -23,15 +23,15 @@ export class CreateBook {
   ) {}
 
   async run(request: CreateBookRequest): Promise<Book> {
-    const bookId = BookId.create(await this.uuidGenerator.generate());
+    const bookId = new BookId(await this.uuidGenerator.generate());
     const now = new Date();
 
     const book = Book.create({
       id: bookId,
-      title: BookTitle.create(request.title),
-      author: BookAuthor.create(request.author),
-      isbn: request.isbn ? BookIsbn.create(request.isbn) : BookIsbn.create('0000000000000'),
-      description: BookDescription.create(request.description),
+      title: new BookTitle(request.title),
+      author: new BookAuthor(request.author),
+      isbn: request.isbn ? new BookIsbn(request.isbn) : new BookIsbn('0000000000000'),
+      description: new BookDescription(request.description),
       purchaseLink: BookPurchaseLink.create(request.purchaseLink),
       createdAt: now,
       updatedAt: now

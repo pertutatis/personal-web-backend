@@ -7,24 +7,20 @@ export class BookAuthor extends StringValueObject {
 
   constructor(value: string) {
     const trimmedValue = value.trim();
+    BookAuthor.validateEmpty(trimmedValue);
+    BookAuthor.validateLength(trimmedValue);
     super(trimmedValue);
-    this.ensureIsNotEmpty(trimmedValue);
-    this.ensureLengthIsNotExceeded(trimmedValue);
   }
 
-  private ensureIsNotEmpty(value: string): void {
-    if (!value.trim()) {
+  private static validateEmpty(value: string): void {
+    if (value.length === 0) {
       throw new BookAuthorEmpty();
     }
   }
 
-  private ensureLengthIsNotExceeded(value: string): void {
+  private static validateLength(value: string): void {
     if (value.length > BookAuthor.MAX_LENGTH) {
       throw new BookAuthorLengthExceeded();
     }
-  }
-
-  static create(value: string): BookAuthor {
-    return new BookAuthor(value.trim());
   }
 }
