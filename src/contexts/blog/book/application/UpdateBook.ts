@@ -1,40 +1,44 @@
 import { Book } from '../domain/Book';
-import { BookRepository } from '../domain/BookRepository';
 import { BookId } from '../domain/BookId';
 import { BookTitle } from '../domain/BookTitle';
 import { BookAuthor } from '../domain/BookAuthor';
 import { BookIsbn } from '../domain/BookIsbn';
 import { BookDescription } from '../domain/BookDescription';
 import { BookPurchaseLink } from '../domain/BookPurchaseLink';
-import { BookNotFound } from './BookNotFound';
+import { BookRepository } from '../domain/BookRepository';
+
+export type UpdateBookRequest = {
+  id: string;
+  title?: string;
+  author?: string;
+  isbn?: string;
+  description?: string;
+  purchaseLink?: string | null;
+};
 
 export class UpdateBook {
   constructor(private readonly repository: BookRepository) {}
 
-  async run(request: {
-    id: string;
-    title?: string;
-    author?: string;
-    isbn?: string;
-    description?: string;
-    purchaseLink?: string | null;
-  }): Promise<Book> {
-    const bookId = BookId.create(request.id);
-    const existingBook = await this.repository.search(bookId);
-    if (!existingBook) {
-      throw new BookNotFound(bookId);
+  async run(request: UpdateBookRequest): Promise<Book> {
+    const bookId = new BookId(request.id);
+    const book = await this.repository.search(bookId);
+
+    if (!book) {
+      throw new Error('Book not found');
     }
 
-    const book = existingBook;
-    book.update({
-      title: request.title ? BookTitle.create(request.title) : book.title,
-      author: request.author ? BookAuthor.create(request.author) : book.author,
-      isbn: request.isbn ? BookIsbn.create(request.isbn) : book.isbn,
-      description: request.description ? BookDescription.create(request.description) : book.description,
-      purchaseLink: request.purchaseLink !== undefined ? BookPurchaseLink.create(request.purchaseLink) : book.purchaseLink
+    const updatedBook = Book.create({
+      id: book.id,
+      title: request.title ? new BookTitle(request.title) : book.title,
+      author: request.author ? new BookAuthor(request.author) : book.author,
+      isbn: request.isbn ? new BookIsbn(request.isbn) : book.isbn,
+      description: request.description ? new BookDescription(request.description) : book.description,
+      purchaseLink: request.purchaseLink !== undefined ? BookPurchaseLink.create(request.purchaseLink) : book.purchaseLink,
+      createdAt: book.createdAt,
+      updatedAt: new Date()
     });
 
-    await this.repository.update(book);
-    return book;
+    await this.repository.update(updatedBook);
+    return updatedBook;
   }
 }

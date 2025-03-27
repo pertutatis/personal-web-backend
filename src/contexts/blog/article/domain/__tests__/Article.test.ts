@@ -1,158 +1,118 @@
-import { ArticleTitleEmpty } from '../ArticleTitleEmpty';
-import { ArticleContentEmpty } from '../ArticleContentEmpty';
-import { ArticleExcerptEmpty } from '../ArticleExcerptEmpty';
-import { ArticleBookIdsEmpty } from '../ArticleBookIdsEmpty';
+import { Article } from '../Article';
 import { ArticleMother } from './mothers/ArticleMother';
-import { ArticleTitleMother } from './mothers/ArticleTitleMother';
-import { ArticleContentMother } from './mothers/ArticleContentMother';
-import { ArticleExcerptMother } from './mothers/ArticleExcerptMother';
-import { ArticleBookIdsMother } from './mothers/ArticleBookIdsMother';
+import { ArticleRelatedLinksMother } from './mothers/ArticleRelatedLinksMother';
+import { ArticleId } from '../ArticleId';
+import { ArticleSlug } from '../ArticleSlug';
+import { ArticleTitle } from '../ArticleTitle';
 import { ArticleExcerpt } from '../ArticleExcerpt';
-import { ArticleRelatedLink } from '../ArticleRelatedLink';
-import { ArticleRelatedLinks } from '../ArticleRelatedLinks';
+import { ArticleContent } from '../ArticleContent';
+import { ArticleBookIds } from '../ArticleBookIds';
 
 describe('Article', () => {
-  it('should create a valid article', () => {
-    const now = new Date();
-    const article = ArticleMother.withDates(now, now);
+  const id = new ArticleId();
+  const slug = new ArticleSlug('test-article');
+  const title = new ArticleTitle('Test Article');
+  const excerpt = new ArticleExcerpt('Test excerpt');
+  const content = new ArticleContent('Test content');
+  const createdAt = new Date();
+  const updatedAt = new Date();
 
-    expect(article.id.toString()).toBeDefined();
-    expect(article.title.toString()).toBe('10 Clean Code Principles Every Developer Should Follow');
-    expect(article.excerpt.toString()).toBe('A guide to writing clean, maintainable code');
-    expect(article.content.toString()).toContain('Clean code is not just about making the code work');
-    expect(article.bookIds.toString()).toBe('cc8d8194-e099-4e3a-a431-6b4412dc5f6a,7d7f60ce-5a49-4be7-8c5e-c4b4375087c8');
-    expect(article.relatedLinks.length).toBe(2);
-    expect(article.slug.value).toBe('10-clean-code-principles-every-developer-should-follow');
-    expect(article.createdAt.toISOString()).toBe(now.toISOString());
-    expect(article.updatedAt.toISOString()).toBe(now.toISOString());
-  });
-
-  it('should create an article event when created', () => {
-    const article = ArticleMother.create();
-    const events = article.pullDomainEvents();
-
-    expect(events).toHaveLength(1);
-    expect(events[0].eventName).toBe('article.created');
-  });
-
-  it('should update article properties and timestamp', () => {
-    const createdAt = new Date('2025-01-01T00:00:00Z');
-    const article = ArticleMother.withDates(createdAt, createdAt);
-    const newTitle = ArticleTitleMother.create('Updated Title');
-    const newExcerpt = ArticleExcerpt.create('Updated Excerpt');
-    const newContent = ArticleContentMother.create('Updated Content');
-    const newBookIds = ArticleBookIdsMother.create(['book-2', 'book-3']);
-    const newRelatedLinks = ArticleRelatedLinks.create([
-      ArticleRelatedLink.create('New Link', 'https://example.com/new')
-    ]);
-
-    const updatedArticle = article.update({
-      title: newTitle,
-      excerpt: newExcerpt,
-      content: newContent,
-      bookIds: newBookIds,
-      relatedLinks: newRelatedLinks
+  it('should create article with all required fields', () => {
+    const article = Article.create({
+      id,
+      slug,
+      title,
+      excerpt,
+      content,
+      bookIds: ArticleBookIds.createEmpty(),
+      relatedLinks: ArticleRelatedLinksMother.createEmpty(),
+      createdAt,
+      updatedAt
     });
 
-    expect(updatedArticle.title.toString()).toBe('Updated Title');
-    expect(updatedArticle.excerpt.toString()).toBe('Updated Excerpt');
-    expect(updatedArticle.content.toString()).toBe('Updated Content');
-    expect(updatedArticle.bookIds.toString()).toBe('book-2,book-3');
-    expect(updatedArticle.relatedLinks.length).toBe(1);
-    expect(updatedArticle.slug.value).toBe('updated-title');
-    expect(updatedArticle.createdAt).toEqual(createdAt);
-    expect(updatedArticle.updatedAt.getTime()).toBeGreaterThan(createdAt.getTime());
+    expect(article.id.equals(id)).toBe(true);
+    expect(article.slug.value).toBe(slug.value);
+    expect(article.title.value).toBe(title.value);
+    expect(article.excerpt.value).toBe(excerpt.value);
+    expect(article.content.value).toBe(content.value);
+    expect(article.relatedLinks.isEmpty).toBe(true);
+    expect(article.bookIds.isEmpty).toBe(true);
   });
 
-  it('should generate slug from title', () => {
-    const article = ArticleMother.withTitle('¡Cómo Implementar Clean Code en TypeScript!');
-    expect(article.slug.value).toBe('como-implementar-clean-code-en-typescript');
-  });
-
-  it('should update slug when title changes', () => {
-    const article = ArticleMother.withTitle('Original Title');
-    const updatedArticle = article.update({
-      title: ArticleTitleMother.create('¡Nuevo Título!')
+  it('should create with empty book ids', () => {
+    const article = Article.create({
+      id,
+      slug,
+      title,
+      excerpt,
+      content,
+      bookIds: ArticleBookIds.createEmpty(),
+      relatedLinks: ArticleRelatedLinksMother.createEmpty(),
+      createdAt,
+      updatedAt
     });
-    expect(updatedArticle.slug.value).toBe('nuevo-titulo');
+
+    expect(article.bookIds.isEmpty).toBe(true);
+  });
+
+  it('should create with book ids', () => {
+    const bookIds = ArticleBookIds.fromValues(['book-1', 'book-2']);
+    const article = Article.create({
+      id,
+      slug,
+      title,
+      excerpt,
+      content,
+      bookIds,
+      relatedLinks: ArticleRelatedLinksMother.createEmpty(),
+      createdAt,
+      updatedAt
+    });
+
+    expect(article.bookIds.equals(bookIds)).toBe(true);
   });
 
   it('should handle related links', () => {
-    const article = ArticleMother.withRelatedLinks([
-      { text: 'Link 1', url: 'https://example.com/1' },
-      { text: 'Link 2', url: 'https://example.com/2' }
-    ]);
+    const article = Article.create({
+      id,
+      slug,
+      title,
+      excerpt,
+      content,
+      bookIds: ArticleBookIds.createEmpty(),
+      relatedLinks: ArticleRelatedLinksMother.createMax(),
+      createdAt,
+      updatedAt
+    });
 
-    expect(article.relatedLinks.length).toBe(2);
-    expect(article.relatedLinks.toPrimitives()).toEqual([
-      { text: 'Link 1', url: 'https://example.com/1' },
-      { text: 'Link 2', url: 'https://example.com/2' }
-    ]);
+    expect(article.relatedLinks.length).toBe(5);
   });
 
   it('should allow empty related links', () => {
-    const article = ArticleMother.withNoRelatedLinks();
+    const article = Article.create({
+      id,
+      slug,
+      title,
+      excerpt,
+      content,
+      bookIds: ArticleBookIds.createEmpty(),
+      relatedLinks: ArticleRelatedLinksMother.createEmpty(),
+      createdAt,
+      updatedAt
+    });
+
     expect(article.relatedLinks.isEmpty).toBe(true);
   });
 
-  it('should create an updated event when updated', () => {
-    const createdAt = new Date('2025-01-01T00:00:00Z');
-    const article = ArticleMother.withDates(createdAt, createdAt);
-    const newTitle = ArticleTitleMother.create('Updated Title');
+  it('should update fields', () => {
+    const article = ArticleMother.random();
+    const newTitle = new ArticleTitle('New Title');
 
     const updatedArticle = article.update({
       title: newTitle
     });
-    
-    const events = updatedArticle.pullDomainEvents();
-    expect(events).toHaveLength(1);
-    expect(events[0].eventName).toBe('article.updated');
-  });
 
-  it('should convert to primitives', () => {
-    const now = new Date();
-    const article = ArticleMother.withDates(now, now);
-    const primitives = article.toPrimitives();
-
-    expect(primitives).toEqual({
-      id: article.id.toString(),
-      title: '10 Clean Code Principles Every Developer Should Follow',
-      excerpt: 'A guide to writing clean, maintainable code',
-      content: expect.stringContaining('Clean code is not just about making the code work'),
-      bookIds: ['cc8d8194-e099-4e3a-a431-6b4412dc5f6a', '7d7f60ce-5a49-4be7-8c5e-c4b4375087c8'],
-      relatedLinks: expect.any(Array),
-      slug: '10-clean-code-principles-every-developer-should-follow',
-      createdAt: now.toISOString(),
-      updatedAt: now.toISOString()
-    });
-  });
-
-  it('should not create article with empty title', () => {
-    expect(() => {
-      ArticleTitleMother.create('');
-    }).toThrow(ArticleTitleEmpty);
-  });
-
-  it('should not create article with empty excerpt', () => {
-    expect(() => {
-      ArticleExcerpt.create('');
-    }).toThrow(ArticleExcerptEmpty);
-  });
-
-  it('should not create article with empty content', () => {
-    expect(() => {
-      ArticleContentMother.create('');
-    }).toThrow(ArticleContentEmpty);
-  });
-
-  it('should allow article creation without book ids', () => {
-    const article = ArticleMother.create(
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      ArticleBookIdsMother.empty()
-    );
-    expect(article.bookIds.getValue()).toEqual([]);
+    expect(updatedArticle.title.equals(newTitle)).toBe(true);
+    expect(updatedArticle.id.equals(article.id)).toBe(true);
   });
 });

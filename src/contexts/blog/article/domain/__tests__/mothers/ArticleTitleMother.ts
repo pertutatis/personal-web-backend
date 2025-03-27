@@ -1,45 +1,38 @@
 import { ArticleTitle } from "../../ArticleTitle";
 
 export class ArticleTitleMother {
-  static create(value: string = "10 Clean Code Principles Every Developer Should Follow"): ArticleTitle {
-    return ArticleTitle.create(value);
-  }
-
-  static random(): ArticleTitle {
-    const subjects = ["Clean Code", "Testing", "Architecture", "Design Patterns", "SOLID"];
-    const topics = ["Principles", "Practices", "Guidelines", "Tips", "Techniques"];
-    const numbers = ["5", "7", "10", "12", "15"];
-    
-    const randomNumber = numbers[Math.floor(Math.random() * numbers.length)];
-    const randomSubject = subjects[Math.floor(Math.random() * subjects.length)];
-    const randomTopic = topics[Math.floor(Math.random() * topics.length)];
-    
-    return ArticleTitle.create(`${randomNumber} ${randomSubject} ${randomTopic} Every Developer Should Know`);
-  }
-
-  static tooLong(): ArticleTitle {
-    // Max length for ArticleTitle is 150 characters
-    return ArticleTitle.create("a".repeat(151));
-  }
-
-  static maxLength(): ArticleTitle {
-    // Exactly 150 characters
-    return ArticleTitle.create("a".repeat(150));
+  static create(value: string = "Clean Code Principles"): ArticleTitle {
+    return new ArticleTitle(value);
   }
 
   static empty(): ArticleTitle {
-    return ArticleTitle.create("");
+    return new ArticleTitle("");
   }
 
   static withSpacesOnly(): ArticleTitle {
-    return ArticleTitle.create("   ");
+    return new ArticleTitle("   ");
+  }
+
+  static tooLong(): ArticleTitle {
+    return new ArticleTitle("a".repeat(151));
+  }
+
+  static maxLength(): ArticleTitle {
+    return new ArticleTitle("a".repeat(150));
   }
 
   static withWhitespace(): ArticleTitle {
-    return ArticleTitle.create("  Title with spaces  ");
+    return new ArticleTitle("  Title With Spaces  ");
   }
 
-  static fromValue(value: string): ArticleTitle {
-    return ArticleTitle.create(value);
+  static random(): ArticleTitle {
+    const titles = [
+      "Clean Code Best Practices",
+      "Design Patterns in JavaScript",
+      "TDD and BDD Guide",
+      "DDD Implementation Tips",
+      "SOLID Principles Explained"
+    ];
+    return new ArticleTitle(titles[Math.floor(Math.random() * titles.length)]);
   }
 }

@@ -7,7 +7,7 @@ export class GetArticle {
   constructor(private readonly repository: ArticleRepository) {}
 
   async run(id: string): Promise<Article> {
-    const articleId = ArticleId.create(id);
+    const articleId = new ArticleId(id);
     const article = await this.repository.search(articleId);
 
     if (!article) {

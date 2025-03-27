@@ -7,21 +7,20 @@ export class BookDescription extends StringValueObject {
 
   constructor(value: string) {
     const trimmedValue = value.trim();
+    BookDescription.validateEmpty(trimmedValue);
+    BookDescription.validateLength(trimmedValue);
     super(trimmedValue);
-    this.ensureValidBookDescription(trimmedValue);
   }
 
-  private ensureValidBookDescription(value: string): void {
+  private static validateEmpty(value: string): void {
     if (value.length === 0) {
       throw new BookDescriptionEmpty();
     }
+  }
 
+  private static validateLength(value: string): void {
     if (value.length > BookDescription.MAX_LENGTH) {
       throw new BookDescriptionLengthExceeded(value.length);
     }
-  }
-
-  static create(value: string): BookDescription {
-    return new BookDescription(value);
   }
 }

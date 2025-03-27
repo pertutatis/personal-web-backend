@@ -1,72 +1,43 @@
-import { Book } from "../../Book";
-import { BookId } from "../../BookId";
-import { BookTitle } from "../../BookTitle";
-import { BookAuthor } from "../../BookAuthor";
-import { BookIsbn } from "../../BookIsbn";
-import { BookDescription } from "../../BookDescription";
-import { BookPurchaseLink } from "../../BookPurchaseLink";
+import { Book } from '../../Book';
+import { BookId } from '../../BookId';
+import { BookTitle } from '../../BookTitle';
+import { BookAuthor } from '../../BookAuthor';
+import { BookIsbn } from '../../BookIsbn';
+import { BookDescription } from '../../BookDescription';
+import { BookPurchaseLink } from '../../BookPurchaseLink';
 
 export class BookMother {
   static create(
-    id = BookId.create("test-id"),
-    title = BookTitle.create("Clean Code"),
-    author = BookAuthor.create("Robert C. Martin"),
-    isbn = BookIsbn.create("978-0-13-235088-4"),
-    description = BookDescription.create("A comprehensive guide to writing clean code"),
-    purchaseLink = BookPurchaseLink.create("https://example.com/clean-code"),
-    createdAt = new Date(),
-    updatedAt = new Date()
+    id?: BookId,
+    title?: BookTitle,
+    author?: BookAuthor,
+    isbn?: BookIsbn,
+    description?: BookDescription,
+    purchaseLink?: BookPurchaseLink
   ): Book {
     return Book.create({
-      id,
-      title,
-      author,
-      isbn,
-      description,
-      purchaseLink,
+      id: id || new BookId('test-id'),
+      title: title || new BookTitle('Clean Code'),
+      author: author || new BookAuthor('Robert C. Martin'),
+      isbn: isbn || new BookIsbn('9780132350884'),
+      description: description || new BookDescription('A comprehensive guide to writing clean code'),
+      purchaseLink: purchaseLink || BookPurchaseLink.create('https://example.com/clean-code'),
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+  }
+
+  static withDates(createdAt: Date, updatedAt: Date): Book {
+    return Book.create({
+      id: new BookId('test-id'),
+      title: new BookTitle('Clean Code'),
+      author: new BookAuthor('Robert C. Martin'),
+      isbn: new BookIsbn('9780132350884'),
+      description: new BookDescription('A comprehensive guide to writing clean code'),
+      purchaseLink: BookPurchaseLink.create('https://example.com/clean-code'),
       createdAt,
       updatedAt
     });
-  }
-
-  static random(): Book {
-    const now = new Date();
-    return Book.create({
-      id: BookId.create(`test-id-${Math.random()}`),
-      title: BookTitle.create(`Test Book ${Math.random()}`),
-      author: BookAuthor.create(`Test Author ${Math.random()}`),
-      isbn: BookIsbn.create("978-0-13-235088-4"),
-      description: BookDescription.create(`Test description ${Math.random()}`),
-      purchaseLink: BookPurchaseLink.create(`https://example.com/book-${Math.random()}`),
-      createdAt: now,
-      updatedAt: now
-    });
-  }
-
-  static withId(id: string): Book {
-    return this.create(BookId.create(id));
-  }
-
-  static withTitle(title: string): Book {
-    return this.create(undefined, BookTitle.create(title));
-  }
-
-  static withAuthor(author: string): Book {
-    return this.create(undefined, undefined, BookAuthor.create(author));
-  }
-
-  static withIsbn(isbn: string): Book {
-    return this.create(undefined, undefined, undefined, BookIsbn.create(isbn));
-  }
-
-  static withDescription(description: string): Book {
-    return this.create(
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      BookDescription.create(description)
-    );
   }
 
   static withMultilineDescription(): Book {
@@ -75,53 +46,22 @@ export class BookMother {
       undefined,
       undefined,
       undefined,
-      BookDescription.create('Line 1\nLine 2\nLine 3')
+      new BookDescription('Line 1\nLine 2\nLine 3')
     );
   }
 
-  static withPurchaseLink(url: string): Book {
+  static withEmptyPurchaseLink(): Book {
     return this.create(
       undefined,
       undefined,
       undefined,
       undefined,
       undefined,
-      BookPurchaseLink.create(url)
+      BookPurchaseLink.createEmpty()
     );
   }
 
-  static withoutPurchaseLink(): Book {
-    return this.create(
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      BookPurchaseLink.create(null)
-    );
-  }
-
-  static withDates(createdAt: Date, updatedAt: Date): Book {
-    return this.create(
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      createdAt,
-      updatedAt
-    );
-  }
-
-  static invalid(): Book {
-    return this.create(
-      BookId.create('invalid'),
-      BookTitle.create(''),
-      BookAuthor.create(''),
-      BookIsbn.create('invalid'),
-      BookDescription.create(''),
-      BookPurchaseLink.create('invalid-url')
-    );
+  static complete(): Book {
+    return this.create();
   }
 }

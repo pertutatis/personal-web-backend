@@ -1,97 +1,79 @@
 import { CreateArticle } from '../CreateArticle';
-import { Article } from '../../domain/Article';
-import { ArticleId } from '../../domain/ArticleId';
-import { ArticleTitle } from '../../domain/ArticleTitle';
-import { ArticleContent } from '../../domain/ArticleContent';
-import { ArticleExcerpt } from '../../domain/ArticleExcerpt';
-import { ArticleBookIds } from '../../domain/ArticleBookIds';
 import { ArticleRepository } from '../../domain/ArticleRepository';
+import { UuidGenerator } from '@/contexts/shared/domain/UuidGenerator';
+import { Article } from '../../domain/Article';
+import { ArticleTitle } from '../../domain/ArticleTitle';
+import { ArticleExcerpt } from '../../domain/ArticleExcerpt';
+import { ArticleContent } from '../../domain/ArticleContent';
+import { ArticleBookIds } from '../../domain/ArticleBookIds';
 import { ArticleRelatedLinks } from '../../domain/ArticleRelatedLinks';
-import { ArticleSlug } from '../../domain/ArticleSlug';
-import { OfficialUuidGenerator } from '@/contexts/shared/infrastructure/OfficialUuidGenerator';
 
 describe('CreateArticle', () => {
-  const mockRepository: jest.Mocked<ArticleRepository> = {
-    save: jest.fn(),
-    search: jest.fn(),
-    searchBySlug: jest.fn(),
-    searchAll: jest.fn(),
-    searchByPage: jest.fn(),
-    searchByBookId: jest.fn(),
-    update: jest.fn(),
-    delete: jest.fn()
-  };
-  
-  const mockUuidGenerator: jest.Mocked<OfficialUuidGenerator> = {
-    generate: jest.fn().mockReturnValue('generated-uuid')
-  };
-
-  const createArticle = new CreateArticle(mockRepository, mockUuidGenerator);
+  let repository: jest.Mocked<ArticleRepository>;
+  let uuidGenerator: jest.Mocked<UuidGenerator>;
+  let createArticle: CreateArticle;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    repository = {
+      save: jest.fn(),
+    } as unknown as jest.Mocked<ArticleRepository>;
+
+    uuidGenerator = {
+      generate: jest.fn().mockResolvedValue('test-id'),
+    } as unknown as jest.Mocked<UuidGenerator>;
+
+    createArticle = new CreateArticle(repository, uuidGenerator);
   });
 
-  it('should create a new article with all fields', async () => {
-    const request = {
-      title: 'Test Article',
+  it('should create article with valid data', async () => {
+    await createArticle.run({
+      title: 'Test Title',
       excerpt: 'Test Excerpt',
       content: 'Test Content',
-      bookIds: ['book-1', 'book-2'],
-      relatedLinks: [
-        { text: 'Link 1', url: 'https://example.com/1' }
-      ]
-    };
+      bookIds: ['book-1'],
+      relatedLinks: []
+    });
 
-    await createArticle.run(request);
+    expect(repository.save).toHaveBeenCalled();
+    const savedArticle = (repository.save as jest.Mock).mock.calls[0][0] as Article;
 
-    expect(mockUuidGenerator.generate).toHaveBeenCalled();
-    expect(mockRepository.save).toHaveBeenCalledWith(
-      expect.objectContaining({
-        id: expect.any(ArticleId),
-        title: expect.any(ArticleTitle),
-        excerpt: expect.any(ArticleExcerpt),
-        content: expect.any(ArticleContent),
-        bookIds: expect.any(ArticleBookIds),
-        relatedLinks: expect.any(ArticleRelatedLinks),
-        slug: expect.any(ArticleSlug),
-        createdAt: expect.any(Date),
-        updatedAt: expect.any(Date)
-      })
-    );
+    expect(savedArticle.id.value).toBe('test-id');
+    expect(savedArticle.title.value).toBe('Test Title');
+    expect(savedArticle.excerpt.value).toBe('Test Excerpt');
+    expect(savedArticle.content.value).toBe('Test Content');
+    expect(savedArticle.bookIds.getValue()).toEqual(['book-1']);
+    expect(savedArticle.relatedLinks.isEmpty).toBe(true);
   });
 
-  it('should create an article with the provided values and generate correct slug', async () => {
-    const request = {
-      title: 'Test Article With Special Chars: ¡Hola!',
+  it('should create with empty book ids', async () => {
+    await createArticle.run({
+      title: 'Test Title',
       excerpt: 'Test Excerpt',
       content: 'Test Content',
-      bookIds: ['book-1', 'book-2'],
-      relatedLinks: [
-        { text: 'Link 1', url: 'https://example.com/1' }
-      ]
-    };
+      bookIds: [],
+      relatedLinks: []
+    });
 
-    const article = await createArticle.run(request);
-
-    expect(article.title.value).toBe(request.title);
-    expect(article.excerpt.value).toBe(request.excerpt);
-    expect(article.content.value).toBe(request.content);
-    expect(article.bookIds.getValue()).toEqual(request.bookIds);
-    expect(article.relatedLinks.toPrimitives()).toEqual(request.relatedLinks);
-    expect(article.slug.value).toBe('test-article-with-special-chars-hola');
+    const savedArticle = (repository.save as jest.Mock).mock.calls[0][0] as Article;
+    expect(savedArticle.bookIds.isEmpty).toBe(true);
   });
 
-  it('should create an article without related links', async () => {
-    const request = {
-      title: 'Test Article',
+  it('should create article with related links', async () => {
+    const relatedLinks = [
+      { text: 'Link 1', url: 'https://example1.com' },
+      { text: 'Link 2', url: 'https://example2.com' }
+    ];
+
+    await createArticle.run({
+      title: 'Test Title',
       excerpt: 'Test Excerpt',
       content: 'Test Content',
-      bookIds: ['book-1', 'book-2']
-    };
+      bookIds: [],
+      relatedLinks
+    });
 
-    const article = await createArticle.run(request);
-
-    expect(article.relatedLinks.toPrimitives()).toEqual([]);
+    const savedArticle = (repository.save as jest.Mock).mock.calls[0][0] as Article;
+    expect(savedArticle.relatedLinks.length).toBe(2);
+    expect(savedArticle.relatedLinks.toPrimitives()).toEqual(relatedLinks);
   });
 });

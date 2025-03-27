@@ -2,37 +2,65 @@ import { BookPurchaseLinkInvalid } from './BookPurchaseLinkInvalid';
 import { BookPurchaseLinkLengthExceeded } from './BookPurchaseLinkLengthExceeded';
 
 export class BookPurchaseLink {
-  static readonly MAX_LENGTH = 2000;
+  static readonly MAX_LENGTH = 500;
 
-  private constructor(public readonly value: string | null) {}
+  private constructor(private readonly _value: string) {
+    Object.freeze(this);
+  }
 
-  private static validateUrl(url: string): void {
-    if (url.length > BookPurchaseLink.MAX_LENGTH) {
-      throw new BookPurchaseLinkLengthExceeded(url.length);
+  static create(value: string): BookPurchaseLink {
+    const trimmedValue = value.trim();
+    this.validate(trimmedValue);
+    return new BookPurchaseLink(trimmedValue);
+  }
+
+  static createEmpty(): BookPurchaseLink {
+    return new BookPurchaseLink('');
+  }
+
+  private static validate(value: string): void {
+    if (value && value.length > BookPurchaseLink.MAX_LENGTH) {
+      throw new BookPurchaseLinkLengthExceeded(value);
     }
 
-    try {
-      const urlPattern = /^https?:\/\/[^\s/$.?#].[^\s]*$/i;
-      if (!urlPattern.test(url)) {
-        throw new Error('Invalid URL format');
-      }
-
-      const parsedUrl = new URL(url);
-      if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
-        throw new Error('Invalid protocol');
-      }
-    } catch (error) {
-      throw new BookPurchaseLinkInvalid(url);
+    if (value && !this.isValidUrl(value)) {
+      throw new BookPurchaseLinkInvalid(value);
     }
   }
 
-  static create(value: string | null | undefined): BookPurchaseLink {
-    if (value === null || value === undefined) {
-      return new BookPurchaseLink(null);
+  private static isValidUrl(url: string): boolean {
+    try {
+      const parsed = new URL(url);
+      return ['http:', 'https:'].includes(parsed.protocol);
+    } catch {
+      return false;
     }
+  }
 
-    const trimmedValue = value.trim();
-    this.validateUrl(trimmedValue);
-    return new BookPurchaseLink(trimmedValue);
+  isEmpty(): boolean {
+    return !this._value;
+  }
+
+  get value(): string {
+    return this._value;
+  }
+
+  getValue(): string {
+    return this._value;
+  }
+
+  equals(other: BookPurchaseLink | null): boolean {
+    if (!other) {
+      return false;
+    }
+    return this._value === other._value;
+  }
+
+  toString(): string {
+    return this._value;
+  }
+
+  toJSON(): string {
+    return this._value;
   }
 }

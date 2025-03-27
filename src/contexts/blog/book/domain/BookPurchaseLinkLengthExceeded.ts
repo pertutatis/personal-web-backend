@@ -1,10 +1,10 @@
-import { DomainError } from '@/contexts/shared/domain/DomainError';
+import { ValidationError } from '@/contexts/shared/domain/ValidationError';
 
-export class BookPurchaseLinkLengthExceeded extends DomainError {
-  constructor(length: number) {
-    super(`Book purchase link length cannot exceed 2000 characters. Current length: ${length}`);
-    this.name = 'BookPurchaseLinkLengthExceeded';
+export class BookPurchaseLinkLengthExceeded extends ValidationError {
+  constructor(value: string = '') {
+    super(
+      'BookPurchaseLinkLengthExceeded',
+      `Book purchase link length cannot exceed 500 characters. Got: ${value}`
+    );
   }
-
-  readonly type = 'BookPurchaseLinkLengthExceeded';
 }

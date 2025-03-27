@@ -1,45 +1,58 @@
-import { PostgresConnection } from '../PostgresConnection';
+import { Pool } from 'pg';
 import { Collection } from '@/contexts/shared/domain/Collection';
 import { getTestConfig } from '../config/DatabaseConfig';
 
 export class TestHelper {
-  private static connections: Record<string, PostgresConnection> = {};
+  private static pools: Record<string, Pool> = {};
 
-  static async getConnection(database: string): Promise<PostgresConnection> {
-    if (!this.connections[database]) {
+  static async getPool(database: string): Promise<Pool> {
+    if (!this.pools[database]) {
       const config = getTestConfig(database);
+      this.pools[database] = new Pool({
+        host: config.host,
+        port: config.port,
+        database: config.database,
+        user: config.user,
+        password: config.password
+      });
+
+      // Verificar conexión
       try {
-        this.connections[database] = await PostgresConnection.create(config);
+        const client = await this.pools[database].connect();
+        await client.query('SELECT 1');
+        client.release();
       } catch (error) {
         console.error(`Failed to connect to ${database}:`, error);
         throw error;
       }
     }
-    return this.connections[database];
+    return this.pools[database];
   }
 
   static async closeConnections(): Promise<void> {
     await Promise.all(
-      Object.values(this.connections).map(async (conn) => {
+      Object.values(this.pools).map(async (pool) => {
         try {
-          await conn.close();
+          await pool.end();
         } catch (error) {
-          console.error('Error closing connection:', error);
+          console.error('Error closing pool:', error);
         }
       })
     );
-    this.connections = {};
+    this.pools = {};
   }
 
   static async cleanDatabase(database: string): Promise<void> {
-    const connection = await this.getConnection(database);
+    const pool = await this.getPool(database);
     try {
       switch (database) {
         case 'test_articles':
-          await connection.execute('DELETE FROM articles');
+          await pool.query('TRUNCATE article_related_links CASCADE');
+          await pool.query('TRUNCATE article_books CASCADE');
+          await pool.query('TRUNCATE articles CASCADE');
           break;
         case 'test_books':
-          await connection.execute('DELETE FROM books');
+          await pool.query('TRUNCATE books CASCADE');
           break;
         default:
           throw new Error(`Unknown database: ${database}`);
@@ -68,8 +81,18 @@ export class TestHelper {
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        await this.getConnection('test_articles');
-        await this.getConnection('test_books');
+        const pool1 = await this.getPool('test_articles');
+        const pool2 = await this.getPool('test_books');
+
+        const client1 = await pool1.connect();
+        const client2 = await pool2.connect();
+
+        await client1.query('SELECT 1');
+        await client2.query('SELECT 1');
+
+        client1.release();
+        client2.release();
+
         return;
       } catch (error) {
         if (attempt === maxRetries) {
@@ -79,13 +102,5 @@ export class TestHelper {
         await new Promise(resolve => setTimeout(resolve, retryDelay));
       }
     }
-  }
-
-  static createPagination(page: number = 1, limit: number = 10, total: number = 0): Collection<any> {
-    return Collection.create([], {
-      page,
-      limit,
-      total
-    });
   }
 }

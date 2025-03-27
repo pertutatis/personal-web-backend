@@ -1,25 +1,24 @@
 import { BookPurchaseLink } from '../../BookPurchaseLink';
 
 export class BookPurchaseLinkMother {
-  static create(value: string = 'https://example.com/book'): BookPurchaseLink {
-    return BookPurchaseLink.create(value);
+  static create(): BookPurchaseLink {
+    return BookPurchaseLink.create('https://example.com/book');
   }
 
-  static random(): BookPurchaseLink {
-    const randomPath = Math.random().toString(36).substring(7);
-    return BookPurchaseLink.create(`https://example.com/book/${randomPath}`);
+  static http(): BookPurchaseLink {
+    return BookPurchaseLink.create('http://example.com/book');
   }
 
-  static tooLong(): string {
-    return `https://example.com/${'a'.repeat(2000)}`;
+  static https(): BookPurchaseLink {
+    return BookPurchaseLink.create('https://example.com/book');
   }
 
-  static invalid(): string {
-    return 'not-a-valid-url';
+  static withPort(): BookPurchaseLink {
+    return BookPurchaseLink.create('https://localhost:3000/book');
   }
 
-  static empty(): null {
-    return null;
+  static withSubdomain(): BookPurchaseLink {
+    return BookPurchaseLink.create('https://api.example.com/book');
   }
 
   static withQueryParams(): BookPurchaseLink {
@@ -30,16 +29,34 @@ export class BookPurchaseLinkMother {
     return BookPurchaseLink.create('https://example.com/book#section1');
   }
 
+  static withSpecialCharacters(): BookPurchaseLink {
+    return BookPurchaseLink.create('https://libros.españa.com/libro');
+  }
+
+  static null(): BookPurchaseLink {
+    return BookPurchaseLink.create(null);
+  }
+
+  static empty(): BookPurchaseLink {
+    return BookPurchaseLink.create('');
+  }
+
+  static invalid(): BookPurchaseLink {
+    return BookPurchaseLink.create('invalid');
+  }
+
+  static tooLong(): string {
+    return 'https://example.com/' + 'a'.repeat(BookPurchaseLink.MAX_LENGTH);
+  }
+
   static atMaxLength(): BookPurchaseLink {
-    const path = 'a'.repeat(1987); // 2000 - 'https://example.com/'.length
-    return BookPurchaseLink.create(`https://example.com/${path}`);
+    const baseUrl = 'https://example.com/';
+    const remainingLength = BookPurchaseLink.MAX_LENGTH - baseUrl.length;
+    return BookPurchaseLink.create(baseUrl + 'a'.repeat(remainingLength));
   }
 
-  static http(): BookPurchaseLink {
-    return BookPurchaseLink.create('http://example.com/book');
-  }
-
-  static https(): BookPurchaseLink {
-    return BookPurchaseLink.create('https://example.com/book');
+  static random(): BookPurchaseLink {
+    const randomId = Math.random().toString(36).substring(7);
+    return BookPurchaseLink.create(`https://example.com/book/${randomId}`);
   }
 }
