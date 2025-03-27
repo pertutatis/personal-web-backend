@@ -25,19 +25,19 @@ describe('PostgresArticleRepository', () => {
   it('should save and retrieve an article', async () => {
     const now = new Date();
     const article = Article.create({
-      id: ArticleId.create('test-id'),
-      title: ArticleTitle.create('Test Article'),
-      excerpt: ArticleExcerpt.create('Test Excerpt'),
-      content: ArticleContent.create('Test Content'),
-      bookIds: ArticleBookIds.create([]),
-      relatedLinks: ArticleRelatedLinks.create([]),
+      id: new ArticleId('test-id'),
+      title: new ArticleTitle('Test Article'),
+      excerpt: new ArticleExcerpt('Test Excerpt'),
+      content: new ArticleContent('Test Content'),
+      bookIds: ArticleBookIds.fromValues([]),
+      relatedLinks: ArticleRelatedLinks.createEmpty(),
       createdAt: now,
       updatedAt: now
     });
 
     await repository.save(article);
 
-    const retrieved = await repository.search(ArticleId.create('test-id'));
+    const retrieved = await repository.search(new ArticleId('test-id'));
     expect(retrieved).not.toBeNull();
 
     const primitives = retrieved?.toPrimitives();
@@ -59,19 +59,19 @@ describe('PostgresArticleRepository', () => {
   });
 
   it('should return null when article not found', async () => {
-    const result = await repository.search(ArticleId.create('non-existent'));
+    const result = await repository.search(new ArticleId('non-existent'));
     expect(result).toBeNull();
   });
 
   it('should update an article', async () => {
     const now = new Date();
     const article = Article.create({
-      id: ArticleId.create('test-id'),
-      title: ArticleTitle.create('Test Article'),
-      excerpt: ArticleExcerpt.create('Test Excerpt'),
-      content: ArticleContent.create('Test Content'),
-      bookIds: ArticleBookIds.create([]),
-      relatedLinks: ArticleRelatedLinks.create([]),
+      id: new ArticleId('test-id'),
+      title: new ArticleTitle('Test Article'),
+      excerpt: new ArticleExcerpt('Test Excerpt'),
+      content: new ArticleContent('Test Content'),
+      bookIds: ArticleBookIds.fromValues([]),
+      relatedLinks: ArticleRelatedLinks.createEmpty(),
       createdAt: now,
       updatedAt: now
     });
@@ -79,18 +79,18 @@ describe('PostgresArticleRepository', () => {
     await repository.save(article);
 
     const updated = article.update({
-      title: ArticleTitle.create('Updated Title'),
-      excerpt: ArticleExcerpt.create('Updated Excerpt'),
-      content: ArticleContent.create('Updated Content'),
-      bookIds: ArticleBookIds.create([]),
+      title: new ArticleTitle('Updated Title'),
+      excerpt: new ArticleExcerpt('Updated Excerpt'),
+      content: new ArticleContent('Updated Content'),
+      bookIds: ArticleBookIds.fromValues([]),
       relatedLinks: ArticleRelatedLinks.create([
-        ArticleRelatedLink.create('Test Link', 'https://example.com')
+        { text: 'Test Link', url: 'https://example.com' }
       ])
     });
 
     await repository.update(updated);
 
-    const retrieved = await repository.search(ArticleId.create('test-id'));
+    const retrieved = await repository.search(new ArticleId('test-id'));
     expect(retrieved?.title.value).toBe('Updated Title');
     expect(retrieved?.excerpt.value).toBe('Updated Excerpt');
     expect(retrieved?.content.value).toBe('Updated Content');
@@ -104,12 +104,12 @@ describe('PostgresArticleRepository', () => {
   it('should update only the excerpt', async () => {
     const now = new Date();
     const article = Article.create({
-      id: ArticleId.create('test-id'),
-      title: ArticleTitle.create('Test Article'),
-      excerpt: ArticleExcerpt.create('Test Excerpt'),
-      content: ArticleContent.create('Test Content'),
-      bookIds: ArticleBookIds.create([]),
-      relatedLinks: ArticleRelatedLinks.create([]),
+      id: new ArticleId('test-id'),
+      title: new ArticleTitle('Test Article'),
+      excerpt: new ArticleExcerpt('Test Excerpt'),
+      content: new ArticleContent('Test Content'),
+      bookIds: ArticleBookIds.fromValues([]),
+      relatedLinks: ArticleRelatedLinks.createEmpty(),
       createdAt: now,
       updatedAt: now
     });
@@ -117,12 +117,12 @@ describe('PostgresArticleRepository', () => {
     await repository.save(article);
 
     const updated = article.update({
-      excerpt: ArticleExcerpt.create('Updated Excerpt Only')
+      excerpt: new ArticleExcerpt('Updated Excerpt Only')
     });
 
     await repository.update(updated);
 
-    const retrieved = await repository.search(ArticleId.create('test-id'));
+    const retrieved = await repository.search(new ArticleId('test-id'));
     expect(retrieved?.title.value).toBe('Test Article');
     expect(retrieved?.excerpt.value).toBe('Updated Excerpt Only');
     expect(retrieved?.content.value).toBe('Test Content');
@@ -135,12 +135,12 @@ describe('PostgresArticleRepository', () => {
     const now = new Date();
     const articles = Array.from({ length: 5 }, (_, i) => 
       Article.create({
-        id: ArticleId.create(`test-id-${i}`),
-        title: ArticleTitle.create(`Test Article ${i}`),
-        excerpt: ArticleExcerpt.create(`Test Excerpt ${i}`),
-        content: ArticleContent.create(`Test Content ${i}`),
-        bookIds: ArticleBookIds.create([]),
-        relatedLinks: ArticleRelatedLinks.create([]),
+        id: new ArticleId(`test-id-${i}`),
+        title: new ArticleTitle(`Test Article ${i}`),
+        excerpt: new ArticleExcerpt(`Test Excerpt ${i}`),
+        content: new ArticleContent(`Test Content ${i}`),
+        bookIds: ArticleBookIds.fromValues([]),
+        relatedLinks: ArticleRelatedLinks.createEmpty(),
         createdAt: now,
         updatedAt: now
       })

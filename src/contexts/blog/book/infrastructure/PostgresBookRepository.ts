@@ -25,6 +25,7 @@ export class PostgresBookRepository implements BookRepository {
 
   async save(book: Book): Promise<void> {
     const primitives = book.toPrimitives();
+    const purchaseLink = primitives.purchaseLink || null;
     await this.connection.execute(
       'INSERT INTO books (id, title, author, isbn, description, purchase_link, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
       [
@@ -33,7 +34,7 @@ export class PostgresBookRepository implements BookRepository {
         primitives.author,
         primitives.isbn,
         primitives.description,
-        primitives.purchaseLink,
+        purchaseLink,
         primitives.createdAt,
         primitives.updatedAt
       ]
@@ -98,6 +99,7 @@ export class PostgresBookRepository implements BookRepository {
 
   async update(book: Book): Promise<void> {
     const primitives = book.toPrimitives();
+    const purchaseLink = primitives.purchaseLink || null;
     await this.connection.execute(
       'UPDATE books SET title = $1, author = $2, isbn = $3, description = $4, purchase_link = $5, updated_at = $6 WHERE id = $7',
       [
@@ -105,7 +107,7 @@ export class PostgresBookRepository implements BookRepository {
         primitives.author,
         primitives.isbn,
         primitives.description,
-        primitives.purchaseLink,
+        purchaseLink,
         primitives.updatedAt,
         primitives.id
       ]
@@ -134,12 +136,12 @@ export class PostgresBookRepository implements BookRepository {
 
   private createBookFromRow(row: BookRow): Book {
     return Book.create({
-      id: BookId.create(row.id),
-      title: BookTitle.create(row.title),
-      author: BookAuthor.create(row.author),
-      isbn: BookIsbn.create(row.isbn),
-      description: BookDescription.create(row.description),
-      purchaseLink: BookPurchaseLink.create(row.purchase_link),
+      id: new BookId(row.id),
+      title: new BookTitle(row.title),
+      author: new BookAuthor(row.author),
+      isbn: new BookIsbn(row.isbn),
+      description: new BookDescription(row.description),
+      purchaseLink: row.purchase_link ? BookPurchaseLink.create(row.purchase_link) : BookPurchaseLink.createEmpty(),
       createdAt: row.created_at,
       updatedAt: row.updated_at
     });
