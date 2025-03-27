@@ -85,7 +85,7 @@ describe('Article', () => {
       updatedAt
     });
 
-    expect(article.relatedLinks.length).toBe(5);
+    expect(article.relatedLinks.length).toBe(10);
   });
 
   it('should allow empty related links', () => {

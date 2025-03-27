@@ -10,7 +10,23 @@ import { ArticleRelatedLink } from '../domain/ArticleRelatedLink';
 import { ArticleSlug } from '../domain/ArticleSlug';
 import { Collection } from '@/contexts/shared/domain/Collection';
 import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection';
-import { ValidationError } from '@/contexts/shared/domain/ValidationError';
+import { DomainError } from '@/contexts/shared/domain/DomainError';
+
+class ArticleNotFoundError extends DomainError {
+  readonly type = 'ArticleNotFoundError';
+  
+  constructor() {
+    super('Article not found');
+  }
+}
+
+class InvalidBookReferenceError extends DomainError {
+  readonly type = 'InvalidBookReferenceError';
+  
+  constructor() {
+    super('One or more referenced books do not exist');
+  }
+}
 import { BookId } from '@/contexts/blog/book/domain/BookId';
 
 interface ArticleRow {
@@ -43,7 +59,7 @@ export class PostgresArticleRepository implements ArticleRepository {
 
     const existingCount = parseInt(result.rows[0].count);
     if (existingCount !== bookIds.length) {
-      throw new ValidationError('One or more referenced books do not exist');
+      throw new InvalidBookReferenceError();
     }
   }
 
@@ -161,7 +177,7 @@ export class PostgresArticleRepository implements ArticleRepository {
     try {
       const existingArticle = await this.search(article.id);
       if (!existingArticle) {
-        throw new ValidationError('Article not found');
+        throw new ArticleNotFoundError();
       }
 
       const existingData = existingArticle.toPrimitives();
@@ -196,7 +212,7 @@ export class PostgresArticleRepository implements ArticleRepository {
         ]
       );
 
-      const updatedArticle = await this.search(ArticleId.create(primitives.id));
+      const updatedArticle = await this.search(new ArticleId(primitives.id));
       if (!updatedArticle) {
         throw new Error('Article not found after update');
       }
@@ -224,7 +240,6 @@ export class PostgresArticleRepository implements ArticleRepository {
   private createArticleFromRow(row: ArticleRow): Article {
     try {
       let relatedLinks: Array<{ text: string; url: string }> = [];
-      // Asegurarse de que row.related_links es un array o convertirlo de JSON si es necesario
       if (typeof row.related_links === 'string') {
         relatedLinks = JSON.parse(row.related_links);
       } else if (Array.isArray(row.related_links)) {
@@ -232,14 +247,12 @@ export class PostgresArticleRepository implements ArticleRepository {
       }
 
       return Article.create({
-        id: ArticleId.create(row.id),
-        title: ArticleTitle.create(row.title),
-        excerpt: ArticleExcerpt.create(row.excerpt),
-        content: ArticleContent.create(row.content),
-        bookIds: ArticleBookIds.create(row.book_ids || []),
-        relatedLinks: ArticleRelatedLinks.create(
-          relatedLinks.map(link => ArticleRelatedLink.create(link.text, link.url))
-        ),
+        id: new ArticleId(row.id),
+        title: new ArticleTitle(row.title),
+        excerpt: new ArticleExcerpt(row.excerpt),
+        content: new ArticleContent(row.content),
+        bookIds: ArticleBookIds.fromValues(row.book_ids || []),
+        relatedLinks: ArticleRelatedLinks.create(relatedLinks),
         slug: new ArticleSlug(row.slug),
         createdAt: new Date(row.created_at),
         updatedAt: new Date(row.updated_at)

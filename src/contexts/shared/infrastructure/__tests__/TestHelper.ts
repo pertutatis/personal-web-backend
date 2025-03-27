@@ -47,8 +47,6 @@ export class TestHelper {
     try {
       switch (database) {
         case 'test_articles':
-          await pool.query('TRUNCATE article_related_links CASCADE');
-          await pool.query('TRUNCATE article_books CASCADE');
           await pool.query('TRUNCATE articles CASCADE');
           break;
         case 'test_books':
