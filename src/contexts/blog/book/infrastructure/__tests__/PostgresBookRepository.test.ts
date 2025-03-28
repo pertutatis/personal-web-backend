@@ -9,9 +9,11 @@ import { BookIdDuplicated } from '../../domain/BookIdDuplicated';
 import { PostgresBookRepository } from '../PostgresBookRepository';
 import { TestDatabase } from '@/contexts/shared/infrastructure/__tests__/TestDatabase';
 import { BookMother } from '../../domain/__tests__/mothers/BookMother';
+import { BookIdMother } from '../../domain/__tests__/mothers/BookIdMother';
 
 describe('PostgresBookRepository', () => {
   let repository: PostgresBookRepository;
+  const validTestId = '123e4567-e89b-4456-a456-426614174000';
 
   beforeAll(async () => {
     const connection = await TestDatabase.getBooksConnection();
@@ -32,15 +34,16 @@ describe('PostgresBookRepository', () => {
     });
 
     it('should return false when book does not exist', async () => {
-      const exists = await repository.exists(new BookId('non-existent'));
+      const exists = await repository.exists(new BookId(validTestId));
       expect(exists).toBe(false);
     });
   });
 
   describe('save', () => {
     it('should save and retrieve a book', async () => {
+      const bookId = validTestId;
       const book = BookMother.create(
-        new BookId('test-id'),
+        new BookId(bookId),
         new BookTitle('Test Book'),
         new BookAuthor('Test Author'),
         new BookIsbn('9780141036144'),
@@ -50,10 +53,10 @@ describe('PostgresBookRepository', () => {
 
       await repository.save(book);
 
-      const retrieved = await repository.search(new BookId('test-id'));
+      const retrieved = await repository.search(new BookId(bookId));
       expect(retrieved).not.toBeNull();
       expect(retrieved?.toPrimitives()).toEqual({
-        id: 'test-id',
+        id: bookId,
         title: 'Test Book',
         author: 'Test Author',
         isbn: '9780141036144',
@@ -91,7 +94,7 @@ describe('PostgresBookRepository', () => {
   });
 
   it('should return null when book not found', async () => {
-    const result = await repository.search(new BookId('non-existent'));
+    const result = await repository.search(new BookId(validTestId));
     expect(result).toBeNull();
   });
 
@@ -143,10 +146,18 @@ describe('PostgresBookRepository', () => {
       '9780141442464',
       '9780140449334'
     ];
+
+    const bookIds = [
+      '123e4567-e89b-4456-a456-426614174001',
+      '123e4567-e89b-4456-a456-426614174002',
+      '123e4567-e89b-4456-a456-426614174003',
+      '123e4567-e89b-4456-a456-426614174004',
+      '123e4567-e89b-4456-a456-426614174005'
+    ];
     
     const books = Array.from({ length: 5 }, (_, i) => 
       BookMother.create(
-        new BookId(`test-id-${i}`),
+        new BookId(bookIds[i]),
         new BookTitle(`Test Book ${i}`),
         new BookAuthor(`Test Author ${i}`),
         new BookIsbn(validIsbns[i]),
