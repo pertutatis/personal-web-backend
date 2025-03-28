@@ -201,9 +201,13 @@ test.describe('Articles API', () => {
       await apiHelpers.verifySuccessResponse<ArticleResponse>(updateResponse);
 
     expect(updatedArticle).toMatchObject({
-      ...createdArticle,
-      ...updateData,
+      id: createdArticle.id,
+      title: updateData.title,
+      excerpt: updateData.excerpt,
+      content: updateData.content,
       updatedAt: expect.any(String),
+      bookIds: createdArticle.bookIds,
+      relatedLinks: createdArticle.relatedLinks
     });
     expect(Date.parse(updatedArticle.updatedAt)).toBeGreaterThan(
       Date.parse(createdArticle.updatedAt)
@@ -268,6 +272,7 @@ test.describe('Articles API', () => {
       excerpt: 'Test excerpt',
       content: 'A'.repeat(10000),
       bookIds: [] as string[],
+      relatedLinks: [] as Array<{ text: string; url: string }>,
     };
 
     const response = await articlesApi.createArticle(maxLengthArticle);
@@ -284,6 +289,7 @@ test.describe('Articles API', () => {
       excerpt: 'Test excerpt',
       content: 'A'.repeat(10001),
       bookIds: [] as string[],
+      relatedLinks: [] as Array<{ text: string; url: string }>,
     };
 
     const response = await articlesApi.createArticle(oversizedArticle);

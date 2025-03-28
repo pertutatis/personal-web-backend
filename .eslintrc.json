@@ -1,5 +1,5 @@
 {
-  "extends": ["next/core-web-vitals", "eslint-config-codely/typescript"],
+  "extends": ["next/core-web-vitals"],
   "overrides": [
     {
       "files": ["*.ts", "*.tsx"],

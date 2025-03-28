@@ -33,7 +33,11 @@ export class UpdateBook {
       author: request.author ? new BookAuthor(request.author) : book.author,
       isbn: request.isbn ? new BookIsbn(request.isbn) : book.isbn,
       description: request.description ? new BookDescription(request.description) : book.description,
-      purchaseLink: request.purchaseLink !== undefined ? BookPurchaseLink.create(request.purchaseLink) : book.purchaseLink,
+      purchaseLink: request.purchaseLink === undefined
+        ? book.purchaseLink
+        : request.purchaseLink === null
+          ? BookPurchaseLink.createEmpty()
+          : BookPurchaseLink.create(request.purchaseLink),
       createdAt: book.createdAt,
       updatedAt: new Date()
     });

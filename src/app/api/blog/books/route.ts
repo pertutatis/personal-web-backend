@@ -5,7 +5,7 @@ import { CreateBook } from '@/contexts/blog/book/application/CreateBook';
 import { ListBooks } from '@/contexts/blog/book/application/ListBooks';
 import { executeWithErrorHandling } from '@/contexts/shared/infrastructure/http/executeWithErrorHandling';
 import { HttpNextResponse } from '@/contexts/shared/infrastructure/http/HttpNextResponse';
-import { ValidationError } from '@/contexts/shared/domain/ValidationError';
+import { ApiValidationError } from '@/contexts/shared/infrastructure/http/ApiValidationError';
 import { getBooksConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
 import { OfficialUuidGenerator } from '@/contexts/shared/infrastructure/OfficialUuidGenerator';
 
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
   return executeWithErrorHandling(async () => {
     const contentType = request.headers.get('content-type');
     if (!contentType || !contentType.includes('application/json')) {
-      throw new ValidationError('Content-Type must be application/json');
+      throw new ApiValidationError('Content-Type must be application/json');
     }
 
     const requestBody = await request.text();
@@ -53,24 +53,24 @@ export async function POST(request: NextRequest) {
       const parsedBody = JSON.parse(requestBody);
       const data = parsedBody.data || parsedBody;
       if (!data || typeof data !== 'object') {
-        throw new ValidationError('Invalid request data format');
+        throw new ApiValidationError('Invalid request data format');
       }
 
       // Validación estricta de campos
       if (typeof data.title !== 'string') {
-        throw new ValidationError('title must be a string');
+        throw new ApiValidationError('title must be a string');
       }
 
       if (typeof data.author !== 'string') {
-        throw new ValidationError('author must be a string');
+        throw new ApiValidationError('author must be a string');
       }
 
       if (typeof data.description !== 'string') {
-        throw new ValidationError('description must be a string');
+        throw new ApiValidationError('description must be a string');
       }
 
       if (data.purchaseLink !== null && data.purchaseLink !== undefined && typeof data.purchaseLink !== 'string') {
-        throw new ValidationError('purchaseLink must be a string or null');
+        throw new ApiValidationError('purchaseLink must be a string or null');
       }
 
       const title = data.title.trim();
@@ -78,19 +78,19 @@ export async function POST(request: NextRequest) {
       const description = data.description.trim();
       
       if (title === '') {
-        throw new ValidationError('title cannot be empty');
+        throw new ApiValidationError('title cannot be empty');
       }
 
       if (author === '') {
-        throw new ValidationError('author cannot be empty');
+        throw new ApiValidationError('author cannot be empty');
       }
 
       if (description === '') {
-        throw new ValidationError('description cannot be empty');
+        throw new ApiValidationError('description cannot be empty');
       }
 
       if (!data.isbn) {
-        throw new ValidationError('isbn is required');
+        throw new ApiValidationError('isbn is required');
       }
 
       bookData = {
@@ -103,14 +103,14 @@ export async function POST(request: NextRequest) {
     } catch (e) {
       console.log(e);
       
-      if (e instanceof ValidationError) {
+      if (e instanceof ApiValidationError) {
         throw e;
       }
       if (e instanceof SyntaxError) {
-        throw new ValidationError('Invalid JSON format');
+        throw new ApiValidationError('Invalid JSON format');
       }
       const message = e instanceof Error ? e.message : 'Invalid request data';
-      throw new ValidationError(message);
+      throw new ApiValidationError(message);
     }
 
     const connection = await getConnection();

@@ -246,7 +246,7 @@ export class PostgresArticleRepository implements ArticleRepository {
         relatedLinks = row.related_links;
       }
 
-      return Article.create({
+      return new Article({
         id: new ArticleId(row.id),
         title: new ArticleTitle(row.title),
         excerpt: new ArticleExcerpt(row.excerpt),

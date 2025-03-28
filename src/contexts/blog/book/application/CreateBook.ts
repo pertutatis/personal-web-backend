@@ -32,7 +32,9 @@ export class CreateBook {
       author: new BookAuthor(request.author),
       isbn: request.isbn ? new BookIsbn(request.isbn) : new BookIsbn('0000000000000'),
       description: new BookDescription(request.description),
-      purchaseLink: BookPurchaseLink.create(request.purchaseLink),
+      purchaseLink: request.purchaseLink === undefined || request.purchaseLink === null
+        ? BookPurchaseLink.createEmpty()
+        : BookPurchaseLink.create(request.purchaseLink),
       createdAt: now,
       updatedAt: now
     });
