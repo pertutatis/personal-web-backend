@@ -29,7 +29,7 @@ describe('Book', () => {
   it('should create a book with empty purchase link', () => {
     const book = BookMother.withEmptyPurchaseLink();
     expect(book.purchaseLink.isEmpty()).toBe(true);
-    expect(book.purchaseLink.toString()).toBe('');
+    expect(book.purchaseLink.value).toBeNull();
   });
 
   it('should create a book with multiline description', () => {
@@ -54,7 +54,7 @@ describe('Book', () => {
     expect(events[0].eventName).toBe('book.created');
     
     const eventData = events[0].toPrimitives();
-    expect(eventData.purchaseLink).toBe('');
+    expect(eventData.purchaseLink).toBeNull();
   });
 
   it('should update book properties', () => {
@@ -94,7 +94,7 @@ describe('Book', () => {
     expect(book.purchaseLink.isEmpty()).toBe(true);
     const events = book.pullDomainEvents();
     expect(events[1].eventName).toBe('book.updated');
-    expect(events[1].toPrimitives().purchaseLink).toBe('');
+    expect(events[1].toPrimitives().purchaseLink).toBeNull();
   });
 
   it('should convert to primitives', () => {
