@@ -31,8 +31,9 @@ export async function executeWithErrorHandling(action: () => Promise<NextRespons
 
     if (error instanceof ValidationError) {
       return HttpNextResponse.badRequest({
-        type: error.type,
-        message: error.message
+        type: 'ValidationError',
+        message: error.message,
+        details: { errorCode: error.code }
       });
     }
 

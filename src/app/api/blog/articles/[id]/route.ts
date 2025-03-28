@@ -7,7 +7,7 @@ import { DeleteArticle } from '@/contexts/blog/article/application/DeleteArticle
 import { getArticlesConfig, getBooksConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
 import { executeWithErrorHandling } from '@/contexts/shared/infrastructure/http/executeWithErrorHandling';
 import { HttpNextResponse } from '@/contexts/shared/infrastructure/http/HttpNextResponse';
-import { ValidationError } from '@/contexts/shared/domain/ValidationError';
+import { ApiValidationError } from '@/contexts/shared/infrastructure/http/ApiValidationError';
 import { validateRelatedLinks } from '@/contexts/shared/infrastructure/validation/validateRelatedLinks';
 import type { RelatedLink } from '@/contexts/shared/infrastructure/validation/validateRelatedLinks';
 
@@ -51,7 +51,7 @@ export async function PUT(
     // Validate content type
     const contentType = request.headers.get('content-type');
     if (!contentType || !contentType.includes('application/json')) {
-      throw new ValidationError('Content-Type must be application/json');
+      throw new ApiValidationError('Content-Type must be application/json');
     }
 
     // Parse request body
@@ -60,7 +60,7 @@ export async function PUT(
       const clone = request.clone();
       rawBody = await clone.json();
     } catch (e) {
-      throw new ValidationError('Invalid JSON in request body');
+      throw new ApiValidationError('Invalid JSON in request body');
     }
     const data = (rawBody && (rawBody.data || rawBody.body || rawBody)) || {};
 
@@ -82,42 +82,42 @@ export async function PUT(
     // Process and validate only provided fields
     if (data.title !== undefined) {
       if (typeof data.title !== 'string' || data.title.trim() === '') {
-        throw new ValidationError('title cannot be empty');
+        throw new ApiValidationError('title cannot be empty');
       }
       updateData.title = data.title.trim();
     }
 
     if (data.excerpt !== undefined) {
       if (typeof data.excerpt !== 'string') {
-        throw new ValidationError('excerpt must be a string');
+        throw new ApiValidationError('excerpt must be a string');
       }
       const excerpt = data.excerpt.trim();
       if (excerpt === '') {
-        throw new ValidationError('excerpt cannot be empty');
+        throw new ApiValidationError('excerpt cannot be empty');
       }
       if (excerpt.length > 160) {
-        throw new ValidationError('excerpt exceeds maximum length of 160 characters');
+        throw new ApiValidationError('excerpt exceeds maximum length of 160 characters');
       }
       updateData.excerpt = excerpt;
     }
 
     if (data.content !== undefined) {
       if (typeof data.content !== 'string') {
-        throw new ValidationError('content must be a string');
+        throw new ApiValidationError('content must be a string');
       }
       const content = data.content.trim();
       if (content === '') {
-        throw new ValidationError('content cannot be empty');
+        throw new ApiValidationError('content cannot be empty');
       }
       if (content.length > 10000) {
-        throw new ValidationError('content exceeds maximum length of 10000 characters');
+        throw new ApiValidationError('content exceeds maximum length of 10000 characters');
       }
       updateData.content = content;
     }
 
     if (data.bookIds !== undefined) {
       if (!Array.isArray(data.bookIds)) {
-        throw new ValidationError('bookIds must be an array');
+        throw new ApiValidationError('bookIds must be an array');
       }
       updateData.bookIds = data.bookIds;
     }

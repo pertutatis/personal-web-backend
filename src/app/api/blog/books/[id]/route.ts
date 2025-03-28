@@ -7,7 +7,7 @@ import { DeleteBook as DeleteBookAction } from '@/contexts/blog/book/application
 import { getBooksConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
 import { executeWithErrorHandling } from '@/contexts/shared/infrastructure/http/executeWithErrorHandling';
 import { HttpNextResponse } from '@/contexts/shared/infrastructure/http/HttpNextResponse';
-import { ValidationError } from '@/contexts/shared/domain/ValidationError';
+import { ApiValidationError } from '@/contexts/shared/infrastructure/http/ApiValidationError';
 import { BookIsbn } from '@/contexts/blog/book/domain/BookIsbn';
 
 // Crear conexión como promesa para asegurar una única instancia
@@ -42,7 +42,7 @@ export async function PUT(
     
     const contentType = request.headers.get('content-type');
     if (!contentType || !contentType.includes('application/json')) {
-      throw new ValidationError('Content-Type must be application/json');
+      throw new ApiValidationError('Content-Type must be application/json');
     }
 
     let data;
@@ -51,38 +51,38 @@ export async function PUT(
       const rawBody = await clone.json();
       data = rawBody.data || rawBody;
       if (!data || typeof data !== 'object') {
-        throw new ValidationError('Invalid request data format');
+        throw new ApiValidationError('Invalid request data format');
       }
 
       // Validar tipos de datos
       if (data.title !== undefined && typeof data.title !== 'string') {
-        throw new ValidationError('title must be a string');
+        throw new ApiValidationError('title must be a string');
       }
       if (data.author !== undefined && typeof data.author !== 'string') {
-        throw new ValidationError('author must be a string');
+        throw new ApiValidationError('author must be a string');
       }
       if (data.description !== undefined && typeof data.description !== 'string') {
-        throw new ValidationError('description must be a string');
+        throw new ApiValidationError('description must be a string');
       }
       if (data.purchaseLink !== undefined && data.purchaseLink !== null && typeof data.purchaseLink !== 'string') {
-        throw new ValidationError('purchaseLink must be a string or null');
+        throw new ApiValidationError('purchaseLink must be a string or null');
       }
 
       // Validar valores vacíos
       if (data.title === '') {
-        throw new ValidationError('title cannot be empty');
+        throw new ApiValidationError('title cannot be empty');
       }
       if (data.author === '') {
-        throw new ValidationError('author cannot be empty');
+        throw new ApiValidationError('author cannot be empty');
       }
       if (data.description === '') {
-        throw new ValidationError('description cannot be empty');
+        throw new ApiValidationError('description cannot be empty');
       }
     } catch (e) {
-      if (e instanceof ValidationError) {
+      if (e instanceof ApiValidationError) {
         throw e;
       }
-      throw new ValidationError('Invalid request body');
+      throw new ApiValidationError('Invalid request body');
     }
 
     const updatedBook = await updateBook.run({

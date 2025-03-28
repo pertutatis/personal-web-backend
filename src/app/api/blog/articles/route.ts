@@ -6,7 +6,7 @@ import { ListArticles } from '@/contexts/blog/article/application/ListArticles';
 import { Article } from '@/contexts/blog/article/domain/Article';
 import { executeWithErrorHandling } from '@/contexts/shared/infrastructure/http/executeWithErrorHandling';
 import { HttpNextResponse } from '@/contexts/shared/infrastructure/http/HttpNextResponse';
-import { ValidationError } from '@/contexts/shared/domain/ValidationError';
+import { ApiValidationError } from '@/contexts/shared/infrastructure/http/ApiValidationError';
 import { getArticlesConfig, getBooksConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
 import { OfficialUuidGenerator } from '@/contexts/shared/infrastructure/OfficialUuidGenerator';
 import { validateRelatedLinks } from '@/contexts/shared/infrastructure/validation/validateRelatedLinks';
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     // Validate request content type
     const contentType = request.headers.get('content-type');
     if (!contentType || !contentType.includes('application/json')) {
-      throw new ValidationError('Content-Type must be application/json');
+      throw new ApiValidationError('Content-Type must be application/json');
     }
 
     // Parse request body
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
       const clone = request.clone();
       rawBody = await clone.json();
     } catch (e) {
-      throw new ValidationError('Invalid JSON in request body');
+      throw new ApiValidationError('Invalid JSON in request body');
     }
 
     const data = (rawBody && (rawBody.data || rawBody.body || rawBody)) || {};
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (errors.length > 0) {
-      throw new ValidationError(errors.join(', '));
+      throw new ApiValidationError(errors.join(', '));
     }
 
     // Validate related links

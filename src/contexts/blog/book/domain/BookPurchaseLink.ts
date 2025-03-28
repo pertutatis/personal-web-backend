@@ -2,20 +2,23 @@ import { BookPurchaseLinkInvalid } from './BookPurchaseLinkInvalid';
 import { BookPurchaseLinkLengthExceeded } from './BookPurchaseLinkLengthExceeded';
 
 export class BookPurchaseLink {
-  static readonly MAX_LENGTH = 500;
+  static readonly MAX_LENGTH = 2000;
 
-  private constructor(private readonly _value: string) {
+  private constructor(private readonly _value: string | null) {
     Object.freeze(this);
   }
 
-  static create(value: string): BookPurchaseLink {
+  static create(value: string | null): BookPurchaseLink {
+    if (value === null) {
+      return this.createEmpty();
+    }
     const trimmedValue = value.trim();
     this.validate(trimmedValue);
-    return new BookPurchaseLink(trimmedValue);
+    return new BookPurchaseLink(trimmedValue || null);
   }
 
   static createEmpty(): BookPurchaseLink {
-    return new BookPurchaseLink('');
+    return new BookPurchaseLink(null);
   }
 
   private static validate(value: string): void {
@@ -38,29 +41,29 @@ export class BookPurchaseLink {
   }
 
   isEmpty(): boolean {
-    return !this._value;
+    return this._value === null || this._value === '';
   }
 
-  get value(): string {
+  get value(): string | null {
     return this._value;
   }
 
-  getValue(): string {
+  getValue(): string | null {
     return this._value;
   }
 
   equals(other: BookPurchaseLink | null): boolean {
     if (!other) {
-      return false;
+      return this.isEmpty();
     }
     return this._value === other._value;
   }
 
   toString(): string {
-    return this._value;
+    return this._value || '';
   }
 
-  toJSON(): string {
+  toJSON(): string | null {
     return this._value;
   }
 }

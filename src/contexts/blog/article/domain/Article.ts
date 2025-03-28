@@ -43,14 +43,14 @@ type UpdateArticleParams = Partial<{
 
 export class Article extends AggregateRoot {
   readonly id: ArticleId;
-  readonly title: ArticleTitle;
-  readonly excerpt: ArticleExcerpt;
-  readonly content: ArticleContent;
-  readonly bookIds: ArticleBookIds;
-  readonly relatedLinks: ArticleRelatedLinks;
-  readonly slug: ArticleSlug;
+  title: ArticleTitle;
+  excerpt: ArticleExcerpt;
+  content: ArticleContent;
+  bookIds: ArticleBookIds;
+  relatedLinks: ArticleRelatedLinks;
+  slug: ArticleSlug;
   readonly createdAt: Date;
-  readonly updatedAt: Date;
+  updatedAt: Date;
 
   constructor(params: CreateArticleParams) {
     super();
@@ -83,36 +83,48 @@ export class Article extends AggregateRoot {
   }
 
   update(params: UpdateArticleParams): Article {
-    const now = new Date();
-
-    const updatedArticle = new Article({
-      id: this.id,
-      title: params.title ?? this.title,
-      excerpt: params.excerpt ?? this.excerpt,
-      content: params.content ?? this.content,
-      bookIds: params.bookIds ?? this.bookIds,
-      relatedLinks: params.relatedLinks ?? this.relatedLinks,
-      createdAt: this.createdAt,
-      updatedAt: now,
-      // Regenerar el slug solo si el título ha cambiado
-      slug: params.title ? ArticleSlug.fromTitle(params.title.value) : this.slug
-    });
-
-    if (Object.keys(params).length > 0) {
-      updatedArticle.record(new ArticleUpdatedDomainEvent({
-        aggregateId: this.id.value,
-        title: updatedArticle.title.value,
-        excerpt: updatedArticle.excerpt.value,
-        content: updatedArticle.content.value,
-        bookIds: updatedArticle.bookIds.getValue(),
-        relatedLinks: updatedArticle.relatedLinks.toPrimitives(),
-        slug: updatedArticle.slug.value,
-        updatedAt: now,
-        occurredOn: now
-      }));
+    if (Object.keys(params).length === 0) {
+      return this;
     }
 
-    return updatedArticle;
+    const now = new Date();
+
+    if (params.title) {
+      this.title = params.title;
+      this.slug = ArticleSlug.fromTitle(params.title.value);
+    }
+
+    if (params.excerpt) {
+      this.excerpt = params.excerpt;
+    }
+
+    if (params.content) {
+      this.content = params.content;
+    }
+
+    if (params.bookIds) {
+      this.bookIds = params.bookIds;
+    }
+
+    if (params.relatedLinks) {
+      this.relatedLinks = params.relatedLinks;
+    }
+
+    this.updatedAt = now;
+
+    this.record(new ArticleUpdatedDomainEvent({
+      aggregateId: this.id.value,
+      title: this.title.value,
+      excerpt: this.excerpt.value,
+      content: this.content.value,
+      bookIds: this.bookIds.getValue(),
+      relatedLinks: this.relatedLinks.toPrimitives(),
+      slug: this.slug.value,
+      updatedAt: now,
+      occurredOn: now
+    }));
+
+    return this;
   }
 
   toPrimitives(): PrimitiveArticle {

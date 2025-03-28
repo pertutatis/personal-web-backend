@@ -37,23 +37,23 @@ export class UpdateArticle {
   private buildUpdateParams(request: UpdateArticleRequest) {
     const params: Record<string, any> = {};
 
-    if (request.title) {
+    if (request.title !== undefined) {
       params.title = new ArticleTitle(request.title);
     }
 
-    if (request.excerpt) {
+    if (request.excerpt !== undefined) {
       params.excerpt = new ArticleExcerpt(request.excerpt);
     }
 
-    if (request.content) {
+    if (request.content !== undefined) {
       params.content = new ArticleContent(request.content);
     }
 
-    if (request.bookIds) {
+    if (request.bookIds !== undefined) {
       params.bookIds = ArticleBookIds.create(request.bookIds);
     }
 
-    if (request.relatedLinks) {
+    if (request.relatedLinks !== undefined) {
       params.relatedLinks = ArticleRelatedLinks.create(request.relatedLinks);
     }
 
