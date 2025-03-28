@@ -30,6 +30,11 @@ export class HttpNextResponse {
     return NextResponse.json(response, { status: 404 });
   }
 
+  static conflict(error: string | ErrorResponse): NextResponse {
+    const response = typeof error === 'string' ? { type: 'Conflict', message: error } : error;
+    return NextResponse.json(response, { status: 409 });
+  }
+
   static internalServerError(error: string | ErrorResponse): NextResponse {
     const response = typeof error === 'string' 
       ? { type: 'InternalServerError', message: error } 

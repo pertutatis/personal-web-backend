@@ -2,6 +2,12 @@
 
 ## Current Focus
 
+### API Enhancement - Client-Side UUID Generation
+- Modificación del módulo Book para aceptar UUIDs del cliente
+- Eliminación de respuestas en create/update
+- Implementación de validaciones UUID
+- Testing del nuevo enfoque
+
 ### API Development
 - Implementación de endpoints RESTful
 - Validación de inputs
@@ -34,20 +40,21 @@
 ## Next Steps
 
 ### Prioridad Alta 🔥
-1. Implementar sistema de eventos de dominio
+1. Implementar client-side UUID generation
+   - Crear nuevos Value Objects para validación UUID
+   - Modificar endpoints para 201/204 sin respuesta
+   - Actualizar tests
+   - Documentar cambios en API
+
+2. Implementar sistema de eventos de dominio
    - Dispatcher de eventos
    - Subscribers
    - Testing de eventos
 
-2. Mejorar documentación API
+3. Mejorar documentación API
    - OpenAPI/Swagger
    - Ejemplos de uso
    - Guías de desarrollo
-
-3. Aumentar cobertura de tests
-   - Tests de integración
-   - Tests de contratos
-   - Tests de mutación
 
 ### Prioridad Media 🔸
 1. Implementar caché
@@ -69,17 +76,23 @@
 ## Active Decisions & Considerations
 
 ### Decisiones Técnicas
-1. **Persistencia**
+1. **Client-Side UUID Generation**
+   - UUIDs generados por el cliente
+   - Validación de formato y unicidad en servidor
+   - Respuestas sin cuerpo para create/update
+   - Comenzar por módulo Book como piloto
+
+2. **Persistencia**
    - PostgreSQL como base de datos principal
    - Connection pooling para eficiencia
    - Migraciones SQL manuales por ahora
 
-2. **Testing**
+3. **Testing**
    - Jest para unit/integration
    - Playwright para E2E
    - Object Mothers para datos de test
 
-3. **Arquitectura**
+4. **Arquitectura**
    - Hexagonal con DDD
    - Value Objects para validaciones
    - Events para comunicación entre agregados

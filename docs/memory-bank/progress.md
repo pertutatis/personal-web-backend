@@ -36,17 +36,24 @@
 ## What's Left to Build 🚧
 
 ### Features Pendientes
-1. **Sistema de Eventos**
+1. **Client-Side UUID Generation**
+   - [ ] Actualizar Book module para aceptar UUIDs del cliente
+   - [ ] Añadir validaciones de UUID
+   - [ ] Modificar respuestas API (201/204 sin cuerpo)
+   - [ ] Actualizar documentación API
+   - [ ] Implementar tests para nuevos escenarios
+
+2. **Sistema de Eventos**
    - [ ] Event dispatcher
    - [ ] Event subscribers
    - [ ] Testing de eventos
 
-2. **Documentación API**
+3. **Documentación API**
    - [ ] OpenAPI/Swagger
    - [ ] Ejemplos de uso
    - [ ] Postman collection
 
-3. **Optimizaciones**
+4. **Optimizaciones**
    - [ ] Caché
    - [ ] Rate limiting
    - [ ] Métricas
@@ -110,14 +117,14 @@
 ## Next Actions 📝
 
 ### Inmediatas
-1. Implementar sistema de eventos
-2. Documentar API con OpenAPI
-3. Aumentar cobertura de tests
+1. Implementar client-side UUID generation en Book module
+2. Actualizar tests para nuevos escenarios de UUID
+3. Actualizar documentación API para reflejar cambios UUID
 
 ### Corto Plazo
-1. Implementar caché
-2. Añadir rate limiting
-3. Mejorar logging
+1. Extender client-side UUID a otros módulos
+2. Implementar sistema de eventos
+3. Documentar API con OpenAPI
 
 ### Largo Plazo
 1. Implementar observabilidad

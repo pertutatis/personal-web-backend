@@ -11,4 +11,5 @@ export interface BookRepository {
   searchByIsbn(isbn: string): Promise<Book | null>;
   update(book: Book): Promise<void>;
   delete(id: BookId): Promise<void>;
+  exists(id: BookId): Promise<boolean>;
 }

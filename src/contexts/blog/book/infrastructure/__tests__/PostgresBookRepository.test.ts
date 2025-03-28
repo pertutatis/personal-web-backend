@@ -5,6 +5,7 @@ import { BookAuthor } from '../../domain/BookAuthor';
 import { BookIsbn } from '../../domain/BookIsbn';
 import { BookDescription } from '../../domain/BookDescription';
 import { BookPurchaseLink } from '../../domain/BookPurchaseLink';
+import { BookIdDuplicated } from '../../domain/BookIdDuplicated';
 import { PostgresBookRepository } from '../PostgresBookRepository';
 import { TestDatabase } from '@/contexts/shared/infrastructure/__tests__/TestDatabase';
 import { BookMother } from '../../domain/__tests__/mothers/BookMother';
@@ -21,39 +22,72 @@ describe('PostgresBookRepository', () => {
     await TestDatabase.cleanBooks();
   });
 
-  it('should save and retrieve a book', async () => {
-    const book = BookMother.create(
-      new BookId('test-id'),
-      new BookTitle('Test Book'),
-      new BookAuthor('Test Author'),
-      new BookIsbn('9780141036144'),
-      new BookDescription('Test Description'),
-      BookPurchaseLink.create('https://example.com/book')
-    );
+  describe('exists', () => {
+    it('should return true when book exists', async () => {
+      const book = BookMother.create();
+      await repository.save(book);
 
-    await repository.save(book);
+      const exists = await repository.exists(book.id);
+      expect(exists).toBe(true);
+    });
 
-    const retrieved = await repository.search(new BookId('test-id'));
-    expect(retrieved).not.toBeNull();
-    expect(retrieved?.toPrimitives()).toEqual({
-      id: 'test-id',
-      title: 'Test Book',
-      author: 'Test Author',
-      isbn: '9780141036144',
-      description: 'Test Description',
-      purchaseLink: 'https://example.com/book',
-      createdAt: expect.any(Date),
-      updatedAt: expect.any(Date)
+    it('should return false when book does not exist', async () => {
+      const exists = await repository.exists(new BookId('non-existent'));
+      expect(exists).toBe(false);
     });
   });
 
-  it('should save and retrieve a book without purchase link', async () => {
-    const book = BookMother.withEmptyPurchaseLink();
-    await repository.save(book);
+  describe('save', () => {
+    it('should save and retrieve a book', async () => {
+      const book = BookMother.create(
+        new BookId('test-id'),
+        new BookTitle('Test Book'),
+        new BookAuthor('Test Author'),
+        new BookIsbn('9780141036144'),
+        new BookDescription('Test Description'),
+        BookPurchaseLink.create('https://example.com/book')
+      );
 
-    const retrieved = await repository.search(book.id);
-    expect(retrieved).not.toBeNull();
-    expect(retrieved?.purchaseLink.value).toBeNull();
+      await repository.save(book);
+
+      const retrieved = await repository.search(new BookId('test-id'));
+      expect(retrieved).not.toBeNull();
+      expect(retrieved?.toPrimitives()).toEqual({
+        id: 'test-id',
+        title: 'Test Book',
+        author: 'Test Author',
+        isbn: '9780141036144',
+        description: 'Test Description',
+        purchaseLink: 'https://example.com/book',
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date)
+      });
+    });
+
+    it('should throw BookIdDuplicated when saving with existing id', async () => {
+      const book = BookMother.create();
+      await repository.save(book);
+
+      const duplicateBook = BookMother.create(
+        book.id,
+        new BookTitle('Different Title'),
+        new BookAuthor('Different Author'),
+        new BookIsbn('9780143039952'),
+        new BookDescription('Different Description'),
+        BookPurchaseLink.create('https://example.com/different')
+      );
+
+      await expect(repository.save(duplicateBook)).rejects.toThrow(BookIdDuplicated);
+    });
+
+    it('should save and retrieve a book without purchase link', async () => {
+      const book = BookMother.withEmptyPurchaseLink();
+      await repository.save(book);
+
+      const retrieved = await repository.search(book.id);
+      expect(retrieved).not.toBeNull();
+      expect(retrieved?.purchaseLink.value).toBeNull();
+    });
   });
 
   it('should return null when book not found', async () => {

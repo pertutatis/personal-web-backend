@@ -8,15 +8,17 @@ import { BookPurchaseLink } from '../BookPurchaseLink';
 import { BookTitleEmpty } from '../BookTitleEmpty';
 import { BookAuthorEmpty } from '../BookAuthorEmpty';
 import { InvalidBookIsbn } from '../InvalidBookIsbn';
+import { BookIdInvalid } from '../BookIdInvalid';
 import { BookMother } from './mothers/BookMother';
 
 describe('Book', () => {
   const defaultDate = new Date('2025-01-01');
+  const validUuid = '123e4567-e89b-4456-a456-426614174000';
 
   it('should create a valid book', () => {
     const book = BookMother.withDates(defaultDate, defaultDate);
 
-    expect(book.id.toString()).toBeDefined();
+    expect(book.id.toString()).toBe(validUuid);
     expect(book.title.toString()).toBe('Clean Code');
     expect(book.author.toString()).toBe('Robert C. Martin');
     expect(book.isbn.toFormattedString()).toBe('978-0-13-235088-4');
@@ -24,6 +26,27 @@ describe('Book', () => {
     expect(book.purchaseLink.toString()).toBe('https://example.com/clean-code');
     expect(book.createdAt).toBe(defaultDate);
     expect(book.updatedAt).toBe(defaultDate);
+  });
+
+  it('should create a book with custom UUID', () => {
+    const customUuid = BookMother.generateValidUuid();
+    const book = BookMother.withId(customUuid);
+    expect(book.id.toString()).toBe(customUuid);
+  });
+
+  it('should not create book with invalid UUID', () => {
+    expect(() => {
+      Book.create({
+        id: new BookId('invalid-uuid'),
+        title: new BookTitle('Test'),
+        author: new BookAuthor('Test'),
+        isbn: new BookIsbn('9780132350884'),
+        description: new BookDescription('Test'),
+        purchaseLink: BookPurchaseLink.createEmpty(),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
+    }).toThrow(BookIdInvalid);
   });
 
   it('should create a book with empty purchase link', () => {
@@ -37,9 +60,9 @@ describe('Book', () => {
     expect(book.description.value).toContain('\n');
   });
 
-  it('should create a book event when created', () => {
+  it('should create book event when created', () => {
     const book = Book.create({
-      id: new BookId('test-id'),
+      id: new BookId(validUuid),
       title: new BookTitle('Test Book'),
       author: new BookAuthor('Test Author'),
       isbn: new BookIsbn('9780141036144'),
@@ -102,7 +125,7 @@ describe('Book', () => {
     const primitives = book.toFormattedPrimitives();
 
     expect(primitives).toEqual({
-      id: book.id.toString(),
+      id: validUuid,
       title: 'Clean Code',
       author: 'Robert C. Martin',
       isbn: '978-0-13-235088-4',

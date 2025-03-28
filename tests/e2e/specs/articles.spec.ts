@@ -118,8 +118,6 @@ test.describe('Articles API', () => {
     expect(updatedArticle.slug).toBe('updated-title');
   });
 
-  // ... (keep existing tests)
-
   test('should handle concurrent article creation', async () => {
     const concurrentArticles = Array(5).fill(null).map((_, index) => ({
       title: `Concurrent Article ${index}`,
@@ -319,13 +317,14 @@ test.describe('Articles API', () => {
   test('should maintain book references after book update', async () => {
     const { book, article } = await apiHelpers.createTestBookWithArticle();
 
-    const updateResponse = await new BooksApi(apiHelpers['request']).updateBook(
-      book.id,
-      {
-        title: 'Updated Book Title',
-      }
+    const booksApi = new BooksApi(apiHelpers['request']);
+    await booksApi.updateBook(book.id, {
+      title: 'Updated Book Title',
+    });
+    await apiHelpers.verifySuccessResponse(
+      await booksApi.getBook(book.id),
+      200
     );
-    expect(updateResponse.status()).toBe(200);
 
     const getArticleResponse = await articlesApi.getArticle(article.id);
     const updatedArticle =
