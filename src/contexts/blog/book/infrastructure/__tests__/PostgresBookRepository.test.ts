@@ -53,7 +53,7 @@ describe('PostgresBookRepository', () => {
 
     const retrieved = await repository.search(book.id);
     expect(retrieved).not.toBeNull();
-    expect(retrieved?.purchaseLink.value).toBe('');
+    expect(retrieved?.purchaseLink.value).toBeNull();
   });
 
   it('should return null when book not found', async () => {
@@ -98,7 +98,7 @@ describe('PostgresBookRepository', () => {
     await repository.update(book);
 
     const updated = await repository.search(book.id);
-    expect(updated?.purchaseLink.value).toBe('');
+    expect(updated?.purchaseLink.value).toBeNull();
   });
 
   it('should list books with pagination', async () => {
