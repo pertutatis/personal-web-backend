@@ -34,6 +34,8 @@ export interface ArticleResponse {
 }
 
 export interface ErrorResponse {
+  type: string;
   message: string;
-  [key: string]: any;
+  stack?: string;
+  details?: unknown;
 }

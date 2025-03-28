@@ -6,6 +6,7 @@ import { BookAuthor } from '../domain/BookAuthor';
 import { BookIsbn } from '../domain/BookIsbn';
 import { BookDescription } from '../domain/BookDescription';
 import { BookPurchaseLink } from '../domain/BookPurchaseLink';
+import { BookIdDuplicated } from '../domain/BookIdDuplicated';
 import { Collection } from '@/contexts/shared/domain/Collection';
 import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection';
 
@@ -24,6 +25,11 @@ export class PostgresBookRepository implements BookRepository {
   constructor(private readonly connection: PostgresConnection) {}
 
   async save(book: Book): Promise<void> {
+    const exists = await this.exists(book.id);
+    if (exists) {
+      throw new BookIdDuplicated(book.id.value);
+    }
+
     const primitives = book.toPrimitives();
     const purchaseLink = primitives.purchaseLink || null;
     await this.connection.execute(
@@ -39,6 +45,15 @@ export class PostgresBookRepository implements BookRepository {
         primitives.updatedAt
       ]
     );
+  }
+
+  async exists(id: BookId): Promise<boolean> {
+    const result = await this.connection.execute<{ exists: boolean }>(
+      'SELECT EXISTS(SELECT 1 FROM books WHERE id = $1) as exists',
+      [id.value]
+    );
+
+    return result.rows[0].exists;
   }
 
   async search(id: BookId): Promise<Book | null> {

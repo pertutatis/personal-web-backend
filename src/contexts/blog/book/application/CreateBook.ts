@@ -6,9 +6,9 @@ import { BookIsbn } from '../domain/BookIsbn';
 import { BookDescription } from '../domain/BookDescription';
 import { BookPurchaseLink } from '../domain/BookPurchaseLink';
 import { BookRepository } from '../domain/BookRepository';
-import { UuidGenerator } from '@/contexts/shared/domain/UuidGenerator';
 
 export type CreateBookRequest = {
+  id: string;
   title: string;
   author: string;
   isbn?: string;
@@ -17,13 +17,10 @@ export type CreateBookRequest = {
 };
 
 export class CreateBook {
-  constructor(
-    private readonly repository: BookRepository,
-    private readonly uuidGenerator: UuidGenerator
-  ) {}
+  constructor(private readonly repository: BookRepository) {}
 
-  async run(request: CreateBookRequest): Promise<Book> {
-    const bookId = new BookId(await this.uuidGenerator.generate());
+  async run(request: CreateBookRequest): Promise<void> {
+    const bookId = new BookId(request.id);
     const now = new Date();
 
     const book = Book.create({
@@ -40,6 +37,5 @@ export class CreateBook {
     });
 
     await this.repository.save(book);
-    return book;
   }
 }

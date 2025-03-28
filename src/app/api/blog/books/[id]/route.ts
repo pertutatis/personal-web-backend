@@ -85,7 +85,7 @@ export async function PUT(
       throw new ApiValidationError('Invalid request body');
     }
 
-    const updatedBook = await updateBook.run({
+    await updateBook.run({
       id: params.id,
       title: data.title,
       author: data.author,
@@ -94,8 +94,7 @@ export async function PUT(
       purchaseLink: data.purchaseLink
     });
 
-    const primitives = updatedBook.toFormattedPrimitives();
-    return HttpNextResponse.ok(primitives);
+    return HttpNextResponse.noContent();
   });
 }
 

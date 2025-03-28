@@ -3,7 +3,7 @@ import { Pool } from 'pg';
 import { getBooksConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
 import { ArticlesApi } from '../apis/articles-api';
 import { BooksApi } from '../apis/books-api';
-import { TestArticle, TestBook } from './test-data';
+import { TestArticle, TestBook, generateValidUuid } from './test-data';
 import { ArticleResponse, BookResponse, ErrorResponse, PaginatedResponse } from './api-types';
 
 export class ApiHelpers {
@@ -48,10 +48,13 @@ export class ApiHelpers {
         });
         throw new Error(`Failed to create book. Status: ${status}, Body: ${errorBody}`);
       }
-      
-      const responseData = await response.json();
-      expect(responseData.id).toBeDefined();
-      return responseData;
+
+      // Get the created book since create returns no content
+      const getResponse = await this.booksApi.getBook(book.id);
+      if (!getResponse.ok()) {
+        throw new Error(`Failed to get created book with id ${book.id}`);
+      }
+      return await getResponse.json();
     } catch (error) {
       console.error('Error in createTestBook:', error);
       throw error;
@@ -65,18 +68,14 @@ export class ApiHelpers {
 
   async cleanupTestData() {
     console.log('Starting test data cleanup...');
-    
     try {
-      // Primero limpiar la base de datos directamente
       await this.cleanDatabaseDirectly();
 
-      // Limpiar artículos a través de la API
       const articlesResponse = await this.articlesApi.listArticles({ limit: 100 });
       if (articlesResponse.ok()) {
         const articles = await articlesResponse.json() as PaginatedResponse<ArticleResponse>;
         console.log(`Found ${articles.items.length} articles to delete`);
         
-        // Delete all articles
         for (const article of articles.items) {
           try {
             const id = typeof article.id === 'object' && article.id !== null && 'value' in article.id
@@ -92,21 +91,16 @@ export class ApiHelpers {
             const deleteResponse = await this.articlesApi.deleteArticle(id);
 
             if (!deleteResponse.ok()) {
-              const errorText = await deleteResponse.text();
-              console.error(`Failed to delete article ${id}:`, errorText);
-            } else {
-              console.log(`Successfully deleted article ${id}`);
+              console.error(`Failed to delete article ${id}:`, await deleteResponse.text());
             }
           } catch (error) {
             console.error('Error deleting article:', error);
           }
         }
       } else {
-        const errorText = await articlesResponse.text();
-        console.error('Failed to list articles:', errorText);
+        console.error('Failed to list articles:', await articlesResponse.text());
       }
 
-      // Luego eliminar los libros
       const booksResponse = await this.booksApi.listBooks({ limit: 100 });
       if (booksResponse.ok()) {
         const books = await booksResponse.json() as PaginatedResponse<BookResponse>;
@@ -114,7 +108,7 @@ export class ApiHelpers {
         
         for (const book of books.items) {
           try {
-            const deleteResponse = await this.booksApi.deleteBook(book.id.toString());
+            const deleteResponse = await this.booksApi.deleteBook(book.id);
             if (!deleteResponse.ok()) {
               console.error(`Failed to delete book ${book.id}:`, await deleteResponse.text());
             }
@@ -135,6 +129,7 @@ export class ApiHelpers {
 
   async createTestBookWithArticle(): Promise<{ book: BookResponse; article: ArticleResponse }> {
     const book = await this.createTestBook({
+      id: generateValidUuid(0),
       title: 'Test Book for Article',
       author: 'Test Author',
       isbn: '9780321125217',
@@ -160,6 +155,20 @@ export class ApiHelpers {
 
   async verifySuccessResponse<T>(response: any, expectedStatus = 200): Promise<T> {
     expect(response.status()).toBe(expectedStatus);
+    
+    // For 204 responses, return null
+    if (expectedStatus === 204) {
+      return null as T;
+    }
+
+    // For 201 responses check if there's a body
+    if (expectedStatus === 201) {
+      const hasBody = await response.body().then(() => true).catch(() => false);
+      if (!hasBody) {
+        return null as T;
+      }
+    }
+
     const body = await response.json();
     expect(body).toBeDefined();
     return body as T;
@@ -168,6 +177,7 @@ export class ApiHelpers {
   async verifyErrorResponse(response: any, expectedStatus = 400): Promise<ErrorResponse> {
     expect(response.status()).toBe(expectedStatus);
     const error = await response.json();
+    expect(error).toHaveProperty('type');
     expect(error).toHaveProperty('message');
     return error;
   }

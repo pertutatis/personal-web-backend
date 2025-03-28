@@ -7,11 +7,11 @@ import { executeWithErrorHandling } from '@/contexts/shared/infrastructure/http/
 import { HttpNextResponse } from '@/contexts/shared/infrastructure/http/HttpNextResponse';
 import { ApiValidationError } from '@/contexts/shared/infrastructure/http/ApiValidationError';
 import { getBooksConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
-import { OfficialUuidGenerator } from '@/contexts/shared/infrastructure/OfficialUuidGenerator';
+import { BookIdDuplicated } from '@/contexts/blog/book/domain/BookIdDuplicated';
+import { BookIdInvalid } from '@/contexts/blog/book/domain/BookIdInvalid';
 
 // Crear conexión como promesa para asegurar una única instancia
 const booksConnectionPromise = PostgresConnection.create(getBooksConfig());
-const uuidGenerator = new OfficialUuidGenerator();
 
 async function getConnection() {
   return await booksConnectionPromise;
@@ -56,6 +56,15 @@ export async function POST(request: NextRequest) {
         throw new ApiValidationError('Invalid request data format');
       }
 
+      // UUID validation
+      if (!data.id) {
+        throw new ApiValidationError('id is required');
+      }
+
+      if (typeof data.id !== 'string') {
+        throw new ApiValidationError('id must be a string');
+      }
+
       // Validación estricta de campos
       if (typeof data.title !== 'string') {
         throw new ApiValidationError('title must be a string');
@@ -94,6 +103,7 @@ export async function POST(request: NextRequest) {
       }
 
       bookData = {
+        id: data.id,
         title,
         author,
         isbn: data.isbn,
@@ -115,10 +125,26 @@ export async function POST(request: NextRequest) {
 
     const connection = await getConnection();
     const repository = new PostgresBookRepository(connection);
-    const createBook = new CreateBook(repository, uuidGenerator);
+    const createBook = new CreateBook(repository);
 
-    const book = await createBook.run(bookData);
-    return HttpNextResponse.created(book.toFormattedPrimitives());
+    try {
+      await createBook.run(bookData);
+      return HttpNextResponse.created();
+    } catch (error) {
+      if (error instanceof BookIdDuplicated) {
+        return HttpNextResponse.conflict({
+          type: 'BookIdDuplicated',
+          message: error.message
+        });
+      }
+      if (error instanceof BookIdInvalid) {
+        return HttpNextResponse.badRequest({
+          type: 'BookIdInvalid',
+          message: error.message
+        });
+      }
+      throw error;
+    }
   });
 }
 
