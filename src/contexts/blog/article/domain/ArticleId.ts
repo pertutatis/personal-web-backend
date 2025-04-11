@@ -1,12 +1,10 @@
 import { Identifier } from '@/contexts/shared/domain/Identifier';
+import { UuidValidator } from '@/contexts/shared/domain/validation/UuidValidator';
 
 export class ArticleId extends Identifier {
-  constructor(value: string = '') {
+  constructor(value: string) {
     super(value);
-  }
-
-  static generate(): ArticleId {
-    return new ArticleId(crypto.randomUUID());
+    UuidValidator.ensureValidUuid(value);
   }
 
   equals(other: unknown): boolean {

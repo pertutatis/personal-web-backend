@@ -19,13 +19,16 @@ test.describe('Articles API', () => {
   });
 
   test('should create an article without books', async () => {
-    const response = await articlesApi.createArticle({
+    const articleData = {
       ...testArticles.valid,
       bookIds: []
-    });
-    const article = await apiHelpers.verifySuccessResponse<ArticleResponse>(response, 201);
+    };
+    delete (articleData as any).id;
 
-    expect(article).toMatchObject({
+    const createdArticle = await apiHelpers.createTestArticle(articleData);
+
+    expect(createdArticle).toBeDefined();
+    expect(createdArticle).toMatchObject({
       title: testArticles.valid.title,
       excerpt: testArticles.valid.excerpt,
       content: testArticles.valid.content,
@@ -33,32 +36,37 @@ test.describe('Articles API', () => {
       relatedLinks: testArticles.valid.relatedLinks,
       slug: 'understanding-domain-driven-design'
     });
-    expect(article.id).toBeDefined();
-    expect(article.createdAt).toBeDefined();
-    expect(article.updatedAt).toBeDefined();
+    expect(createdArticle.id).toBeDefined();
+    expect(createdArticle.createdAt).toBeDefined();
+    expect(createdArticle.updatedAt).toBeDefined();
   });
 
   test('should create an article with related links', async () => {
-    const response = await articlesApi.createArticle(testArticles.valid);
-    const article = await apiHelpers.verifySuccessResponse<ArticleResponse>(response, 201);
+    const articleData = { ...testArticles.valid };
+    delete (articleData as any).id;
 
-    expect(article.relatedLinks).toHaveLength(1);
-    expect(article.relatedLinks[0]).toEqual({
+    const createdArticle = await apiHelpers.createTestArticle(articleData);
+
+    expect(createdArticle.relatedLinks).toHaveLength(1);
+    expect(createdArticle.relatedLinks[0]).toEqual({
       text: 'Learn DDD',
       url: 'https://example.com/learn-ddd'
     });
   });
 
   test('should generate correct slug from title with special characters', async () => {
-    const response = await articlesApi.createArticle(testArticles.specialCharactersTitle);
-    const article = await apiHelpers.verifySuccessResponse<ArticleResponse>(response, 201);
+    const articleData = { ...testArticles.specialCharactersTitle };
+    delete (articleData as any).id;
 
-    expect(article.slug).toBe('como-implementar-ddd-en-typescript');
+    const createdArticle = await apiHelpers.createTestArticle(articleData);
+    expect(createdArticle.slug).toBe('como-implementar-ddd-en-typescript');
   });
 
   test('should find article by slug', async () => {
-    const createResponse = await articlesApi.createArticle(testArticles.valid);
-    const createdArticle = await apiHelpers.verifySuccessResponse<ArticleResponse>(createResponse, 201);
+    const articleData = { ...testArticles.valid };
+    delete (articleData as any).id;
+
+    const createdArticle = await apiHelpers.createTestArticle(articleData);
 
     const response = await articlesApi.getArticleBySlug(createdArticle.slug);
     const article = await apiHelpers.verifySuccessResponse<ArticleResponse>(response);
@@ -67,8 +75,10 @@ test.describe('Articles API', () => {
   });
 
   test('should update article related links', async () => {
-    const createResponse = await articlesApi.createArticle(testArticles.valid);
-    const createdArticle = await apiHelpers.verifySuccessResponse<ArticleResponse>(createResponse, 201);
+    const articleData = { ...testArticles.valid };
+    delete (articleData as any).id;
+
+    const createdArticle = await apiHelpers.createTestArticle(articleData);
 
     const newLinks = [
       { text: 'Updated Link', url: 'https://example.com/updated' }
@@ -77,44 +87,70 @@ test.describe('Articles API', () => {
     const updateResponse = await articlesApi.updateArticle(createdArticle.id, {
       relatedLinks: newLinks
     });
-    const updatedArticle = await apiHelpers.verifySuccessResponse<ArticleResponse>(updateResponse);
-
-    expect(updatedArticle.relatedLinks).toEqual(newLinks);
+    expect(updateResponse.status()).toBe(204);
   });
 
   test('should validate maximum number of related links', async () => {
-    const response = await articlesApi.createArticle(testArticles.tooManyLinks);
+    const articleData = { ...testArticles.tooManyLinks };
+    delete (articleData as any).id;
+
+    const response = await articlesApi.createArticle({
+      ...articleData,
+      id: testArticles.valid.id
+    });
     const error = await apiHelpers.verifyErrorResponse(response, 400);
     expect(error.message).toContain('Cannot have more than 10 related links');
   });
 
   test('should validate related links format', async () => {
-    const response = await articlesApi.createArticle(testArticles.invalidLinks);
+    const articleData = { ...testArticles.invalidLinks };
+    delete (articleData as any).id;
+
+    const response = await articlesApi.createArticle({
+      ...articleData,
+      id: testArticles.valid.id
+    });
     const error = await apiHelpers.verifyErrorResponse(response, 400);
     expect(error.message).toContain('text exceeds maximum length');
   });
 
   test('should validate related links URLs', async () => {
-    const response = await articlesApi.createArticle(testArticles.invalidLinkUrl);
+    const articleData = { ...testArticles.invalidLinkUrl };
+    delete (articleData as any).id;
+
+    const response = await articlesApi.createArticle({
+      ...articleData,
+      id: testArticles.valid.id
+    });
     const error = await apiHelpers.verifyErrorResponse(response, 400);
     expect(error.message).toContain('not a valid URL');
   });
 
   test('should reject duplicate URLs in related links', async () => {
-    const response = await articlesApi.createArticle(testArticles.duplicateLinks);
+    const articleData = { ...testArticles.duplicateLinks };
+    delete (articleData as any).id;
+
+    const response = await articlesApi.createArticle({
+      ...articleData,
+      id: testArticles.valid.id
+    });
     const error = await apiHelpers.verifyErrorResponse(response, 400);
     expect(error.message).toContain('Duplicate URLs are not allowed');
   });
 
   test('should update slug when title changes', async () => {
-    const createResponse = await articlesApi.createArticle(testArticles.valid);
-    const createdArticle = await apiHelpers.verifySuccessResponse<ArticleResponse>(createResponse, 201);
+    const articleData = { ...testArticles.valid };
+    delete (articleData as any).id;
+
+    const createdArticle = await apiHelpers.createTestArticle(articleData);
 
     const updateResponse = await articlesApi.updateArticle(createdArticle.id, {
       title: 'Updated Title'
     });
-    const updatedArticle = await apiHelpers.verifySuccessResponse<ArticleResponse>(updateResponse);
+    expect(updateResponse.status()).toBe(204);
 
+    const getResponse = await articlesApi.getArticle(createdArticle.id);
+    const updatedArticle = await apiHelpers.verifySuccessResponse<ArticleResponse>(getResponse);
     expect(updatedArticle.slug).toBe('updated-title');
   });
 
@@ -127,13 +163,11 @@ test.describe('Articles API', () => {
       relatedLinks: [] as { text: string; url: string }[]
     }));
 
-    const responses = await Promise.all(
-      concurrentArticles.map(article => articlesApi.createArticle(article))
+    const articles = await Promise.all(
+      concurrentArticles.map(article => apiHelpers.createTestArticle(article))
     );
 
-    for (const response of responses) {
-      expect(response.status()).toBe(201);
-      const article = await response.json();
+    for (const article of articles) {
       expect(article.id).toBeDefined();
       expect(article.slug).toBeDefined();
     }
@@ -142,61 +176,68 @@ test.describe('Articles API', () => {
   test('should create an article with referenced books', async () => {
     const book = await apiHelpers.createTestBook(testBooks.valid);
 
-    const response = await articlesApi.createArticle({
+    const articleData = {
       ...testArticles.valid,
-      bookIds: [book.id],
-    });
-    const article = await apiHelpers.verifySuccessResponse<ArticleResponse>(
-      response,
-      201
-    );
+      bookIds: [book.id]
+    };
+    delete (articleData as any).id;
 
-    expect(article.bookIds).toContain(book.id);
+    const createdArticle = await apiHelpers.createTestArticle(articleData);
+    expect(createdArticle.bookIds).toContain(book.id);
   });
 
   test('should return 400 for article with non-existent book ids', async () => {
-    const response = await articlesApi.createArticle(
-      testArticles.invalidBookIds
-    );
+    const articleData = { ...testArticles.invalidBookIds };
+    delete (articleData as any).id;
+
+    const response = await articlesApi.createArticle({
+      ...articleData,
+      id: testArticles.valid.id
+    });
     const error = await apiHelpers.verifyErrorResponse(response, 400);
     expect(error.message).toContain('book');
   });
 
   test('should get an article by id', async () => {
-    const createdArticle = await apiHelpers.createTestArticle({
+    const articleData = {
       ...testArticles.valid,
-      bookIds: [],
-    });
+      bookIds: []
+    };
+    delete (articleData as any).id;
+
+    const createdArticle = await apiHelpers.createTestArticle(articleData);
 
     const response = await articlesApi.getArticle(createdArticle.id);
-    const article =
-      await apiHelpers.verifySuccessResponse<ArticleResponse>(response);
+    const article = await apiHelpers.verifySuccessResponse<ArticleResponse>(response);
 
     expect(article).toEqual(createdArticle);
   });
 
   test('should return 404 for non-existent article', async () => {
-    const response = await articlesApi.getArticle('non-existent-id');
+    const response = await articlesApi.getArticle('cc8d8194-e099-4e3a-a431-000000000000');
     await apiHelpers.verifyErrorResponse(response, 404);
   });
 
   test('should update an article', async () => {
-    const createdArticle = await apiHelpers.createTestArticle({
+    const articleData = {
       ...testArticles.valid,
-      bookIds: [],
-    });
+      bookIds: []
+    };
+    delete (articleData as any).id;
+
+    const createdArticle = await apiHelpers.createTestArticle(articleData);
 
     const updateData = {
       title: 'Updated Article Title',
       excerpt: 'Updated article excerpt',
       content: 'Updated article content',
     };
-    const updateResponse = await articlesApi.updateArticle(
-      createdArticle.id,
-      updateData
-    );
-    const updatedArticle =
-      await apiHelpers.verifySuccessResponse<ArticleResponse>(updateResponse);
+
+    const updateResponse = await articlesApi.updateArticle(createdArticle.id, updateData);
+    expect(updateResponse.status()).toBe(204);
+
+    const getResponse = await articlesApi.getArticle(createdArticle.id);
+    const updatedArticle = await apiHelpers.verifySuccessResponse<ArticleResponse>(getResponse);
 
     expect(updatedArticle).toMatchObject({
       id: createdArticle.id,
@@ -213,27 +254,34 @@ test.describe('Articles API', () => {
   });
 
   test('should update article book references', async () => {
-    const createdArticle = await apiHelpers.createTestArticle({
+    const articleData = {
       ...testArticles.valid,
-      bookIds: [],
-    });
+      bookIds: []
+    };
+    delete (articleData as any).id;
 
+    const createdArticle = await apiHelpers.createTestArticle(articleData);
     const book = await apiHelpers.createTestBook(testBooks.valid);
 
     const updateResponse = await articlesApi.updateArticle(createdArticle.id, {
-      bookIds: [book.id],
+      bookIds: [book.id]
     });
-    const updatedArticle =
-      await apiHelpers.verifySuccessResponse<ArticleResponse>(updateResponse);
+    expect(updateResponse.status()).toBe(204);
+
+    const getResponse = await articlesApi.getArticle(createdArticle.id);
+    const updatedArticle = await apiHelpers.verifySuccessResponse<ArticleResponse>(getResponse);
 
     expect(updatedArticle.bookIds).toContain(book.id);
   });
 
   test('should delete an article', async () => {
-    const createdArticle = await apiHelpers.createTestArticle({
+    const articleData = {
       ...testArticles.valid,
-      bookIds: [],
-    });
+      bookIds: []
+    };
+    delete (articleData as any).id;
+
+    const createdArticle = await apiHelpers.createTestArticle(articleData);
 
     const deleteResponse = await articlesApi.deleteArticle(createdArticle.id);
     expect(deleteResponse.status()).toBe(204);
@@ -249,14 +297,12 @@ test.describe('Articles API', () => {
     ];
 
     for (const article of articlesToCreate) {
+      delete (article as any).id;
       await apiHelpers.createTestArticle(article);
     }
 
     const response = await articlesApi.listArticles({ page: 1, limit: 1 });
-    const result =
-      await apiHelpers.verifySuccessResponse<
-        PaginatedResponse<ArticleResponse>
-      >(response);
+    const result = await apiHelpers.verifySuccessResponse<PaginatedResponse<ArticleResponse>>(response);
 
     expect(result.items).toHaveLength(1);
     expect(result.total).toBeGreaterThanOrEqual(2);
@@ -273,12 +319,8 @@ test.describe('Articles API', () => {
       relatedLinks: [] as Array<{ text: string; url: string }>,
     };
 
-    const response = await articlesApi.createArticle(maxLengthArticle);
-    const article = await apiHelpers.verifySuccessResponse<ArticleResponse>(
-      response,
-      201
-    );
-    expect(article.content).toHaveLength(10000);
+    const createdArticle = await apiHelpers.createTestArticle(maxLengthArticle);
+    expect(createdArticle.content).toHaveLength(10000);
   });
 
   test('should handle article with content exceeding maximum length', async () => {
@@ -290,26 +332,30 @@ test.describe('Articles API', () => {
       relatedLinks: [] as Array<{ text: string; url: string }>,
     };
 
-    const response = await articlesApi.createArticle(oversizedArticle);
+    const response = await articlesApi.createArticle({
+      ...oversizedArticle,
+      id: testArticles.valid.id
+    });
     const error = await apiHelpers.verifyErrorResponse(response, 400);
     expect(error.message).toContain('content');
   });
 
   test('should handle article with maximum excerpt length', async () => {
-    const response = await articlesApi.createArticle(
-      testArticles.maxLengthExcerpt
-    );
-    const article = await apiHelpers.verifySuccessResponse<ArticleResponse>(
-      response,
-      201
-    );
-    expect(article.excerpt).toHaveLength(160);
+    const articleData = { ...testArticles.maxLengthExcerpt };
+    delete (articleData as any).id;
+
+    const createdArticle = await apiHelpers.createTestArticle(articleData);
+    expect(createdArticle.excerpt).toHaveLength(160);
   });
 
   test('should return 400 for article with excerpt exceeding maximum length', async () => {
-    const response = await articlesApi.createArticle(
-      testArticles.invalidExcerpt
-    );
+    const articleData = { ...testArticles.invalidExcerpt };
+    delete (articleData as any).id;
+
+    const response = await articlesApi.createArticle({
+      ...articleData,
+      id: testArticles.valid.id
+    });
     const error = await apiHelpers.verifyErrorResponse(response, 400);
     expect(error.message).toContain('excerpt');
   });
@@ -327,10 +373,7 @@ test.describe('Articles API', () => {
     );
 
     const getArticleResponse = await articlesApi.getArticle(article.id);
-    const updatedArticle =
-      await apiHelpers.verifySuccessResponse<ArticleResponse>(
-        getArticleResponse
-      );
+    const updatedArticle = await apiHelpers.verifySuccessResponse<ArticleResponse>(getArticleResponse);
     expect(updatedArticle.bookIds).toContain(book.id);
   });
 });

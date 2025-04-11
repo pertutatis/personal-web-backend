@@ -3,7 +3,7 @@ import { Pool } from 'pg';
 import { getBooksConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
 import { ArticlesApi } from '../apis/articles-api';
 import { BooksApi } from '../apis/books-api';
-import { TestArticle, TestBook, generateValidUuid } from './test-data';
+import { TestArticle, TestBook, CreateArticleRequest, generateValidUuid } from './test-data';
 import { ArticleResponse, BookResponse, ErrorResponse, PaginatedResponse } from './api-types';
 
 export class ApiHelpers {
@@ -61,8 +61,12 @@ export class ApiHelpers {
     }
   }
 
-  async createTestArticle(article: TestArticle): Promise<ArticleResponse> {
-    const response = await this.articlesApi.createArticle(article);
+  async createTestArticle(article: Omit<TestArticle, 'id'>): Promise<ArticleResponse> {
+    const articleWithId: CreateArticleRequest = {
+      ...article,
+      id: generateValidUuid(Math.floor(Math.random() * 1000))
+    };
+    const response = await this.articlesApi.createArticle(articleWithId);
     return this.verifySuccessResponse<ArticleResponse>(response, 201);
   }
 

@@ -9,7 +9,7 @@ import { ArticleContent } from '../ArticleContent';
 import { ArticleBookIds } from '../ArticleBookIds';
 
 describe('Article', () => {
-  const id = new ArticleId();
+  const id = new ArticleId('cc8d8194-e099-4e3a-a431-6b4412dc5f6a');
   const slug = new ArticleSlug('test-article');
   const title = new ArticleTitle('Test Article');
   const excerpt = new ArticleExcerpt('Test excerpt');

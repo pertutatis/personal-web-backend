@@ -1,11 +1,11 @@
 import { APIRequestContext } from '@playwright/test';
 import { ArticleResponse, PaginatedResponse } from '../fixtures/api-types';
-import { TestArticle } from '../fixtures/test-data';
+import { CreateArticleRequest, TestArticle } from '../fixtures/test-data';
 
 export class ArticlesApi {
   constructor(private request: APIRequestContext) {}
 
-  async createArticle(article: TestArticle) {
+  async createArticle(article: CreateArticleRequest) {
     const response = await this.request.post('/api/blog/articles', {
       headers: {
         'Content-Type': 'application/json',

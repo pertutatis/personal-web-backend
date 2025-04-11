@@ -1,7 +1,6 @@
 import { ListArticles } from '../ListArticles';
 import { ArticleRepository } from '../../domain/ArticleRepository';
 import { Article } from '../../domain/Article';
-import { ArticleId } from '../../domain/ArticleId';
 import { ArticleTitle } from '../../domain/ArticleTitle';
 import { ArticleExcerpt } from '../../domain/ArticleExcerpt';
 import { ArticleContent } from '../../domain/ArticleContent';
@@ -25,17 +24,34 @@ describe('ListArticles', () => {
   });
 
   it('should return paginated articles', async () => {
-    const articles = Array.from({ length: 2 }, (_, i) => 
+    // Crear UUIDs únicos para cada artículo
+    const uuid1 = 'cc8d8194-e099-4e3a-a431-6b4412dc5f6a';
+    const uuid2 = 'dd7d8194-e099-4e3a-a431-6b4412dc5f6b';
+
+    const articles = [
       Article.create({
-        id: ArticleIdMother.sequence(i + 1),
-        title: new ArticleTitle(`Test Article ${i}`),
-        excerpt: new ArticleExcerpt(`Test Excerpt ${i}`),
-        content: new ArticleContent(`Test Content ${i}`),
+        id: ArticleIdMother.create(uuid1),
+        title: new ArticleTitle('Test Article 1'),
+        excerpt: new ArticleExcerpt('Test Excerpt 1'),
+        content: new ArticleContent('Test Content 1'),
+        slug: ArticleSlug.fromTitle('Test Article 1'),
         bookIds: ArticleBookIds.create([]),
+        relatedLinks: ArticleRelatedLinks.create([]),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }),
+      Article.create({
+        id: ArticleIdMother.create(uuid2),
+        title: new ArticleTitle('Test Article 2'),
+        excerpt: new ArticleExcerpt('Test Excerpt 2'),
+        content: new ArticleContent('Test Content 2'),
+        slug: ArticleSlug.fromTitle('Test Article 2'),
+        bookIds: ArticleBookIds.create([]),
+        relatedLinks: ArticleRelatedLinks.create([]),
         createdAt: new Date(),
         updatedAt: new Date()
       })
-    );
+    ];
 
     const collection = new Collection(articles, {
       page: 1,

@@ -8,6 +8,7 @@ import { ArticleRelatedLinks } from '../../domain/ArticleRelatedLinks';
 import { ArticleRelatedLink } from '../../domain/ArticleRelatedLink';
 import { PostgresArticleRepository } from '../PostgresArticleRepository';
 import { TestDatabase } from '@/contexts/shared/infrastructure/__tests__/TestDatabase';
+import { v4 as uuidv4 } from 'uuid';
 
 describe('PostgresArticleRepository', () => {
   let repository: PostgresArticleRepository;
@@ -24,8 +25,9 @@ describe('PostgresArticleRepository', () => {
 
   it('should save and retrieve an article', async () => {
     const now = new Date();
+    const id = uuidv4();
     const article = Article.create({
-      id: new ArticleId('test-id'),
+      id: new ArticleId(id),
       title: new ArticleTitle('Test Article'),
       excerpt: new ArticleExcerpt('Test Excerpt'),
       content: new ArticleContent('Test Content'),
@@ -37,12 +39,12 @@ describe('PostgresArticleRepository', () => {
 
     await repository.save(article);
 
-    const retrieved = await repository.search(new ArticleId('test-id'));
+    const retrieved = await repository.search(new ArticleId(id));
     expect(retrieved).not.toBeNull();
 
     const primitives = retrieved?.toPrimitives();
     expect(primitives).toEqual({
-      id: 'test-id',
+      id,
       title: 'Test Article',
       excerpt: 'Test Excerpt',
       content: 'Test Content',
@@ -53,20 +55,20 @@ describe('PostgresArticleRepository', () => {
       updatedAt: expect.any(String)
     });
 
-    // Verificar que las fechas son válidas
     expect(new Date(primitives!.createdAt).getTime()).not.toBeNaN();
     expect(new Date(primitives!.updatedAt).getTime()).not.toBeNaN();
   });
 
   it('should return null when article not found', async () => {
-    const result = await repository.search(new ArticleId('non-existent'));
+    const result = await repository.search(new ArticleId(uuidv4()));
     expect(result).toBeNull();
   });
 
   it('should update an article', async () => {
     const now = new Date();
+    const id = uuidv4();
     const article = Article.create({
-      id: new ArticleId('test-id'),
+      id: new ArticleId(id),
       title: new ArticleTitle('Test Article'),
       excerpt: new ArticleExcerpt('Test Excerpt'),
       content: new ArticleContent('Test Content'),
@@ -90,7 +92,7 @@ describe('PostgresArticleRepository', () => {
 
     await repository.update(updated);
 
-    const retrieved = await repository.search(new ArticleId('test-id'));
+    const retrieved = await repository.search(new ArticleId(id));
     expect(retrieved?.title.value).toBe('Updated Title');
     expect(retrieved?.excerpt.value).toBe('Updated Excerpt');
     expect(retrieved?.content.value).toBe('Updated Content');
@@ -103,8 +105,9 @@ describe('PostgresArticleRepository', () => {
 
   it('should update only the excerpt', async () => {
     const now = new Date();
+    const id = uuidv4();
     const article = Article.create({
-      id: new ArticleId('test-id'),
+      id: new ArticleId(id),
       title: new ArticleTitle('Test Article'),
       excerpt: new ArticleExcerpt('Test Excerpt'),
       content: new ArticleContent('Test Content'),
@@ -122,7 +125,7 @@ describe('PostgresArticleRepository', () => {
 
     await repository.update(updated);
 
-    const retrieved = await repository.search(new ArticleId('test-id'));
+    const retrieved = await repository.search(new ArticleId(id));
     expect(retrieved?.title.value).toBe('Test Article');
     expect(retrieved?.excerpt.value).toBe('Updated Excerpt Only');
     expect(retrieved?.content.value).toBe('Test Content');
@@ -133,12 +136,12 @@ describe('PostgresArticleRepository', () => {
 
   it('should list articles with pagination', async () => {
     const now = new Date();
-    const articles = Array.from({ length: 5 }, (_, i) => 
+    const articles = Array.from({ length: 5 }, () => 
       Article.create({
-        id: new ArticleId(`test-id-${i}`),
-        title: new ArticleTitle(`Test Article ${i}`),
-        excerpt: new ArticleExcerpt(`Test Excerpt ${i}`),
-        content: new ArticleContent(`Test Content ${i}`),
+        id: new ArticleId(uuidv4()),
+        title: new ArticleTitle('Test Article'),
+        excerpt: new ArticleExcerpt('Test Excerpt'),
+        content: new ArticleContent('Test Content'),
         bookIds: ArticleBookIds.fromValues([]),
         relatedLinks: ArticleRelatedLinks.createEmpty(),
         createdAt: now,
@@ -156,10 +159,9 @@ describe('PostgresArticleRepository', () => {
     expect(page2.items).toHaveLength(2);
     expect(page3.items).toHaveLength(1);
 
-    // Verify excerpt and slug are present in paginated results
-    expect(page1.items[0].excerpt.value).toMatch(/Test Excerpt/);
-    expect(page1.items[0].slug.value).toMatch(/test-article/);
-    expect(page1.items[1].excerpt.value).toMatch(/Test Excerpt/);
-    expect(page1.items[1].slug.value).toMatch(/test-article/);
+    expect(page1.items[0].excerpt.value).toBe('Test Excerpt');
+    expect(page1.items[0].slug.value).toBe('test-article');
+    expect(page1.items[1].excerpt.value).toBe('Test Excerpt');
+    expect(page1.items[1].slug.value).toBe('test-article');
   });
 });

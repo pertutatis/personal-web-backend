@@ -5,6 +5,8 @@ CREATE TABLE IF NOT EXISTS articles (
     excerpt TEXT NOT NULL,
     content TEXT NOT NULL,
     book_ids TEXT[] DEFAULT '{}',
+    related_links JSONB DEFAULT '[]',
+    slug VARCHAR(255) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -14,6 +16,9 @@ CREATE INDEX IF NOT EXISTS articles_title_idx ON articles (title);
 
 -- Create index on excerpt for searching
 CREATE INDEX IF NOT EXISTS articles_excerpt_idx ON articles (excerpt);
+
+-- Create index on slug for fast lookups
+CREATE INDEX IF NOT EXISTS articles_slug_idx ON articles (slug);
 
 -- Create index on created_at for pagination
 CREATE INDEX IF NOT EXISTS articles_created_at_idx ON articles (created_at DESC);
@@ -36,3 +41,9 @@ CREATE TRIGGER update_articles_updated_at
 
 -- Add comment to document excerpt column's purpose
 COMMENT ON COLUMN articles.excerpt IS 'A brief summary or preview of the article content';
+
+-- Add comment to document related_links column's purpose
+COMMENT ON COLUMN articles.related_links IS 'Array of related links with text and URL';
+
+-- Add comment to document slug column's purpose
+COMMENT ON COLUMN articles.slug IS 'URL-friendly version of the title';
