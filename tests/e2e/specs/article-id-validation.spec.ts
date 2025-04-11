@@ -28,21 +28,28 @@ test.describe('Article ID Validation', () => {
     const response = await articlesApi.createArticle(testArticles.invalidUuidFormat);
     const error = await apiHelpers.verifyErrorResponse(response, 400);
     
-    expect(error.message).toContain('id must be a valid UUID v4');
+    expect(error.message).toBe('id must be a valid UUID v4');
   });
 
   test('should reject UUID v5', async () => {
     const response = await articlesApi.createArticle(testArticles.invalidUuidVersion);
     const error = await apiHelpers.verifyErrorResponse(response, 400);
     
-    expect(error.message).toContain('id must be a valid UUID v4');
+    expect(error.message).toBe('id must be a valid UUID v4');
   });
 
   test('should reject missing UUID', async () => {
-    const response = await articlesApi.createArticle(testArticles.missingId);
+    // Use raw request to bypass TypeScript validation
+    const response = await apiHelpers['request'].post('/api/blog/articles', {
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json'
+      },
+      data: testArticles.missingId
+    });
     const error = await apiHelpers.verifyErrorResponse(response, 400);
     
-    expect(error.message).toContain('id cannot be empty');
+    expect(error.message).toBe('id cannot be empty');
   });
 
   test('should reject duplicate UUID', async () => {
@@ -83,6 +90,6 @@ test.describe('Article ID Validation', () => {
     });
     const error = await apiHelpers.verifyErrorResponse(response, 400);
     
-    expect(error.message).toContain('Invalid UUID v4 format');
+    expect(error.message).toBe('Article ID must be a valid UUID v4');
   });
 });

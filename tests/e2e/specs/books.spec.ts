@@ -1,8 +1,9 @@
 import { test, expect } from '@playwright/test';
 import { BooksApi } from '../apis/books-api';
 import { ApiHelpers } from '../fixtures/api-helpers';
-import { testBooks, generateValidIsbn } from '../fixtures/test-data';
+import { testBooks } from '../fixtures/test-data';
 import { BookResponse, PaginatedResponse } from '../fixtures/api-types';
+import { v4 as uuidv4 } from 'uuid';
 
 test.describe('Books API', () => {
   let booksApi: BooksApi;
@@ -31,7 +32,8 @@ test.describe('Books API', () => {
 
   test('should create a new book with client-provided UUID', async () => {
     const response = await booksApi.createBook(testBooks.valid);
-    await apiHelpers.verifySuccessResponse(response, 201);
+    expect(response.status()).toBe(201);
+    expect(await response.text()).toBe('');
 
     const getResponse = await booksApi.getBook(testBooks.valid.id);
     const book = await apiHelpers.verifySuccessResponse<BookResponse>(getResponse);
@@ -72,7 +74,8 @@ test.describe('Books API', () => {
 
   test('should create a book without purchase link', async () => {
     const response = await booksApi.createBook(testBooks.validWithoutPurchaseLink);
-    await apiHelpers.verifySuccessResponse(response, 201);
+    expect(response.status()).toBe(201);
+    expect(await response.text()).toBe('');
 
     const getResponse = await booksApi.getBook(testBooks.validWithoutPurchaseLink.id);
     const book = await apiHelpers.verifySuccessResponse<BookResponse>(getResponse);
@@ -81,7 +84,8 @@ test.describe('Books API', () => {
 
   test('should handle description with maximum length', async () => {
     const response = await booksApi.createBook(testBooks.maxLengthDescription);
-    await apiHelpers.verifySuccessResponse(response, 201);
+    expect(response.status()).toBe(201);
+    expect(await response.text()).toBe('');
 
     const getResponse = await booksApi.getBook(testBooks.maxLengthDescription.id);
     const book = await apiHelpers.verifySuccessResponse<BookResponse>(getResponse);
@@ -90,7 +94,8 @@ test.describe('Books API', () => {
 
   test('should handle purchase link with maximum length', async () => {
     const response = await booksApi.createBook(testBooks.maxLengthPurchaseLink);
-    await apiHelpers.verifySuccessResponse(response, 201);
+    expect(response.status()).toBe(201);
+    expect(await response.text()).toBe('');
 
     const getResponse = await booksApi.getBook(testBooks.maxLengthPurchaseLink.id);
     const book = await apiHelpers.verifySuccessResponse<BookResponse>(getResponse);
@@ -140,7 +145,10 @@ test.describe('Books API', () => {
   });
 
   test('should get a book by id', async () => {
-    await booksApi.createBook(testBooks.valid);
+    const createResponse = await booksApi.createBook(testBooks.valid);
+    expect(createResponse.status()).toBe(201);
+    expect(await createResponse.text()).toBe('');
+
     const response = await booksApi.getBook(testBooks.valid.id);
     const book = await apiHelpers.verifySuccessResponse<BookResponse>(response);
 
@@ -155,7 +163,10 @@ test.describe('Books API', () => {
   });
 
   test('should update all book fields', async () => {
-    await booksApi.createBook(testBooks.valid);
+    const createResponse = await booksApi.createBook(testBooks.valid);
+    expect(createResponse.status()).toBe(201);
+    expect(await createResponse.text()).toBe('');
+
     const updateData = {
       title: 'Updated Title',
       author: 'Updated Author',
@@ -164,7 +175,8 @@ test.describe('Books API', () => {
     };
 
     const updateResponse = await booksApi.updateBook(testBooks.valid.id, updateData);
-    await apiHelpers.verifySuccessResponse(updateResponse, 204);
+    expect(updateResponse.status()).toBe(204);
+    expect(await updateResponse.text()).toBe('');
 
     const getResponse = await booksApi.getBook(testBooks.valid.id);
     const updatedBook = await apiHelpers.verifySuccessResponse<BookResponse>(getResponse);
@@ -176,8 +188,13 @@ test.describe('Books API', () => {
   });
 
   test('should list books with pagination', async () => {
-    await booksApi.createBook(testBooks.valid);
-    await booksApi.createBook(testBooks.validSecond);
+    const book1Response = await booksApi.createBook(testBooks.valid);
+    expect(book1Response.status()).toBe(201);
+    expect(await book1Response.text()).toBe('');
+
+    const book2Response = await booksApi.createBook(testBooks.validSecond);
+    expect(book2Response.status()).toBe(201);
+    expect(await book2Response.text()).toBe('');
 
     const response = await booksApi.listBooks({ page: 1, limit: 1 });
     const result = await apiHelpers.verifySuccessResponse<PaginatedResponse<BookResponse>>(response);

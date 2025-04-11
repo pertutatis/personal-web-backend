@@ -12,8 +12,8 @@ export class HttpNextResponse {
     return NextResponse.json(data, { status: 200 });
   }
 
-  static created<T>(data?: T): NextResponse {
-    return NextResponse.json(data || {}, { status: 201 });
+  static created(): NextResponse {
+    return new NextResponse(null, { status: 201 });
   }
 
   static noContent(): NextResponse {

@@ -10,6 +10,7 @@ import { HttpNextResponse } from '@/contexts/shared/infrastructure/http/HttpNext
 import { ApiValidationError } from '@/contexts/shared/infrastructure/http/ApiValidationError';
 import { validateRelatedLinks } from '@/contexts/shared/infrastructure/validation/validateRelatedLinks';
 import type { RelatedLink } from '@/contexts/shared/infrastructure/validation/validateRelatedLinks';
+import { UuidValidator } from '@/contexts/shared/domain/validation/UuidValidator';
 
 const articlesConnectionPromise = PostgresConnection.create(getArticlesConfig());
 const booksConnectionPromise = PostgresConnection.create(getBooksConfig());
@@ -27,6 +28,11 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   return executeWithErrorHandling(async () => {
+    // Validate UUID format
+    if (!UuidValidator.isValidUuid(params.id)) {
+      throw new ApiValidationError('Article ID must be a valid UUID v4');
+    }
+
     const { articlesConnection, booksConnection } = await getConnections();
     const repository = new PostgresArticleRepository(
       articlesConnection,
@@ -44,6 +50,11 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   return executeWithErrorHandling(async () => {
+    // Validate UUID format
+    if (!UuidValidator.isValidUuid(params.id)) {
+      throw new ApiValidationError('Article ID must be a valid UUID v4');
+    }
+
     const { articlesConnection, booksConnection } = await getConnections();
     const repository = new PostgresArticleRepository(articlesConnection, booksConnection);
     const updateArticle = new UpdateArticle(repository);
@@ -64,10 +75,9 @@ export async function PUT(
     }
     const data = (rawBody && (rawBody.data || rawBody.body || rawBody)) || {};
 
-    // Get existing article
+    // Get existing article to verify it exists
     const articleFinder = new GetArticle(repository);
-    const existingArticle = await articleFinder.run(params.id);
-    const existingData = existingArticle.toPrimitives();
+    await articleFinder.run(params.id);
 
     // Build update data only with changed fields
     const updateData: {
@@ -119,6 +129,12 @@ export async function PUT(
       if (!Array.isArray(data.bookIds)) {
         throw new ApiValidationError('bookIds must be an array');
       }
+      // Validate each book ID is a valid UUID
+      for (const bookId of data.bookIds) {
+        if (!UuidValidator.isValidUuid(bookId)) {
+          throw new ApiValidationError('All book IDs must be valid UUID v4');
+        }
+      }
       updateData.bookIds = data.bookIds;
     }
 
@@ -134,9 +150,7 @@ export async function PUT(
     // Execute update only with changed fields
     await updateArticle.run(updateData);
 
-    // Get the updated article
-    const updatedArticle = await articleFinder.run(params.id);
-    return HttpNextResponse.ok(updatedArticle.toPrimitives());
+    return HttpNextResponse.noContent();
   });
 }
 
@@ -145,6 +159,11 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   return executeWithErrorHandling(async () => {
+    // Validate UUID format
+    if (!UuidValidator.isValidUuid(params.id)) {
+      throw new ApiValidationError('Article ID must be a valid UUID v4');
+    }
+
     const { articlesConnection, booksConnection } = await getConnections();
     const repository = new PostgresArticleRepository(articlesConnection, booksConnection);
     const deleteArticle = new DeleteArticle(repository);

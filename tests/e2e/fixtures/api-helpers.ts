@@ -3,8 +3,9 @@ import { Pool } from 'pg';
 import { getBooksConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
 import { ArticlesApi } from '../apis/articles-api';
 import { BooksApi } from '../apis/books-api';
-import { TestArticle, TestBook, CreateArticleRequest, generateValidUuid } from './test-data';
+import { TestArticle, TestBook, CreateArticleRequest } from './test-data';
 import { ArticleResponse, BookResponse, ErrorResponse, PaginatedResponse } from './api-types';
+import { v4 as uuidv4 } from 'uuid';
 
 export class ApiHelpers {
   private pool: Pool;
@@ -37,23 +38,12 @@ export class ApiHelpers {
   async createTestBook(book: TestBook): Promise<BookResponse> {
     try {
       const response = await this.booksApi.createBook(book);
-      const status = response.status();
-      
-      if (status !== 201) {
-        const errorBody = await response.text();
-        console.error('Create book failed:', {
-          status,
-          body: errorBody,
-          requestData: book
-        });
-        throw new Error(`Failed to create book. Status: ${status}, Body: ${errorBody}`);
-      }
+      expect(response.status()).toBe(201);
+      expect(await response.text()).toBe('');
 
       // Get the created book since create returns no content
       const getResponse = await this.booksApi.getBook(book.id);
-      if (!getResponse.ok()) {
-        throw new Error(`Failed to get created book with id ${book.id}`);
-      }
+      expect(getResponse.ok()).toBe(true);
       return await getResponse.json();
     } catch (error) {
       console.error('Error in createTestBook:', error);
@@ -62,12 +52,20 @@ export class ApiHelpers {
   }
 
   async createTestArticle(article: Omit<TestArticle, 'id'>): Promise<ArticleResponse> {
+    const articleId = uuidv4();
     const articleWithId: CreateArticleRequest = {
       ...article,
-      id: generateValidUuid(Math.floor(Math.random() * 1000))
+      id: articleId
     };
+
     const response = await this.articlesApi.createArticle(articleWithId);
-    return this.verifySuccessResponse<ArticleResponse>(response, 201);
+    expect(response.status()).toBe(201);
+    expect(await response.text()).toBe('');
+
+    // Get the created article since create returns no content
+    const getResponse = await this.articlesApi.getArticle(articleId);
+    expect(getResponse.ok()).toBe(true);
+    return await getResponse.json();
   }
 
   async cleanupTestData() {
@@ -93,7 +91,6 @@ export class ApiHelpers {
 
             console.log(`Attempting to delete article ${id}`);
             const deleteResponse = await this.articlesApi.deleteArticle(id);
-
             if (!deleteResponse.ok()) {
               console.error(`Failed to delete article ${id}:`, await deleteResponse.text());
             }
@@ -133,7 +130,7 @@ export class ApiHelpers {
 
   async createTestBookWithArticle(): Promise<{ book: BookResponse; article: ArticleResponse }> {
     const book = await this.createTestBook({
-      id: generateValidUuid(0),
+      id: uuidv4(),
       title: 'Test Book for Article',
       author: 'Test Author',
       isbn: '9780321125217',
@@ -160,19 +157,14 @@ export class ApiHelpers {
   async verifySuccessResponse<T>(response: any, expectedStatus = 200): Promise<T> {
     expect(response.status()).toBe(expectedStatus);
     
-    // For 204 responses, return null
-    if (expectedStatus === 204) {
+    // For 204 and 201 responses, verify empty body
+    if (expectedStatus === 204 || expectedStatus === 201) {
+      const body = await response.text();
+      expect(body).toBe('');
       return null as T;
     }
 
-    // For 201 responses check if there's a body
-    if (expectedStatus === 201) {
-      const hasBody = await response.body().then(() => true).catch(() => false);
-      if (!hasBody) {
-        return null as T;
-      }
-    }
-
+    // For other successful responses, expect and parse JSON body
     const body = await response.json();
     expect(body).toBeDefined();
     return body as T;
