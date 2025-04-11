@@ -1,7 +1,6 @@
 import { createSwaggerSpec } from 'next-swagger-doc';
-import type { PathsObject, ParameterObject, SchemaObject } from 'openapi3-ts';
 
-const errorSchema: SchemaObject = {
+const errorSchema = {
   type: 'object',
   properties: {
     type: {
@@ -18,7 +17,7 @@ const errorSchema: SchemaObject = {
   required: ['type', 'message']
 };
 
-const articleIdParameter: ParameterObject = {
+const articleIdParameter = {
   name: 'id',
   in: 'path',
   required: true,
@@ -30,7 +29,7 @@ const articleIdParameter: ParameterObject = {
   }
 };
 
-const paginationParameters: ParameterObject[] = [
+const paginationParameters = [
   {
     name: 'page',
     in: 'query',
@@ -55,141 +54,6 @@ const paginationParameters: ParameterObject[] = [
     }
   }
 ];
-
-const paths: PathsObject = {
-  '/blog/articles': {
-    get: {
-      tags: ['Articles'],
-      summary: 'Listar artículos',
-      description: 'Obtiene una lista paginada de artículos',
-      parameters: paginationParameters,
-      responses: {
-        '200': {
-          description: 'Lista de artículos obtenida correctamente',
-          content: {
-            'application/json': {
-              schema: {
-                $ref: '#/components/schemas/ArticleCollection'
-              }
-            }
-          }
-        }
-      }
-    },
-    post: {
-      tags: ['Articles'],
-      summary: 'Crear artículo',
-      description: 'Crea un nuevo artículo',
-      requestBody: {
-        required: true,
-        content: {
-          'application/json': {
-            schema: {
-              $ref: '#/components/schemas/CreateArticleRequest'
-            }
-          }
-        }
-      },
-      responses: {
-        '201': {
-          description: 'Artículo creado correctamente'
-        },
-        '400': {
-          description: 'Error de validación',
-          content: {
-            'application/json': {
-              schema: {
-                $ref: '#/components/schemas/Error'
-              }
-            }
-          }
-        }
-      }
-    }
-  },
-  '/blog/articles/{id}': {
-    get: {
-      tags: ['Articles'],
-      summary: 'Obtener artículo',
-      description: 'Obtiene un artículo por su ID',
-      parameters: [articleIdParameter],
-      responses: {
-        '200': {
-          description: 'Artículo encontrado',
-          content: {
-            'application/json': {
-              schema: {
-                $ref: '#/components/schemas/Article'
-              }
-            }
-          }
-        },
-        '404': {
-          description: 'Artículo no encontrado',
-          content: {
-            'application/json': {
-              schema: {
-                $ref: '#/components/schemas/Error'
-              }
-            }
-          }
-        }
-      }
-    },
-    put: {
-      tags: ['Articles'],
-      summary: 'Actualizar artículo',
-      description: 'Actualiza un artículo existente',
-      parameters: [articleIdParameter],
-      requestBody: {
-        required: true,
-        content: {
-          'application/json': {
-            schema: {
-              $ref: '#/components/schemas/UpdateArticleRequest'
-            }
-          }
-        }
-      },
-      responses: {
-        '204': {
-          description: 'Artículo actualizado correctamente'
-        },
-        '404': {
-          description: 'Artículo no encontrado',
-          content: {
-            'application/json': {
-              schema: {
-                $ref: '#/components/schemas/Error'
-              }
-            }
-          }
-        }
-      }
-    },
-    delete: {
-      tags: ['Articles'],
-      summary: 'Eliminar artículo',
-      description: 'Elimina un artículo existente',
-      parameters: [articleIdParameter],
-      responses: {
-        '204': {
-          description: 'Artículo eliminado correctamente'
-        },
-        '404': {
-          description: 'Artículo no encontrado',
-          content: {
-            'application/json': {
-              schema: {
-                $ref: '#/components/schemas/Error'
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-};
 
 const openApiDocument = {
   openapi: '3.0.3',
@@ -219,7 +83,140 @@ const openApiDocument = {
       Error: errorSchema
     }
   },
-  paths
+  paths: {
+    '/blog/articles': {
+      get: {
+        tags: ['Articles'],
+        summary: 'Listar artículos',
+        description: 'Obtiene una lista paginada de artículos',
+        parameters: paginationParameters,
+        responses: {
+          '200': {
+            description: 'Lista de artículos obtenida correctamente',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/ArticleCollection'
+                }
+              }
+            }
+          }
+        }
+      },
+      post: {
+        tags: ['Articles'],
+        summary: 'Crear artículo',
+        description: 'Crea un nuevo artículo',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/CreateArticleRequest'
+              }
+            }
+          }
+        },
+        responses: {
+          '201': {
+            description: 'Artículo creado correctamente'
+          },
+          '400': {
+            description: 'Error de validación',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/Error'
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/blog/articles/{id}': {
+      get: {
+        tags: ['Articles'],
+        summary: 'Obtener artículo',
+        description: 'Obtiene un artículo por su ID',
+        parameters: [articleIdParameter],
+        responses: {
+          '200': {
+            description: 'Artículo encontrado',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/Article'
+                }
+              }
+            }
+          },
+          '404': {
+            description: 'Artículo no encontrado',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/Error'
+                }
+              }
+            }
+          }
+        }
+      },
+      put: {
+        tags: ['Articles'],
+        summary: 'Actualizar artículo',
+        description: 'Actualiza un artículo existente',
+        parameters: [articleIdParameter],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/UpdateArticleRequest'
+              }
+            }
+          }
+        },
+        responses: {
+          '204': {
+            description: 'Artículo actualizado correctamente'
+          },
+          '404': {
+            description: 'Artículo no encontrado',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/Error'
+                }
+              }
+            }
+          }
+        }
+      },
+      delete: {
+        tags: ['Articles'],
+        summary: 'Eliminar artículo',
+        description: 'Elimina un artículo existente',
+        parameters: [articleIdParameter],
+        responses: {
+          '204': {
+            description: 'Artículo eliminado correctamente'
+          },
+          '404': {
+            description: 'Artículo no encontrado',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/Error'
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 };
 
 export const getApiDocs = () => {
