@@ -35,13 +35,19 @@
 
 ## What's Left to Build 🚧
 
+### Features Implementadas
+1. **Client-Side UUID Generation** ✅
+   - [x] Validaciones de UUID implementadas en Articles y Books
+   - [x] Respuestas API (201/204 sin cuerpo) en ambos módulos
+   - [x] Tests implementados
+   - [x] Manejo de errores de duplicación
+   - [x] Validación de formato UUID v4
+
 ### Features Pendientes
-1. **Client-Side UUID Generation**
-   - [ ] Actualizar Book module para aceptar UUIDs del cliente
-   - [ ] Añadir validaciones de UUID
-   - [ ] Modificar respuestas API (201/204 sin cuerpo)
-   - [ ] Actualizar documentación API
-   - [ ] Implementar tests para nuevos escenarios
+1. **Sistema de Eventos**
+   - [ ] Event dispatcher
+   - [ ] Event subscribers
+   - [ ] Testing de eventos
 
 2. **Sistema de Eventos**
    - [ ] Event dispatcher
@@ -49,9 +55,10 @@
    - [ ] Testing de eventos
 
 3. **Documentación API**
-   - [ ] OpenAPI/Swagger
-   - [ ] Ejemplos de uso
+   - [x] OpenAPI/Swagger ✅
+   - [x] Ejemplos de uso en OpenAPI ✅
    - [ ] Postman collection
+   - [ ] Guías de desarrollo y contribución
 
 4. **Optimizaciones**
    - [ ] Caché
@@ -117,14 +124,14 @@
 ## Next Actions 📝
 
 ### Inmediatas
-1. Implementar client-side UUID generation en Book module
-2. Actualizar tests para nuevos escenarios de UUID
-3. Actualizar documentación API para reflejar cambios UUID
+1. Implementar sistema de eventos
+2. Documentar API con OpenAPI
+3. Implementar métricas y monitoreo
 
 ### Corto Plazo
-1. Extender client-side UUID a otros módulos
-2. Implementar sistema de eventos
-3. Documentar API con OpenAPI
+1. Implementar sistema de eventos
+2. Completar documentación (Postman, guías)
+3. Implementar observabilidad
 
 ### Largo Plazo
 1. Implementar observabilidad

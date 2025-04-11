@@ -2,6 +2,33 @@
 
 ## System Architecture
 
+### API Controllers Structure (Next.js)
+```mermaid
+flowchart TD
+    subgraph API[API Layer]
+        R[route.ts] --> G[GET Handler]
+        R --> P[POST Handler]
+        R --> U[PUT Handler]
+        R --> D[DELETE Handler]
+    end
+    
+    subgraph Application[Application Layer]
+        UC[Use Cases]
+    end
+    
+    G --> UC
+    P --> UC
+    U --> UC
+    D --> UC
+```
+
+Los controladores API se mantienen en un único archivo route.ts por:
+- Mejor cohesión de endpoints relacionados
+- Facilita compartir configuración (ej: conexiones DB)
+- Controladores delgados que solo orquestan casos de uso
+- Sigue el principio "Common Closure Principle"
+
+
 ### Arquitectura Hexagonal (Ports & Adapters)
 ```mermaid
 flowchart TB

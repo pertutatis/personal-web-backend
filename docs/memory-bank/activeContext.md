@@ -40,11 +40,10 @@
 ## Next Steps
 
 ### Prioridad Alta 🔥
-1. Implementar client-side UUID generation
-   - Crear nuevos Value Objects para validación UUID
-   - Modificar endpoints para 201/204 sin respuesta
-   - Actualizar tests
-   - Documentar cambios en API
+1. Implementar sistema de eventos de dominio
+   - Dispatcher de eventos
+   - Subscribers
+   - Testing de eventos
 
 2. Implementar sistema de eventos de dominio
    - Dispatcher de eventos
@@ -52,9 +51,9 @@
    - Testing de eventos
 
 3. Mejorar documentación API
-   - OpenAPI/Swagger
-   - Ejemplos de uso
-   - Guías de desarrollo
+   - [x] OpenAPI/Swagger ✅
+   - [ ] Postman collection
+   - [ ] Guías de desarrollo (integración, contribución)
 
 ### Prioridad Media 🔸
 1. Implementar caché
@@ -76,11 +75,11 @@
 ## Active Decisions & Considerations
 
 ### Decisiones Técnicas
-1. **Client-Side UUID Generation**
+1. **Client-Side UUID Generation** ✅
    - UUIDs generados por el cliente
    - Validación de formato y unicidad en servidor
    - Respuestas sin cuerpo para create/update
-   - Comenzar por módulo Book como piloto
+   - Implementado en módulos Book y Article
 
 2. **Persistencia**
    - PostgreSQL como base de datos principal
@@ -93,9 +92,10 @@
    - Object Mothers para datos de test
 
 4. **Arquitectura**
-   - Hexagonal con DDD
-   - Value Objects para validaciones
-   - Events para comunicación entre agregados
+    - Hexagonal con DDD
+    - Value Objects para validaciones
+    - Events para comunicación entre agregados
+    - Controladores API unificados en route.ts para mantener cohesión
 
 ### Consideraciones de Mejora
 1. **Performance**
