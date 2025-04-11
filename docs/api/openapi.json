@@ -67,17 +67,20 @@
         },
         "responses": {
           "201": {
-            "description": "Artículo creado correctamente",
+            "description": "Artículo creado correctamente"
+          },
+          "400": {
+            "description": "Error de validación",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Article"
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
           },
-          "400": {
-            "description": "Error de validación",
+          "409": {
+            "description": "El ID del artículo ya existe",
             "content": {
               "application/json": {
                 "schema": {
@@ -95,10 +98,11 @@
           "name": "id",
           "in": "path",
           "required": true,
-          "description": "ID del artículo",
+          "description": "ID del artículo (UUID v4)",
           "schema": {
             "type": "string",
-            "format": "uuid"
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
           }
         }
       ],
@@ -142,12 +146,15 @@
           }
         },
         "responses": {
-          "200": {
-            "description": "Artículo actualizado correctamente",
+          "204": {
+            "description": "Artículo actualizado correctamente"
+          },
+          "400": {
+            "description": "Error de validación",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Article"
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -239,17 +246,20 @@
         },
         "responses": {
           "201": {
-            "description": "Libro creado correctamente",
+            "description": "Libro creado correctamente"
+          },
+          "400": {
+            "description": "Error de validación",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Book"
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
           },
-          "400": {
-            "description": "Error de validación",
+          "409": {
+            "description": "El ID o ISBN del libro ya existe",
             "content": {
               "application/json": {
                 "schema": {
@@ -267,10 +277,11 @@
           "name": "id",
           "in": "path",
           "required": true,
-          "description": "ID del libro",
+          "description": "ID del libro (UUID v4)",
           "schema": {
             "type": "string",
-            "format": "uuid"
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
           }
         }
       ],
@@ -314,12 +325,15 @@
           }
         },
         "responses": {
-          "200": {
-            "description": "Libro actualizado correctamente",
+          "204": {
+            "description": "Libro actualizado correctamente"
+          },
+          "400": {
+            "description": "Error de validación",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Book"
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -362,13 +376,20 @@
       "Error": {
         "type": "object",
         "properties": {
-          "error": {
+          "type": {
             "type": "string",
-            "description": "Mensaje descriptivo del error"
+            "description": "Tipo de error",
+            "example": "ValidationError"
+          },
+          "message": {
+            "type": "string",
+            "description": "Mensaje descriptivo del error",
+            "example": "El ID debe ser un UUID v4 válido"
           }
         },
         "required": [
-          "error"
+          "type",
+          "message"
         ]
       },
       "Pagination": {
