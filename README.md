@@ -12,7 +12,7 @@ src/
 │   │   ├── article/      # Article aggregate
 │   │   └── book/         # Book aggregate
 │   └── shared/           # Shared kernel
-└── databases/            # Database schemas
+└── lib/                  # Shared libraries and configuration
 ```
 
 ## Requirements
@@ -53,40 +53,69 @@ docker compose up -d
 npm run dev
 ```
 
-## API Endpoints
+## API Documentation
+
+The API documentation is available in two formats:
+
+1. **Swagger UI**: Available at `/api-docs` when running the server
+2. **OpenAPI Specification**: Available at `/docs/api/openapi.json`
+
+### Response Codes
+
+- `200`: Success with response body
+- `201`: Resource created successfully (no body)
+- `204`: Success without response body
+- `400`: Validation error
+- `404`: Resource not found
+- `409`: Conflict (e.g., duplicate ID)
 
 ### Articles
 
 - **GET /api/blog/articles**
   - List all articles
   - Query params:
-    - page: number (optional)
-    - limit: number (optional)
+    - page: number (optional, default: 1)
+    - limit: number (optional, default: 10, max: 100)
   - Response includes complete book information for referenced books
 
 - **GET /api/blog/articles/:id**
-  - Get article by ID
+  - Get article by ID (UUID v4)
   - Response includes complete book information
 
 - **POST /api/blog/articles**
-  - Create new article
+  - Create new article (returns 201)
   - Body:
     ```json
     {
+      "id": "uuid-v4",
       "title": "string",
-      "content": "string",
-      "bookIds": "string[]"
+      "excerpt": "string (max 160 chars)",
+      "content": "string (max 10000 chars)",
+      "bookIds": "string[] (UUID v4)",
+      "relatedLinks": [
+        {
+          "text": "string (max 100 chars)",
+          "url": "string (valid URL)"
+        }
+      ]
     }
     ```
 
 - **PUT /api/blog/articles/:id**
-  - Update article
-  - Body:
+  - Update article (returns 204)
+  - Body (all fields optional):
     ```json
     {
       "title": "string",
+      "excerpt": "string",
       "content": "string",
-      "bookIds": "string[]"
+      "bookIds": "string[]",
+      "relatedLinks": [
+        {
+          "text": "string",
+          "url": "string"
+        }
+      ]
     }
     ```
 
@@ -95,33 +124,57 @@ npm run dev
 - **GET /api/blog/books**
   - List all books
   - Query params:
-    - page: number (optional)
-    - limit: number (optional)
+    - page: number (optional, default: 1)
+    - limit: number (optional, default: 10, max: 100)
 
 - **GET /api/blog/books/:id**
-  - Get book by ID
+  - Get book by ID (UUID v4)
 
 - **POST /api/blog/books**
-  - Create new book
+  - Create new book (returns 201)
   - Body:
     ```json
     {
+      "id": "uuid-v4",
       "title": "string",
       "author": "string",
-      "isbn": "string"
+      "isbn": "string (valid ISBN)",
+      "description": "string",
+      "purchaseLink": "string (valid URL)"
     }
     ```
 
 - **PUT /api/blog/books/:id**
-  - Update book
-  - Body:
+  - Update book (returns 204)
+  - Body (all fields optional):
     ```json
     {
       "title": "string",
       "author": "string",
-      "isbn": "string"
+      "isbn": "string",
+      "description": "string",
+      "purchaseLink": "string"
     }
     ```
+
+## Error Handling
+
+The API provides detailed error responses:
+
+```json
+{
+  "type": "ErrorType",
+  "message": "Detailed error message"
+}
+```
+
+Common error types:
+- `ValidationError`: Invalid input data
+- `ResourceNotFound`: Resource does not exist
+- `ResourceConflict`: Resource already exists
+- `ArticleIdInvalid`: Invalid article UUID format
+- `BookIdInvalid`: Invalid book UUID format
+- `InvalidBookReference`: Referenced book does not exist
 
 ## Testing
 
@@ -129,8 +182,8 @@ The project includes comprehensive test coverage:
 
 ### Test Types
 - Unit tests for domain objects and value objects
-- Integration tests for repositories and database operations
-- Application tests for use cases and business logic
+- Integration tests for repositories
+- Application tests for use cases
 - E2E tests for API endpoints
 
 ### Running Tests
@@ -139,162 +192,44 @@ The project includes comprehensive test coverage:
 # Run all tests
 npm test
 
+# Run E2E tests with fresh environment
+npm run test:e2e:fresh
+
 # Run tests in watch mode
 npm run test:watch
 
 # Generate coverage report
 npm run test:coverage
-
-# Run tests in CI mode
-npm run test:ci
-```
-
-### Test Environment Setup
-
-1. Set up test environment (required once):
-```bash
-npm run test:setup
-```
-This will:
-- Start required Docker containers
-- Create test databases
-- Apply database schemas
-- Configure test environment
-
-2. Test databases:
-- Separate databases for tests
-- Automatic cleanup between test runs
-- Isolated from development databases
-
-### Test Structure
-
-Tests follow the project's structure:
-```
-src/
-├── contexts/
-    ├── blog/
-    │   ├── article/
-    │   │   ├── application/__tests__/    # Use case tests
-    │   │   ├── domain/__tests__/         # Domain object tests
-    │   │   └── infrastructure/__tests__/  # Repository tests
-    │   └── book/
-    │       ├── application/__tests__/
-    │       ├── domain/__tests__/
-    │       └── infrastructure/__tests__/
-```
-
-## Architecture
-
-This project follows:
-- Hexagonal Architecture (Ports and Adapters)
-- Domain-Driven Design principles
-- SOLID principles
-- Clean Architecture patterns
-
-### Key Patterns Used
-
-1. **Aggregates**:
-   - Article (root)
-   - Book (root)
-
-2. **Value Objects**:
-   - ArticleTitle, ArticleContent, ArticleBookIds
-   - BookTitle, BookAuthor, BookIsbn
-
-3. **Domain Events**:
-   - ArticleCreated, ArticleUpdated
-   - BookCreated, BookUpdated
-
-4. **Repositories**:
-   - ArticleRepository
-   - BookRepository
-
-## Development
-
-### Available Commands
-
-```bash
-# Start development server
-npm run dev
-
-# Lint code
-npm run lint
-
-# Format code
-npm run format
-
-# Type check
-npm run type-check
-
-# Build for production
-npm run build
-
-# Start production server
-npm run start
 ```
 
 ### Development Workflow
 
 1. Coding Standards:
    - TypeScript for type safety
-   - ESLint for code quality (`npm run lint`)
-   - Prettier for code formatting (`npm run format`)
-   - Pre-commit hooks for code quality
+   - ESLint for code quality
+   - Prettier for code formatting
+   - Pre-commit hooks
 
 2. Git Workflow:
-   - Create feature branch: `git checkout -b feature/nombre-feature`
-   - Commit using conventional commits: `type(scope): message`
-   - Push changes: `git push origin feature/nombre-feature`
-   - Create pull request
-   - Automated CI checks
-   - Code review process
-   - Merge after approval
-
-3. Database Management:
-   - PostgreSQL for persistence
-   - Separate databases for articles and books
-   - Schema files in `databases/` directory
-   - Automatic schema initialization on Docker startup
-   - Test databases managed separately
+   - Feature branches
+   - Conventional commits
+   - Pull request workflow
+   - CI/CD integration
 
 ## Documentation
 
 The project includes comprehensive documentation:
 
-### Architecture Documentation
+### Technical Documentation
 - [Architecture Decision Records](./docs/adr)
-  - `001-arquitectura-hexagonal.md`: Decisiones sobre arquitectura hexagonal
-  - `002-persistencia-datos.md`: Estrategia de persistencia de datos
-  - `003-api-rest.md`: Diseño de la API REST
-
-### Business Rules
 - [Operation Behavior Rules](./docs/obr)
-  - `001-article-rules.md`: Reglas de negocio para artículos
-  - `002-book-rules.md`: Reglas de negocio para libros
+- [Implementation Plans](./docs/implementation-plans)
+- [Testing Guide](./docs/testing)
 
-### Technical Setup
-- [Setup Documentation](./docs/setup)
-  - `path-aliases.md`: Configuración de alias de rutas
-  - `path-aliases-implementation.md`: Implementación técnica de los alias
-
-### Additional Resources
-- [Testing Guide](./docs/testing.md): Guía detallada de pruebas
-- [Prompts](./docs/prompts): Documentación de tareas y prompts
-
-## Error Handling
-
-The application implements comprehensive error handling:
-- Domain-specific errors
-- HTTP-specific responses
-- Validation errors
-- Database errors
-
-## Contributing
-
-1. Create a feature branch
-2. Make your changes
-3. Run tests
-4. Submit a pull request
+### API Documentation
+- Swagger UI at `/api-docs`
+- OpenAPI Specification at `/docs/api/openapi.json`
+- [Postman Collection](./docs/postman)
 
 ## License
 
