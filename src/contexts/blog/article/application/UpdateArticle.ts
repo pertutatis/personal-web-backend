@@ -1,13 +1,15 @@
 import { Article } from '../domain/Article';
 import { ArticleId } from '../domain/ArticleId';
 import { ArticleTitle } from '../domain/ArticleTitle';
-import { ArticleExcerpt } from '../domain/ArticleExcerpt';
+import { ArticleSlug } from '../domain/ArticleSlug';
 import { ArticleContent } from '../domain/ArticleContent';
+import { ArticleExcerpt } from '../domain/ArticleExcerpt';
+import { ArticleRepository } from '../domain/ArticleRepository';
 import { ArticleBookIds } from '../domain/ArticleBookIds';
 import { ArticleRelatedLinks } from '../domain/ArticleRelatedLinks';
-import { ArticleRepository } from '../domain/ArticleRepository';
+import { ArticleNotFound } from './ArticleNotFound';
 
-type UpdateArticleRequest = {
+export type UpdateArticleRequest = {
   id: string;
   title?: string;
   excerpt?: string;
@@ -19,26 +21,32 @@ type UpdateArticleRequest = {
 export class UpdateArticle {
   constructor(private readonly repository: ArticleRepository) {}
 
-  async run(request: UpdateArticleRequest): Promise<Article> {
+  async run(request: UpdateArticleRequest): Promise<void> {
     const articleId = new ArticleId(request.id);
     const article = await this.repository.search(articleId);
 
     if (!article) {
-      throw new Error('Article not found');
+      throw new ArticleNotFound(articleId);
     }
 
     const updateParams = this.buildUpdateParams(request);
     const updatedArticle = article.update(updateParams);
     await this.repository.update(updatedArticle);
-
-    return updatedArticle;
   }
 
-  private buildUpdateParams(request: UpdateArticleRequest) {
-    const params: Record<string, any> = {};
+  private buildUpdateParams(request: UpdateArticleRequest): Partial<{
+    title: ArticleTitle;
+    excerpt: ArticleExcerpt;
+    content: ArticleContent;
+    bookIds: ArticleBookIds;
+    relatedLinks: ArticleRelatedLinks;
+    slug: ArticleSlug;
+  }> {
+    const params: ReturnType<UpdateArticle['buildUpdateParams']> = {};
 
     if (request.title !== undefined) {
       params.title = new ArticleTitle(request.title);
+      params.slug = ArticleSlug.fromTitle(request.title);
     }
 
     if (request.excerpt !== undefined) {

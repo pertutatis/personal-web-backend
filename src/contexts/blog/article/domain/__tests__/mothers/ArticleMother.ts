@@ -6,9 +6,10 @@ import { ArticleExcerpt } from '../../ArticleExcerpt';
 import { ArticleContent } from '../../ArticleContent';
 import { ArticleBookIds } from '../../ArticleBookIds';
 import { ArticleRelatedLinksMother } from './ArticleRelatedLinksMother';
+import { v4 as uuidv4 } from 'uuid';
 
 export class ArticleMother {
-  static create(id: string = 'article-1'): Article {
+  static create(id: string = 'cc8d8194-e099-4e3a-a431-6b4412dc5f6a'): Article {
     return Article.create({
       id: new ArticleId(id),
       slug: new ArticleSlug('test-article'),
@@ -23,7 +24,7 @@ export class ArticleMother {
   }
 
   static random(): Article {
-    const id = Math.random().toString(36).substring(7);
+    const id = uuidv4();
     return Article.create({
       id: new ArticleId(id),
       slug: new ArticleSlug(`test-article-${id}`),

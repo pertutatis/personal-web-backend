@@ -1,13 +1,14 @@
 # Article Rules
 
 ## Use Cases
-
 ### 1. Create Article
 - **Primary Flow**:
-  1. Receive title, content, excerpt, book IDs, and optional related links
-  2. Generate slug from title
-  3. Validate all inputs
-  4. Create new article
+  1. Receive UUID, title, content, excerpt, book IDs, and optional related links
+  2. Validate UUID format and uniqueness
+  3. Generate slug from title
+  4. Validate all inputs
+  5. Create new article
+  6. Return 201 without response body
   5. Return success
 
 - **Edge Cases**:
@@ -19,7 +20,9 @@
   - Excerpt exceeds 300 characters → Return error
   - Book IDs array is empty → Return error
   - Any book ID doesn't exist → Return error
-  - Invalid UUID format → Return error
+  - Invalid UUID format → Return 400 error
+  - Duplicate UUID → Return 409 error
+  - Missing UUID → Return 400 error
   - Related link text empty → Return error
   - Related link text exceeds 100 characters → Return error
   - Related link URL invalid → Return error
@@ -57,7 +60,7 @@
   2. If title changes, generate new slug
   3. Validate all inputs
   4. Update article
-  5. Return success
+  5. Return 204 without response body
 
 - **Edge Cases**:
   - Article not found → Return 404

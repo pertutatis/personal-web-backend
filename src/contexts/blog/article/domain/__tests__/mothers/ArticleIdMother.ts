@@ -10,41 +10,25 @@ export class ArticleIdMother {
     return new ArticleId(uuidv4());
   }
 
-  static sequence(index: number): ArticleId {
-    return new ArticleId(`article-${index}`);
-  }
-
-  static invalid(): ArticleId {
-    return new ArticleId('invalid-id');
-  }
-
-  static empty(): ArticleId {
-    return new ArticleId('');
-  }
-
-  static withDashes(): ArticleId {
-    return new ArticleId('article-id-with-dashes');
-  }
-
-  static withNumbers(): ArticleId {
-    return new ArticleId('article123');
-  }
-
-  static withSpecialChars(): ArticleId {
-    return new ArticleId('article.id_special@chars');
-  }
-
   // Helper para tests de colecciones
   static multiple(count: number): ArticleId[] {
-    return Array.from({ length: count }, (_, index) => this.sequence(index + 1));
+    return Array.from({ length: count }, () => this.random());
   }
 
   // Helper para tests de bases de datos
   static existing(): ArticleId {
-    return new ArticleId('existing-article-id');
+    return new ArticleId('cc8d8194-e099-4e3a-a431-6b4412dc5f6a');
   }
 
   static nonExisting(): ArticleId {
-    return new ArticleId('non-existing-article-id');
+    return new ArticleId('dd7d8194-e099-4e3a-a431-6b4412dc5f6b');
+  }
+
+  static invalidFormat(): string {
+    return 'not-a-uuid';
+  }
+
+  static invalidVersion(): string {
+    return 'cc8d8194-e099-5e3a-a431-6b4412dc5f6a'; // UUID v5
   }
 }

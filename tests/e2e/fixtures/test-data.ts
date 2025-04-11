@@ -123,6 +123,7 @@ export const testBooks = {
 
 export const testArticles = {
   valid: {
+    id: 'cc8d8194-e099-4e3a-a431-6b4412dc5f6a',
     title: 'Understanding Domain-Driven Design',
     excerpt: 'A comprehensive guide to DDD concepts and patterns',
     content: 'This is a comprehensive guide about DDD...',
@@ -135,13 +136,38 @@ export const testArticles = {
     ]
   },
   validWithBooks: {
+    id: 'dd7d8194-e099-4e3a-a431-6b4412dc5f6b',
     title: 'Clean Code Principles',
     excerpt: 'Exploring the fundamentals of clean code',
     content: 'In this article we will explore clean code principles...',
     bookIds: [],
     relatedLinks: []
   },
+  invalidUuidFormat: {
+    id: 'not-a-uuid',
+    title: 'Test Article',
+    excerpt: 'Test excerpt',
+    content: 'Test content',
+    bookIds: [],
+    relatedLinks: []
+  },
+  invalidUuidVersion: {
+    id: 'cc8d8194-e099-5e3a-a431-6b4412dc5f6a', // UUID v5
+    title: 'Test Article',
+    excerpt: 'Test excerpt',
+    content: 'Test content',
+    bookIds: [],
+    relatedLinks: []
+  },
+  missingId: {
+    title: 'Test Article',
+    excerpt: 'Test excerpt',
+    content: 'Test content',
+    bookIds: [],
+    relatedLinks: []
+  },
   validWithMaxLinks: {
+    id: 'ee7d8194-e099-4e3a-a431-6b4412dc5f6c',
     title: 'Article with Maximum Links',
     excerpt: 'Testing maximum number of related links',
     content: 'Test content...',
@@ -152,6 +178,7 @@ export const testArticles = {
     }))
   },
   invalidLinks: {
+    id: 'ff7d8194-e099-4e3a-a431-6b4412dc5f6d',
     title: 'Article with Invalid Links',
     excerpt: 'Test excerpt',
     content: 'Test content',
@@ -164,6 +191,7 @@ export const testArticles = {
     ]
   },
   invalidLinkUrl: {
+    id: 'gg7d8194-e099-4e3a-a431-6b4412dc5f6e',
     title: 'Article with Invalid Link URL',
     excerpt: 'Test excerpt',
     content: 'Test content',
@@ -176,6 +204,7 @@ export const testArticles = {
     ]
   },
   duplicateLinks: {
+    id: 'hh7d8194-e099-4e3a-a431-6b4412dc5f6f',
     title: 'Article with Duplicate Links',
     excerpt: 'Test excerpt',
     content: 'Test content',
@@ -192,6 +221,7 @@ export const testArticles = {
     ]
   },
   tooManyLinks: {
+    id: 'ii7d8194-e099-4e3a-a431-6b4412dc5f70',
     title: 'Article with Too Many Links',
     excerpt: 'Test excerpt',
     content: 'Test content',
@@ -202,6 +232,7 @@ export const testArticles = {
     }))
   },
   specialCharactersTitle: {
+    id: 'jj7d8194-e099-4e3a-a431-6b4412dc5f71',
     title: '¿Cómo Implementar DDD en TypeScript?',
     excerpt: 'Una guía práctica de Domain-Driven Design',
     content: 'Test content...',
@@ -209,6 +240,7 @@ export const testArticles = {
     relatedLinks: []
   },
   invalid: {
+    id: 'kk7d8194-e099-4e3a-a431-6b4412dc5f72',
     title: '',
     excerpt: '',
     content: 'A'.repeat(10001),
@@ -216,6 +248,7 @@ export const testArticles = {
     relatedLinks: []
   },
   invalidBookIds: {
+    id: 'll7d8194-e099-4e3a-a431-6b4412dc5f73',
     title: 'Test Article',
     excerpt: 'Test excerpt',
     content: 'Test content',
@@ -223,6 +256,7 @@ export const testArticles = {
     relatedLinks: []
   },
   maxLengthTitle: {
+    id: 'mm7d8194-e099-4e3a-a431-6b4412dc5f74',
     title: 'A'.repeat(255),
     excerpt: 'Valid excerpt',
     content: 'Valid content',
@@ -230,6 +264,7 @@ export const testArticles = {
     relatedLinks: []
   },
   maxLengthContent: {
+    id: 'nn7d8194-e099-4e3a-a431-6b4412dc5f75',
     title: 'Test Title',
     excerpt: 'Test excerpt',
     content: 'A'.repeat(10000),
@@ -237,6 +272,7 @@ export const testArticles = {
     relatedLinks: []
   },
   maxLengthExcerpt: {
+    id: 'oo7d8194-e099-4e3a-a431-6b4412dc5f76',
     title: 'Test Title',
     excerpt: 'A'.repeat(160),
     content: 'Test content',
@@ -244,6 +280,7 @@ export const testArticles = {
     relatedLinks: []
   },
   invalidExcerpt: {
+    id: 'pp7d8194-e099-4e3a-a431-6b4412dc5f77',
     title: 'Test Title',
     excerpt: 'A'.repeat(161),
     content: 'Test content',
@@ -277,11 +314,16 @@ export interface TestBook {
 }
 
 export interface TestArticle {
+  id?: string;
   title: string;
   excerpt: string;
   content: string;
   bookIds: string[];
   relatedLinks: RelatedLink[];
+}
+
+export interface CreateArticleRequest extends Omit<TestArticle, 'id'> {
+  id: string;
 }
 
 export const generateValidIsbn = (index: number): string => {

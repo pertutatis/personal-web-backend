@@ -7,9 +7,10 @@ import { ArticleExcerpt } from '../domain/ArticleExcerpt';
 import { ArticleBookIds } from '../domain/ArticleBookIds';
 import { ArticleRelatedLinks } from '../domain/ArticleRelatedLinks';
 import { ArticleRepository } from '../domain/ArticleRepository';
-import { UuidGenerator } from '@/contexts/shared/domain/UuidGenerator';
+import { ArticleIdDuplicated } from '../domain/ArticleIdDuplicated';
 
 export type CreateArticleRequest = {
+  id: string;
   title: string;
   excerpt: string;
   content: string;
@@ -18,13 +19,17 @@ export type CreateArticleRequest = {
 };
 
 export class CreateArticle {
-  constructor(
-    private readonly repository: ArticleRepository,
-    private readonly uuidGenerator: UuidGenerator
-  ) {}
+  constructor(private readonly repository: ArticleRepository) {}
 
-  async run(request: CreateArticleRequest): Promise<Article> {
-    const articleId = new ArticleId(await this.uuidGenerator.generate());
+  async run(request: CreateArticleRequest): Promise<void> {
+    const articleId = new ArticleId(request.id);
+
+    // Verificar duplicados
+    const existingArticle = await this.repository.search(articleId);
+    if (existingArticle) {
+      throw new ArticleIdDuplicated(request.id);
+    }
+
     const now = new Date();
 
     const article = Article.create({
@@ -40,6 +45,5 @@ export class CreateArticle {
     });
 
     await this.repository.save(article);
-    return article;
   }
 }
