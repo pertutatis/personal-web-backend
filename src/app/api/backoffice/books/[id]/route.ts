@@ -1,14 +1,14 @@
 import { NextRequest } from 'next/server';
-import { PostgresBookRepository } from '@/contexts/blog/book/infrastructure/PostgresBookRepository';
+import { PostgresBookRepository } from '@/contexts/backoffice/book/infrastructure/PostgresBookRepository';
 import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection';
-import { GetBook } from '@/contexts/blog/book/application/GetBook';
-import { UpdateBook } from '@/contexts/blog/book/application/UpdateBook';
-import { DeleteBook as DeleteBookAction } from '@/contexts/blog/book/application/DeleteBook';
+import { GetBook } from '@/contexts/backoffice/book/application/GetBook';
+import { UpdateBook } from '@/contexts/backoffice/book/application/UpdateBook';
+import { DeleteBook as DeleteBookAction } from '@/contexts/backoffice/book/application/DeleteBook';
 import { getBooksConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
 import { executeWithErrorHandling } from '@/contexts/shared/infrastructure/http/executeWithErrorHandling';
 import { HttpNextResponse } from '@/contexts/shared/infrastructure/http/HttpNextResponse';
 import { ApiValidationError } from '@/contexts/shared/infrastructure/http/ApiValidationError';
-import { BookIsbn } from '@/contexts/blog/book/domain/BookIsbn';
+import { BookIsbn } from '@/contexts/backoffice/book/domain/BookIsbn';
 
 // Crear conexión como promesa para asegurar una única instancia
 const booksConnectionPromise = PostgresConnection.create(getBooksConfig());

@@ -69,7 +69,7 @@ export class ArticleContentMother {
   }
 
   static tooLong(): ArticleContent {
-    return new ArticleContent("a".repeat(10001));
+    return new ArticleContent("a".repeat(20001));
   }
 
   static maxLength(): ArticleContent {

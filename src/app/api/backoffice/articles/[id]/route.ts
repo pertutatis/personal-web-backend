@@ -1,9 +1,9 @@
 import { NextRequest } from 'next/server';
-import { PostgresArticleRepository } from '@/contexts/blog/article/infrastructure/PostgresArticleRepository';
+import { PostgresArticleRepository } from '@/contexts/backoffice/article/infrastructure/PostgresArticleRepository';
 import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection';
-import { GetArticle } from '@/contexts/blog/article/application/GetArticle';
-import { UpdateArticle } from '@/contexts/blog/article/application/UpdateArticle';
-import { DeleteArticle } from '@/contexts/blog/article/application/DeleteArticle';
+import { GetArticle } from '@/contexts/backoffice/article/application/GetArticle';
+import { UpdateArticle } from '@/contexts/backoffice/article/application/UpdateArticle';
+import { DeleteArticle } from '@/contexts/backoffice/article/application/DeleteArticle';
 import { getArticlesConfig, getBooksConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
 import { executeWithErrorHandling } from '@/contexts/shared/infrastructure/http/executeWithErrorHandling';
 import { HttpNextResponse } from '@/contexts/shared/infrastructure/http/HttpNextResponse';

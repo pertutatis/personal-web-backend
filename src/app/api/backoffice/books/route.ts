@@ -1,14 +1,14 @@
 import { NextRequest } from 'next/server';
-import { PostgresBookRepository } from '@/contexts/blog/book/infrastructure/PostgresBookRepository';
+import { PostgresBookRepository } from '@/contexts/backoffice/book/infrastructure/PostgresBookRepository';
 import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection';
-import { CreateBook } from '@/contexts/blog/book/application/CreateBook';
-import { ListBooks } from '@/contexts/blog/book/application/ListBooks';
+import { CreateBook } from '@/contexts/backoffice/book/application/CreateBook';
+import { ListBooks } from '@/contexts/backoffice/book/application/ListBooks';
 import { executeWithErrorHandling } from '@/contexts/shared/infrastructure/http/executeWithErrorHandling';
 import { HttpNextResponse } from '@/contexts/shared/infrastructure/http/HttpNextResponse';
 import { ApiValidationError } from '@/contexts/shared/infrastructure/http/ApiValidationError';
 import { getBooksConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
-import { BookIdDuplicated } from '@/contexts/blog/book/domain/BookIdDuplicated';
-import { BookIdInvalid } from '@/contexts/blog/book/domain/BookIdInvalid';
+import { BookIdDuplicated } from '@/contexts/backoffice/book/domain/BookIdDuplicated';
+import { BookIdInvalid } from '@/contexts/backoffice/book/domain/BookIdInvalid';
 
 // Crear conexión como promesa para asegurar una única instancia
 const booksConnectionPromise = PostgresConnection.create(getBooksConfig());

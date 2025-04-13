@@ -60,7 +60,7 @@ const openApiDocument = {
   info: {
     title: 'Personal Web Backend API',
     version: '1.0.0',
-    description: 'API RESTful para la gestión de artículos y libros del blog personal',
+    description: 'API RESTful para la gestión de artículos y libros del backoffice',
   },
   servers: [
     {
@@ -84,7 +84,7 @@ const openApiDocument = {
     }
   },
   paths: {
-    '/blog/articles': {
+    '/backoffice/articles': {
       get: {
         tags: ['Articles'],
         summary: 'Listar artículos',
@@ -134,7 +134,7 @@ const openApiDocument = {
         }
       }
     },
-    '/blog/articles/{id}': {
+    '/backoffice/articles/{id}': {
       get: {
         tags: ['Articles'],
         summary: 'Obtener artículo',

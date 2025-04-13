@@ -1,5 +1,5 @@
-import { InvalidPaginationParams as ArticleInvalidPaginationParams } from '@/contexts/blog/article/application/InvalidPaginationParams';
-import { InvalidPaginationParams as BookInvalidPaginationParams } from '@/contexts/blog/book/application/InvalidPaginationParams';
+import { InvalidPaginationParams as ArticleInvalidPaginationParams } from '@/contexts/backoffice/article/application/InvalidPaginationParams';
+import { InvalidPaginationParams as BookInvalidPaginationParams } from '@/contexts/backoffice/book/application/InvalidPaginationParams';
 import { DomainError } from '@/contexts/shared/domain/DomainError';
 
 describe('Error Handling', () => {

@@ -1,15 +1,15 @@
 import { NextRequest } from 'next/server';
-import { PostgresArticleRepository } from '@/contexts/blog/article/infrastructure/PostgresArticleRepository';
+import { PostgresArticleRepository } from '@/contexts/backoffice/article/infrastructure/PostgresArticleRepository';
 import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection';
-import { CreateArticle } from '@/contexts/blog/article/application/CreateArticle';
-import { ListArticles } from '@/contexts/blog/article/application/ListArticles';
+import { CreateArticle } from '@/contexts/backoffice/article/application/CreateArticle';
+import { ListArticles } from '@/contexts/backoffice/article/application/ListArticles';
 import { executeWithErrorHandling } from '@/contexts/shared/infrastructure/http/executeWithErrorHandling';
 import { HttpNextResponse } from '@/contexts/shared/infrastructure/http/HttpNextResponse';
 import { ApiValidationError } from '@/contexts/shared/infrastructure/http/ApiValidationError';
 import { getArticlesConfig, getBooksConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
 import { validateRelatedLinks } from '@/contexts/shared/infrastructure/validation/validateRelatedLinks';
 import type { RelatedLink } from '@/contexts/shared/infrastructure/validation/validateRelatedLinks';
-import { ArticleIdDuplicated } from '@/contexts/blog/article/domain/ArticleIdDuplicated';
+import { ArticleIdDuplicated } from '@/contexts/backoffice/article/domain/ArticleIdDuplicated';
 import { UuidValidator } from '@/contexts/shared/domain/validation/UuidValidator';
 
 // Crear conexiones como promesas para asegurar una única instancia

@@ -27,7 +27,7 @@ class InvalidBookReferenceError extends DomainError {
     super('One or more referenced books do not exist');
   }
 }
-import { BookId } from '@/contexts/blog/book/domain/BookId';
+import { BookId } from '@/contexts/backoffice/book/domain/BookId';
 
 interface ArticleRow {
   id: string;

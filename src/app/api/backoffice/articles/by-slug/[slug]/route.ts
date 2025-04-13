@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { PostgresArticleRepository } from '@/contexts/blog/article/infrastructure/PostgresArticleRepository';
+import { PostgresArticleRepository } from '@/contexts/backoffice/article/infrastructure/PostgresArticleRepository';
 import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection';
 import { getArticlesConfig, getBooksConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
 import { executeWithErrorHandling } from '@/contexts/shared/infrastructure/http/executeWithErrorHandling';

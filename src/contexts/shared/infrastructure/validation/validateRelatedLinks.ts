@@ -1,4 +1,4 @@
-import { RelatedLinksValidationError } from '@/contexts/blog/article/domain/validation/errors/RelatedLinksValidationError';
+import { RelatedLinksValidationError } from '@/contexts/backoffice/article/domain/validation/errors/RelatedLinksValidationError';
 
 export interface RelatedLink {
   text: string;
