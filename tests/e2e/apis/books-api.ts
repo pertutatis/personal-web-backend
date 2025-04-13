@@ -8,7 +8,7 @@ export class BooksApi {
   async createBook(book: TestBook) {
     try {
       console.log('Sending create book request:', book);
-      const response = await this.request.post('/api/blog/books', {
+      const response = await this.request.post('/api/backoffice/books', {
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json'
@@ -46,12 +46,12 @@ export class BooksApi {
 
   async getBook(id: string | number | object) {
     const bookId = this.formatId(id);
-    return this.request.get(`/api/blog/books/${bookId}`);
+    return this.request.get(`/api/backoffice/books/${bookId}`);
   }
 
   async updateBook(id: string | number | object, book: Partial<TestBook>) {
     const bookId = this.formatId(id);
-    return this.request.put(`/api/blog/books/${bookId}`, {
+    return this.request.put(`/api/backoffice/books/${bookId}`, {
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json'
@@ -62,7 +62,7 @@ export class BooksApi {
 
   async deleteBook(id: string | number | object) {
     const bookId = this.formatId(id);
-    return this.request.delete(`/api/blog/books/${bookId}`);
+    return this.request.delete(`/api/backoffice/books/${bookId}`);
   }
 
   async listBooks({ page, limit }: { page?: number; limit?: number } = {}) {
@@ -71,7 +71,7 @@ export class BooksApi {
     if (limit !== undefined) searchParams.append('limit', limit.toString());
     
     const queryString = searchParams.toString();
-    const url = `/api/blog/books${queryString ? `?${queryString}` : ''}`;
+    const url = `/api/backoffice/books${queryString ? `?${queryString}` : ''}`;
     return this.request.get(url);
   }
 

@@ -6,7 +6,7 @@ export class ArticlesApi {
   constructor(private request: APIRequestContext) {}
 
   async createArticle(article: CreateArticleRequest) {
-    const response = await this.request.post('/api/blog/articles', {
+    const response = await this.request.post('/api/backoffice/articles', {
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json'
@@ -36,16 +36,16 @@ export class ArticlesApi {
 
   async getArticle(id: string | object) {
     const articleId = this.getIdValue(id);
-    return this.request.get(`/api/blog/articles/${articleId}`);
+    return this.request.get(`/api/backoffice/articles/${articleId}`);
   }
 
   async getArticleBySlug(slug: string) {
-    return this.request.get(`/api/blog/articles/by-slug/${slug}`);
+    return this.request.get(`/api/backoffice/articles/by-slug/${slug}`);
   }
 
   async updateArticle(id: string | object, article: Partial<TestArticle>) {
     const articleId = this.getIdValue(id);
-    return this.request.put(`/api/blog/articles/${articleId}`, {
+    return this.request.put(`/api/backoffice/articles/${articleId}`, {
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json'
@@ -56,7 +56,7 @@ export class ArticlesApi {
 
   async deleteArticle(id: string | object) {
     const articleId = this.getIdValue(id);
-    return this.request.delete(`/api/blog/articles/${articleId}`);
+    return this.request.delete(`/api/backoffice/articles/${articleId}`);
   }
 
   async listArticles({ page, limit }: { page?: number; limit?: number } = {}) {
@@ -65,7 +65,7 @@ export class ArticlesApi {
     if (limit !== undefined) searchParams.append('limit', limit.toString());
     
     const queryString = searchParams.toString();
-    const url = `/api/blog/articles${queryString ? `?${queryString}` : ''}`;
+    const url = `/api/backoffice/articles${queryString ? `?${queryString}` : ''}`;
     return this.request.get(url);
   }
 

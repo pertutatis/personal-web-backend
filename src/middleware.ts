@@ -23,5 +23,5 @@ export function middleware(request: NextRequest) {
 
 // Configurar el middleware para que solo se ejecute en las rutas de la API
 export const config = {
-  matcher: '/api/:path*'
+  matcher: '/api/(backoffice|health|swagger)/:path*'
 }

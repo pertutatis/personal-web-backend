@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Personal Web Backend API",
-    "description": "API RESTful para la gestión de artículos y libros del blog personal",
+    "description": "API RESTful para la gestión de artículos y libros del backoffice",
     "version": "1.0.0"
   },
   "servers": [
@@ -12,7 +12,7 @@
     }
   ],
   "paths": {
-    "/blog/articles": {
+    "/backoffice/articles": {
       "get": {
         "summary": "Listar artículos",
         "description": "Obtiene una lista paginada de artículos",
@@ -92,7 +92,7 @@
         }
       }
     },
-    "/blog/articles/{id}": {
+    "/backoffice/articles/{id}": {
       "parameters": [
         {
           "name": "id",
@@ -191,7 +191,7 @@
         }
       }
     },
-    "/blog/books": {
+    "/backoffice/books": {
       "get": {
         "summary": "Listar libros",
         "description": "Obtiene una lista paginada de libros",
@@ -271,7 +271,7 @@
         }
       }
     },
-    "/blog/books/{id}": {
+    "/backoffice/books/{id}": {
       "parameters": [
         {
           "name": "id",

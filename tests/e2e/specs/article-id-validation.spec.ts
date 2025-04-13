@@ -40,7 +40,7 @@ test.describe('Article ID Validation', () => {
 
   test('should reject missing UUID', async () => {
     // Use raw request to bypass TypeScript validation
-    const response = await apiHelpers['request'].post('/api/blog/articles', {
+    const response = await apiHelpers['request'].post('/api/backoffice/articles', {
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json'

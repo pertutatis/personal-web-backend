@@ -1,6 +1,6 @@
 {
   "paths": {
-    "/blog/books": {
+    "/backoffice/books": {
       "get": {
         "summary": "Listar libros",
         "description": "Obtiene una lista paginada de libros",
@@ -77,7 +77,7 @@
         }
       }
     },
-    "/blog/books/{id}": {
+    "/backoffice/books/{id}": {
       "parameters": [
         {
           "name": "id",
