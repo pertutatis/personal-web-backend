@@ -105,8 +105,8 @@ export async function PUT(
       if (excerpt === '') {
         throw new ApiValidationError('excerpt cannot be empty');
       }
-      if (excerpt.length > 160) {
-        throw new ApiValidationError('excerpt exceeds maximum length of 160 characters');
+      if (excerpt.length > 300) {
+        throw new ApiValidationError('excerpt exceeds maximum length of 300 characters');
       }
       updateData.excerpt = excerpt;
     }
@@ -119,8 +119,8 @@ export async function PUT(
       if (content === '') {
         throw new ApiValidationError('content cannot be empty');
       }
-      if (content.length > 10000) {
-        throw new ApiValidationError('content exceeds maximum length of 10000 characters');
+      if (content.length > 20000) {
+        throw new ApiValidationError('content exceeds maximum length of 20000 characters');
       }
       updateData.content = content;
     }

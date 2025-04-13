@@ -93,15 +93,15 @@ export async function POST(request: NextRequest) {
     // Validate excerpt
     if (!excerpt) {
       errors.push('excerpt cannot be empty');
-    } else if (excerpt.length > 160) {
-      errors.push('excerpt exceeds maximum length of 160 characters');
+    } else if (excerpt.length > 300) {
+      errors.push('excerpt exceeds maximum length of 300 characters');
     }
 
     // Validate content
     if (!articleContent) {
       errors.push('content cannot be empty');
-    } else if (articleContent.length > 10000) {
-      errors.push('content exceeds maximum length of 10000 characters');
+    } else if (articleContent.length > 20000) {
+      errors.push('content exceeds maximum length of 20000 characters');
     }
 
     if (errors.length > 0) {

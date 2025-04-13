@@ -3,7 +3,7 @@ import { ArticleContentEmpty } from './ArticleContentEmpty';
 import { ArticleContentLengthExceeded } from './ArticleContentLengthExceeded';
 
 export class ArticleContent extends StringValueObject {
-  static readonly MAX_LENGTH = 10000;
+  static readonly MAX_LENGTH = 20000;
 
   constructor(value: string) {
     const trimmedValue = value.trim();
