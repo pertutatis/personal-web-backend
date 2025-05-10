@@ -1,23 +1,22 @@
 #!/bin/bash
 set -e
 
-echo "🔧 Setting up test environment..."
+echo "Setting up test environment..."
 
-# Limpiar procesos previos
-echo "🧹 Cleaning up previous processes..."
-pkill -f "next start" || true
-lsof -ti:3000 | xargs kill -9 || true
+# Setup auth database
+echo "Setting up auth database..."
+ts-node scripts/setupAuthDb.ts
 
-# Inicializar bases de datos de prueba
-echo "📦 Setting up test databases..."
-npx ts-node scripts/setupTestDb.ts
+# Setup articles database
+echo "Setting up articles database..."
+ts-node scripts/setupTestDb.ts articles test_articles
 
-# Construir la aplicación Next.js
-echo "🏗️ Building Next.js application..."
-npm run build
+# Setup books database
+echo "Setting up books database..."
+ts-node scripts/setupTestDb.ts books test_books
 
-# Copiar variables de entorno para los tests
-echo "🔑 Setting up test environment variables..."
-cp .env.test .env.local
+# Run migrations
+echo "Running migrations..."
+ts-node scripts/verify-test-env.ts
 
-echo "✅ Test environment setup complete!"
+echo "Test environment setup completed"

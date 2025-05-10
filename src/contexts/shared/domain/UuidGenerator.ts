@@ -1,3 +1,3 @@
 export interface UuidGenerator {
-  generate(): Promise<string>;
+  generate(): string
 }

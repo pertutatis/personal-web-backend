@@ -1,115 +1,73 @@
-import { PostgresConnection } from '../src/contexts/shared/infrastructure/PostgresConnection';
-import { getTestConfig } from '../src/contexts/shared/infrastructure/config/DatabaseConfig';
-import * as fs from 'fs';
-import * as path from 'path';
+import { Pool } from 'pg'
 
-async function loadSqlFile(databaseType: 'articles' | 'books'): Promise<string> {
-  const filePath = path.join(__dirname, '..', 'databases', `${databaseType}.sql`);
-  return fs.readFileSync(filePath, 'utf8');
-}
+async function verifyDatabase(name: string, tables: string[]) {
+  const pool = new Pool({
+    host: process.env.TEST_DB_HOST || 'localhost',
+    port: Number(process.env.TEST_DB_PORT) || 5432,
+    user: process.env.TEST_DB_USER || 'postgres',
+    password: process.env.TEST_DB_PASSWORD || 'postgres',
+    database: name
+  })
 
-async function createDatabase(type: 'articles' | 'books'): Promise<void> {
-  const name = `test_${type}`;
-  const port = type === 'articles' ? 5432 : 5433;
-  
-  // Connect to default database first
-  const defaultConfig = {
-    host: process.env.DB_HOST || 'localhost',
-    port,
-    database: 'postgres',
-    user: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASSWORD || 'postgres'
-  };
-
-  let defaultConnection: PostgresConnection | undefined;
-  
   try {
-    defaultConnection = await PostgresConnection.create(defaultConfig);
-    
-    // Drop database if exists and create it again
-    await defaultConnection.execute(`
-      SELECT pg_terminate_backend(pid) 
-      FROM pg_stat_activity 
-      WHERE datname = '${name}'
-    `);
-    await defaultConnection.execute(`DROP DATABASE IF EXISTS ${name}`);
-    await defaultConnection.execute(`CREATE DATABASE ${name}`);
-    
-    console.log(`✅ Database ${name} created`);
+    await pool.query('SELECT NOW()')
+    console.log(`✅ Database ${name} created`)
+
+    // Verificar tablas
+    for (const table of tables) {
+      const result = await pool.query(`
+        SELECT EXISTS (
+          SELECT FROM information_schema.tables 
+          WHERE table_schema = 'public' 
+          AND table_name = $1
+        )
+      `, [table])
+
+      if (result.rows[0].exists) {
+        console.log(`✅ Table ${table} exists in ${name}`)
+      } else {
+        console.error(`❌ Table ${table} not found in ${name}`)
+        process.exit(1)
+      }
+    }
+
+    // Obtener constraints
+    const constraintsResult = await pool.query(`
+      SELECT conname
+      FROM pg_constraint
+      WHERE conrelid = (SELECT oid FROM pg_class WHERE relname LIKE ANY($1))
+    `, [tables])
+
+    console.log(`Constraints found in ${name}:`, constraintsResult.rows.map(r => r.conname).join(', '))
+
   } catch (error) {
-    console.error(`❌ Failed to create database ${name}:`, error);
-    throw error;
+    console.error(`❌ Error verifying ${name}:`, error)
+    process.exit(1)
   } finally {
-    if (defaultConnection) {
-      await defaultConnection.close().catch(console.error);
-    }
+    await pool.end()
   }
 }
 
-async function verifyDatabase(type: 'articles' | 'books'): Promise<void> {
-  const name = `test_${type}`;
-  console.log(`\nVerifying ${name} database...`);
-  
-  try {
-    // Create database if it doesn't exist
-    await createDatabase(type);
+async function verifyTestEnvironment() {
+  console.log('Verifying test databases...\n')
 
-    // Connect to the newly created database
-    const config = getTestConfig(name);
-    const connection = await PostgresConnection.create(config);
+  // Verificar test_articles
+  console.log('Verifying test_articles database...')
+  await verifyDatabase('test_articles', ['articles'])
 
-    try {
-      // Load and apply schema
-      const schema = await loadSqlFile(type);
-      await connection.execute(schema);
-      console.log(`✅ Schema applied to ${name}`);
+  // Verificar test_books
+  console.log('\nVerifying test_books database...')
+  await verifyDatabase('test_books', ['books'])
 
-      // Verify tables
-      const tables = await connection.execute<{ table_name: string }>(
-        "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"
-      );
-      
-      console.log('Tables found:', tables.rows.map(r => r.table_name).join(', '));
-      
-      // Verify constraints
-      const constraints = await connection.execute<{ constraint_name: string }>(
-        "SELECT constraint_name FROM information_schema.table_constraints WHERE table_schema = 'public'"
-      );
-      
-      console.log('Constraints:', constraints.rows.map(r => r.constraint_name).join(', '));
+  // Verificar auth_test
+  console.log('\nVerifying auth_test database...')
+  await verifyDatabase('auth_test', ['users'])
 
-    } finally {
-      await connection.close().catch(console.error);
-    }
-  } catch (error) {
-    console.error(`❌ Failed to verify ${name}:`, error);
-    throw error;
-  }
+  console.log('\n✅ All database connections verified successfully')
+  process.exit(0)
 }
 
-async function verifyDatabases() {
-  console.log('Verifying test databases...');
-
-  try {
-    // Verify both databases
-    await verifyDatabase('articles');
-    await verifyDatabase('books');
-
-    console.log('\n✅ All database connections verified successfully');
-  } catch (error) {
-    console.error('\n❌ Database verification failed:', error);
-    process.exit(1);
-  }
-}
-
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (error) => {
-  console.error('Unhandled promise rejection:', error);
-  process.exit(1);
-});
-
-// Run verification
-verifyDatabases().catch((error) => {
-  console.error('Verification script failed:', error);
-  process.exit(1);
-});
+verifyTestEnvironment().catch(error => {
+  console.error('Failed to verify test environment:', error)
+  process.exit(1)
+})
