@@ -1,114 +1,64 @@
 # Active Context
 
 ## Current Focus
-
-### API Enhancement - Client-Side UUID Generation
-- Modificación del módulo Book para aceptar UUIDs del cliente
-- Eliminación de respuestas en create/update
-- Implementación de validaciones UUID
-- Testing del nuevo enfoque
-
-### API Development
-- Implementación de endpoints RESTful
-- Validación de inputs
-- Manejo de errores HTTP
-- Testing E2E
-
-### Arquitectura
-- Refinamiento de la arquitectura hexagonal
-- Implementación de Domain Events
-- Mejora de la estructura de tests
+Implementación de sistema de autenticación JWT para proteger las rutas de la API del backoffice.
 
 ## Recent Changes
-
-### Implementados ✅
-1. Arquitectura Hexagonal
-   - Separación clara de capas
-   - Interfaces de repositorio
-   - Value Objects para validaciones
-
-2. Testing
-   - Unit tests con Jest
-   - Object Mothers para test data
-   - Tests E2E con Playwright
-
-3. Infraestructura
-   - Configuración de PostgreSQL
-   - Docker para desarrollo
-   - Scripts de testing
+1. Creación de ADR para autenticación JWT
+2. Definición de reglas de negocio para autenticación (OBR)
+3. Planificación de nuevo contexto acotado para Auth
 
 ## Next Steps
+1. Implementar el nuevo contexto de Auth siguiendo la arquitectura hexagonal:
+   - Crear dominio (User, Token, AuthRepository)
+   - Implementar casos de uso (Login, Register, ValidateToken)
+   - Desarrollar infraestructura (JWTService, PostgresAuthRepository)
 
-### Prioridad Alta 🔥
-1. Implementar sistema de eventos de dominio
-   - Dispatcher de eventos
-   - Subscribers
-   - Testing de eventos
+2. Implementar middleware de autenticación:
+   - Validación de tokens
+   - Inyección de contexto de usuario
+   - Manejo de errores
 
-2. Implementar sistema de eventos de dominio
-   - Dispatcher de eventos
-   - Subscribers
-   - Testing de eventos
+3. Implementar endpoints de autenticación:
+   - /api/backoffice/auth/login
+   - /api/backoffice/auth/register
+   - /api/backoffice/auth/refresh-token
 
-3. Mejorar documentación API
-   - [x] OpenAPI/Swagger ✅
-   - [ ] Postman collection
-   - [ ] Guías de desarrollo (integración, contribución)
+4. Actualizar documentación swagger
 
-### Prioridad Media 🔸
-1. Implementar caché
-   - Estrategia de caché
-   - Invalidación
-   - Testing
+## Active Decisions
+1. Uso de JWT para autenticación stateless
+2. Creación de nuevo contexto acotado para Auth
+3. Implementación de roles básicos (admin, editor)
 
-2. Añadir rate limiting
-   - Configuración por endpoint
-   - Headers de rate limit
-   - Testing
+## Key Considerations
+1. **Seguridad**:
+   - Validación robusta de tokens
+   - Hashing seguro de passwords
+   - Protección contra ataques comunes
 
-### Prioridad Baja ⏳
-1. Implementar métricas
-   - Tiempos de respuesta
-   - Errores
-   - Dashboard
+2. **Rendimiento**:
+   - Optimización de validación de tokens
+   - Caché de usuarios autenticados
+   - Manejo eficiente de refresh tokens
 
-## Active Decisions & Considerations
+3. **Mantenibilidad**:
+   - Separación clara de responsabilidades
+   - Tests exhaustivos
+   - Documentación actualizada
 
-### Decisiones Técnicas
-1. **Client-Side UUID Generation** ✅
-   - UUIDs generados por el cliente
-   - Validación de formato y unicidad en servidor
-   - Respuestas sin cuerpo para create/update
-   - Implementado en módulos Book y Article
+4. **Integración**:
+   - Frontend Vue.js
+   - API Next.js
+   - Base de datos PostgreSQL
 
-2. **Persistencia**
-   - PostgreSQL como base de datos principal
-   - Connection pooling para eficiencia
-   - Migraciones SQL manuales por ahora
+## Current Challenges
+1. Gestión eficiente de refresh tokens
+2. Implementación de roles y permisos
+3. Integración con el frontend existente
 
-3. **Testing**
-   - Jest para unit/integration
-   - Playwright para E2E
-   - Object Mothers para datos de test
-
-4. **Arquitectura**
-    - Hexagonal con DDD
-    - Value Objects para validaciones
-    - Events para comunicación entre agregados
-    - Controladores API unificados en route.ts para mantener cohesión
-
-### Consideraciones de Mejora
-1. **Performance**
-   - Implementar caché
-   - Optimizar queries
-   - Añadir índices
-
-2. **Seguridad**
-   - Rate limiting
-   - Validación de inputs
-   - Sanitización de datos
-
-3. **Mantenibilidad**
-   - Mejorar documentación
-   - Aumentar cobertura de tests
-   - Refactorizar código duplicado
+## Testing Strategy
+1. Unit tests para lógica de dominio
+2. Integration tests para persistencia
+3. E2E tests para flujos de autenticación
+4. Tests de seguridad

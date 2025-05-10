@@ -1,90 +1,119 @@
-import { PostgresConnection } from './PostgresConnection';
-import * as fs from 'fs';
-import * as path from 'path';
-
-export const ARTICLES_SCHEMA = `
-CREATE TABLE IF NOT EXISTS articles (
-  id VARCHAR(255) PRIMARY KEY,
-  slug VARCHAR(255) UNIQUE NOT NULL,
-  title VARCHAR(255) NOT NULL,
-  excerpt TEXT NOT NULL,
-  content TEXT NOT NULL,
-  book_ids TEXT[],
-  related_links JSONB,
-  created_at TIMESTAMP NOT NULL,
-  updated_at TIMESTAMP NOT NULL
-);
-`;
-
-export const BOOKS_SCHEMA = `
-CREATE TABLE IF NOT EXISTS books (
-  id VARCHAR(255) PRIMARY KEY,
-  isbn VARCHAR(13) NOT NULL,
-  title VARCHAR(255) NOT NULL,
-  author VARCHAR(255) NOT NULL,
-  description TEXT,
-  purchase_link TEXT,
-  created_at TIMESTAMP NOT NULL,
-  updated_at TIMESTAMP NOT NULL
-);
-`;
+import { PostgresConnection } from './PostgresConnection'
+import { Logger } from './Logger'
 
 export class PostgresMigrations {
-  private readonly migrationsPath: string;
+  constructor(private readonly databaseName: string) {}
 
-  constructor(private connection: PostgresConnection) {
-    this.migrationsPath = path.join(process.cwd(), 'databases', 'migrations');
-  }
-
-  private async executeWithNewConnection(sql: string): Promise<void> {
-    const conn = await PostgresConnection.createTestConnection(this.connection.getDatabase());
+  async execute(sql: string): Promise<void> {
+    let conn: PostgresConnection | null = null
     try {
-      await conn.execute(sql);
+      conn = await PostgresConnection.createTestConnection(this.databaseName)
+      await conn.execute(sql)
+    } catch (error) {
+      Logger.error('Error executing migration:', error)
+      throw error
     } finally {
-      await conn.close();
+      if (conn) {
+        await conn.close()
+      }
     }
   }
 
-  async apply(): Promise<void> {
+  async clean(): Promise<void> {
     try {
-      // 1. Terminar conexiones existentes
-      await this.executeWithNewConnection(`
-        SELECT pg_terminate_backend(pid)
-        FROM pg_stat_activity
-        WHERE pid <> pg_backend_pid()
-        AND datname = current_database();
-      `);
+      Logger.info('Cleaning database directly with SQL...')
 
-      // 2. Recrear esquema
-      await this.executeWithNewConnection(`
-        DROP SCHEMA public CASCADE;
-        CREATE SCHEMA public;
-        GRANT ALL ON SCHEMA public TO public;
-        ALTER SCHEMA public OWNER TO postgres;
-      `);
+      // Connect to postgres database first
+      let conn = await PostgresConnection.createTestConnection('postgres')
+      
+      try {
+        // Force close all connections to the target database
+        await conn.execute(`
+          SELECT pg_terminate_backend(pg_stat_activity.pid)
+          FROM pg_stat_activity
+          WHERE pg_stat_activity.datname = $1
+          AND pid <> pg_backend_pid()
+        `, [this.databaseName])
 
-      // 3. Crear tablas
-      await this.executeWithNewConnection(ARTICLES_SCHEMA);
-      await this.executeWithNewConnection(BOOKS_SCHEMA);
-
-      // 4. Aplicar migraciones adicionales
-      const files = fs.readdirSync(this.migrationsPath)
-        .filter(file => file.endsWith('.sql'))
-        .sort();
-
-      for (const file of files) {
-        const sql = fs.readFileSync(path.join(this.migrationsPath, file), 'utf8');
-        await this.executeWithNewConnection(sql);
+        // Now we can safely drop the database
+        await conn.execute(`DROP DATABASE IF EXISTS ${this.databaseName}`)
+      } finally {
+        await conn.close()
       }
 
+      // Create test database
+      conn = await PostgresConnection.createTestConnection('postgres')
+      try {
+        await conn.execute(`CREATE DATABASE ${this.databaseName}`)
+      } finally {
+        await conn.close()
+      }
+
+      Logger.info('Database cleaned successfully')
     } catch (error) {
-      console.error('Error applying migrations:', error);
-      throw error;
+      Logger.error('Error cleaning database:', error)
+      throw error
     }
   }
 
-  static async createAndApply(connection: PostgresConnection): Promise<void> {
-    const migrations = new PostgresMigrations(connection);
-    await migrations.apply();
+  async setup(): Promise<void> {
+    try {
+      // Create tables
+      const conn = await PostgresConnection.createTestConnection(this.databaseName)
+      try {
+        if (this.databaseName === 'auth_test') {
+          await this.setupAuthTables(conn)
+        } else if (this.databaseName === 'test_articles') {
+          await this.setupArticlesTables(conn)
+        } else if (this.databaseName === 'test_books') {
+          await this.setupBooksTables(conn)
+        }
+      } finally {
+        await conn.close()
+      }
+    } catch (error) {
+      Logger.error('Error setting up database:', error)
+      throw error
+    }
+  }
+
+  private async setupAuthTables(conn: PostgresConnection): Promise<void> {
+    await conn.execute(`
+      CREATE TABLE IF NOT EXISTS users (
+        id UUID PRIMARY KEY,
+        email VARCHAR(255) NOT NULL UNIQUE,
+        password_hash VARCHAR(255) NOT NULL
+      )
+    `)
+    await conn.execute('DELETE FROM users')
+  }
+
+  private async setupArticlesTables(conn: PostgresConnection): Promise<void> {
+    await conn.execute(`
+      CREATE TABLE IF NOT EXISTS articles (
+        id UUID PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        content TEXT NOT NULL,
+        slug VARCHAR(255) NOT NULL UNIQUE,
+        tags TEXT[] NOT NULL DEFAULT '{}'::TEXT[],
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )
+    `)
+    await conn.execute('DELETE FROM articles')
+  }
+
+  private async setupBooksTables(conn: PostgresConnection): Promise<void> {
+    await conn.execute(`
+      CREATE TABLE IF NOT EXISTS books (
+        id UUID PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        author VARCHAR(255) NOT NULL,
+        isbn VARCHAR(20) NOT NULL UNIQUE,
+        description TEXT NOT NULL,
+        purchase_link VARCHAR(2048),
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )
+    `)
+    await conn.execute('DELETE FROM books')
   }
 }

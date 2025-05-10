@@ -1,78 +1,88 @@
-import { Pool, PoolClient, QueryResult, QueryResultRow } from 'pg';
-import { DatabaseConfig } from './config/DatabaseConfig';
+import { Pool, PoolClient, QueryResult, QueryResultRow } from 'pg'
 
 export class PostgresConnection {
+  private client: Pool
+  private database: string
+
+  private constructor(client: Pool, database: string) {
+    this.client = client
+    this.database = database
+  }
+
+  static async create(config: {
+    host: string
+    port: number
+    user: string
+    password: string
+    database: string
+  }): Promise<PostgresConnection> {
+    try {
+      console.log('Creating postgres connection with config:', {
+        ...config,
+        password: '***'
+      })
+
+      const pool = new Pool(config)
+
+      // Verify connection
+      const client = await pool.connect()
+      console.log('Database connection established successfully')
+      await client.query('SELECT 1')
+      client.release()
+
+      return new PostgresConnection(pool, config.database)
+    } catch (error) {
+      console.error('Error creating postgres connection:', error)
+      throw error
+    }
+  }
+
   static async createTestConnection(database: string): Promise<PostgresConnection> {
-    const config: DatabaseConfig = {
+    return this.create({
       host: process.env.TEST_DB_HOST || 'localhost',
       port: Number(process.env.TEST_DB_PORT) || 5432,
       user: process.env.TEST_DB_USER || 'postgres',
       password: process.env.TEST_DB_PASSWORD || 'postgres',
       database
-    };
-    
-    return PostgresConnection.create(config);
-  }
-
-  private constructor(
-    private readonly connection: Pool | PoolClient,
-    private readonly database: string
-  ) {}
-
-  static async create(config: DatabaseConfig): Promise<PostgresConnection> {
-    const pool = new Pool(config);
-    
-    try {
-      // Test connection
-      await pool.query('SELECT NOW()');
-      return new PostgresConnection(pool, config.database);
-    } catch (error) {
-      await pool.end();
-      throw error;
-    }
+    })
   }
 
   async execute<T extends QueryResultRow = any>(
     query: string,
-    values: any[] = []
+    values?: any[]
   ): Promise<QueryResult<T>> {
-
+    let client: PoolClient | null = null
     try {
-      const result = await this.connection.query<T>(query, values);
-      return result;
+      console.log('Executing query:', query.trim(), 'with values:', values)
+      
+      client = await this.client.connect()
+      const result = await client.query<T>(query, values)
+      
+      console.log('Query executed successfully. Row count:', result.rowCount)
+      return result
     } catch (error) {
-      throw error;
-    }
-  }
-
-  async transaction<T>(callback: (client: PostgresConnection) => Promise<T>): Promise<T> {
-    if (!(this.connection instanceof Pool)) {
-      throw new Error('Cannot start transaction on non-pool connection');
-    }
-
-    const client = await this.connection.connect();
-    
-    try {
-      await client.query('BEGIN');
-      const result = await callback(new PostgresConnection(client, this.database));
-      await client.query('COMMIT');
-      return result;
-    } catch (error) {
-      await client.query('ROLLBACK');
-      throw error;
+      console.error('Error executing query:', error)
+      throw error
     } finally {
-      client.release();
+      if (client) {
+        console.log('Releasing database client')
+        client.release()
+      }
     }
   }
 
   async close(): Promise<void> {
-    if (this.connection instanceof Pool) {
-      await this.connection.end();
+    try {
+      console.log('Closing database connection')
+      await this.client.end()
+      console.log('Database connection closed successfully')
+    } catch (error) {
+      console.error('Error closing database connection:', error)
+      throw error
     }
-    // PoolClient instances are released in transaction()
   }
 
   getDatabase(): string {
-    return this.database;
+    return this.database
   }
 }

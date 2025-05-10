@@ -1,8 +1,8 @@
-import { UuidGenerator } from '../domain/UuidGenerator';
-import crypto from 'crypto';
+import { UuidGenerator } from '../domain/UuidGenerator'
+import { v4 as uuidv4 } from 'uuid'
 
 export class OfficialUuidGenerator implements UuidGenerator {
-  async generate(): Promise<string> {
-    return crypto.randomUUID();
+  generate(): string {
+    return uuidv4()
   }
 }
