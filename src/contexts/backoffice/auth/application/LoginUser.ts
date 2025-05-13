@@ -23,8 +23,7 @@ export class LoginUser {
       throw new InvalidCredentials()
     }
 
-    const passwordHash = new PasswordHash(user.passwordHash.toString())
-    const isValid = await passwordHash.compare(password)
+    const isValid = await user.validatePassword(password)
 
     if (!isValid) {
       Logger.info('Invalid password for user:', { email })
@@ -34,7 +33,7 @@ export class LoginUser {
     Logger.info('User logged in successfully:', { email })
     
     const payload: TokenPayload = {
-      userId: user.id.value,
+      id: user.id.value,
       email: user.email.value
     }
     

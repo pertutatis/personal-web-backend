@@ -1,8 +1,18 @@
+import { Pool } from 'pg'
 import { PostgresConnection } from './PostgresConnection'
 import { Logger } from './Logger'
 
 export class PostgresMigrations {
+  private connection: PostgresConnection | null = null
+  
   constructor(private readonly databaseName: string) {}
+
+  async getPool(): Promise<Pool> {
+    if (!this.connection) {
+      this.connection = await PostgresConnection.createTestConnection(this.databaseName)
+    }
+    return this.connection.getPool()
+  }
 
   async execute(sql: string): Promise<void> {
     let conn: PostgresConnection | null = null
