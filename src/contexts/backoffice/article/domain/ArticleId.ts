@@ -3,10 +3,10 @@ import { UuidValidator } from '../../../shared/domain/validation/UuidValidator'
 
 export class ArticleId extends Identifier {
   constructor(value: string) {
-    super(value)
     if (!UuidValidator.isValidUuid(value)) {
-      throw new Error('Invalid UUID format')
+      throw new Error('Invalid UUID v4 format')
     }
+    super(value)
   }
 
   equals(other: unknown): boolean {
@@ -14,5 +14,13 @@ export class ArticleId extends Identifier {
       return false
     }
     return this.value === other.value
+  }
+
+  toString(): string {
+    return this.value
+  }
+
+  toJSON(): string {
+    return this.value
   }
 }

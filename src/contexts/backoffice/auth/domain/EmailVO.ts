@@ -4,6 +4,9 @@ import { EmailInvalid } from './EmailInvalid'
 
 export class EmailVO extends ValueObject<string> {
   constructor(value: string) {
+    if (value === undefined || value === null) {
+      throw new EmailEmpty()
+    }
     const normalizedEmail = value.trim().toLowerCase()
     EmailVO.ensureValidEmail(normalizedEmail)
     super(normalizedEmail)

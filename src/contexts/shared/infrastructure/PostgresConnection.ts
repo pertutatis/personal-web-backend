@@ -74,7 +74,11 @@ export class PostgresConnection {
   async close(): Promise<void> {
     try {
       console.log('Closing database connection')
-      await this.client.end()
+      if (this.client) {
+        const clients = await this.client.connect()
+        await clients.release()
+        await this.client.end()
+      }
       console.log('Database connection closed successfully')
     } catch (error) {
       console.error('Error closing database connection:', error)
@@ -84,5 +88,9 @@ export class PostgresConnection {
 
   getDatabase(): string {
     return this.database
+  }
+
+  getPool(): Pool {
+    return this.client
   }
 }
