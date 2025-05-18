@@ -3,6 +3,7 @@ import { User } from '../../domain/User'
 import { UserId } from '../../domain/UserId'
 import { EmailVO } from '../../domain/EmailVO'
 import { PostgresConnection } from '../../../../shared/infrastructure/PostgresConnection'
+import { TestDatabase } from '../../../../shared/infrastructure/__tests__/TestDatabase'
 
 describe('PostgresAuthRepository', () => {
   let repository: PostgresAuthRepository
@@ -10,18 +11,18 @@ describe('PostgresAuthRepository', () => {
   let user: User
 
   beforeAll(async () => {
-    connection = await PostgresConnection.createTestConnection('auth_test')
+    connection = await TestDatabase.getAuthConnection()
     repository = new PostgresAuthRepository(connection)
   })
 
   afterAll(async () => {
-    await connection.close()
+    await TestDatabase.closeAll()
   })
 
   beforeEach(async () => {
     await connection.execute('DELETE FROM users')
     
-    user = User.create({
+    user = await User.create({
       id: new UserId('550e8400-e29b-41d4-a716-446655440000'),
       email: new EmailVO('test@example.com'),
       plainPassword: 'Valid1Password!'

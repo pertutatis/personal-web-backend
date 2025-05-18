@@ -41,11 +41,11 @@ describe('JwtTokenGenerator', () => {
     })
 
     it('should throw InvalidToken for an expired token', async () => {
-      const shortLivedGenerator = new JwtTokenGenerator(SECRET_KEY, '1ms')
+      const shortLivedGenerator = new JwtTokenGenerator(SECRET_KEY, '1s')
       const token = await shortLivedGenerator.generate(validPayload)
 
       // Esperar a que el token expire
-      await new Promise(resolve => setTimeout(resolve, 100))
+      await new Promise(resolve => setTimeout(resolve, 1100))
 
       await expect(shortLivedGenerator.verify(token))
         .rejects

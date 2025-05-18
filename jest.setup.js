@@ -1,19 +1,18 @@
-// Import test helper
+// Import dependencies
 const { TestHelper } = require('./src/contexts/shared/infrastructure/__tests__/TestHelper');
+const { PostgresMigrations } = require('./src/contexts/shared/infrastructure/PostgresMigrations');
 const fs = require('fs');
 const path = require('path');
 
 // Setup default test environment variables
 const defaultEnv = {
   DB_HOST: 'localhost',
-  ARTICLES_DB_PORT: '5432',
+  DB_PORT: '5432',
+  DB_USER: 'postgres',
+  DB_PASSWORD: 'postgres',
   ARTICLES_DB_NAME: 'test_articles',
-  ARTICLES_DB_USER: 'postgres',
-  ARTICLES_DB_PASSWORD: 'postgres',
-  BOOKS_DB_PORT: '5433',
   BOOKS_DB_NAME: 'test_books',
-  BOOKS_DB_USER: 'postgres',
-  BOOKS_DB_PASSWORD: 'postgres'
+  AUTH_DB_NAME: 'auth_test'
 };
 
 // Load environment variables from .env.test if it exists
@@ -33,11 +32,21 @@ jest.setTimeout(30000);
 // Setup global beforeAll
 beforeAll(async () => {
   try {
+    const articlesMigrations = new PostgresMigrations('test_articles')
+    const booksMigrations = new PostgresMigrations('test_books')
+    const authMigrations = new PostgresMigrations('auth_test')
+
+    await Promise.all([
+      articlesMigrations.setup(),
+      booksMigrations.setup(),
+      authMigrations.setup()
+    ])
+
     // Wait for databases to be ready
     await TestHelper.waitForDatabases();
-    // console.log('✓ Database connections established');
+    console.log('✓ Database connections established and schemas created');
   } catch (error) {
-    console.error('Failed to connect to databases:', error);
+    console.error('Failed to setup databases:', error);
     throw error;
   }
 });

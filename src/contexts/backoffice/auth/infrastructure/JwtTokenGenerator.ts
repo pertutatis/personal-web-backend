@@ -1,20 +1,21 @@
 import { JWTGenerator } from '../domain/JWTGenerator'
 import { TokenPayload } from '../domain/TokenPayload'
-import * as jwt from 'jsonwebtoken'
+import { InvalidToken } from '../domain/InvalidToken'
+import { sign, verify, JsonWebTokenError, TokenExpiredError, Secret, SignOptions } from 'jsonwebtoken'
 import { Logger } from '@/contexts/shared/infrastructure/Logger'
 
 export class JwtTokenGenerator implements JWTGenerator {
-  constructor(private readonly secret: string) {}
+  constructor(
+    private readonly secret: string,
+    private readonly expiresIn: number | string = '24h'
+  ) {}
 
   async generate(payload: TokenPayload): Promise<string> {
     try {
-      Logger.info('Generating JWT token for user:', { userId: payload.userId })
+      Logger.info('Generating JWT token for user:', { id: payload.id })
       
-      const token = jwt.sign(
-        payload,
-        this.secret,
-        { expiresIn: '24h' }
-      )
+      const options = { expiresIn: this.expiresIn } as SignOptions
+      const token = sign(payload, this.secret as Secret, options)
 
       Logger.info('JWT token generated successfully')
       return token
@@ -28,16 +29,19 @@ export class JwtTokenGenerator implements JWTGenerator {
     try {
       Logger.info('Verifying JWT token')
       
-      const decoded = jwt.verify(token, this.secret) as TokenPayload
+      const decoded = verify(token, this.secret as Secret) as TokenPayload
       
-      if (!decoded.userId || !decoded.email) {
-        throw new Error('Invalid token payload')
+      if (!decoded.id || !decoded.email) {
+        throw new InvalidToken()
       }
       
       Logger.info('JWT token verified successfully')
       return decoded
     } catch (error) {
       Logger.error('Error verifying JWT token:', error)
+      if (error instanceof JsonWebTokenError || error instanceof TokenExpiredError) {
+        throw new InvalidToken()
+      }
       throw error
     }
   }
