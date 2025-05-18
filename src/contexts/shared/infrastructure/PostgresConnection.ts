@@ -17,16 +17,16 @@ export class PostgresConnection {
     database: string
   }): Promise<PostgresConnection> {
     try {
-      console.log('Creating postgres connection with config:', {
-        ...config,
-        password: '***'
-      })
+      // console.log('Creating postgres connection with config:', {
+      //   ...config,
+      //   password: '***'
+      // })
 
       const pool = new Pool(config)
 
       // Verify connection
       const client = await pool.connect()
-      console.log('Database connection established successfully')
+      // console.log('Database connection established successfully')
       await client.query('SELECT 1')
       client.release()
 
@@ -53,19 +53,19 @@ export class PostgresConnection {
   ): Promise<QueryResult<T>> {
     let client: PoolClient | null = null
     try {
-      console.log('Executing query:', query.trim(), 'with values:', values)
+      // console.log('Executing query:', query.trim(), 'with values:', values)
       
       client = await this.client.connect()
       const result = await client.query<T>(query, values)
       
-      console.log('Query executed successfully. Row count:', result.rowCount)
+      // console.log('Query executed successfully. Row count:', result.rowCount)
       return result
     } catch (error) {
       console.error('Error executing query:', error)
       throw error
     } finally {
       if (client) {
-        console.log('Releasing database client')
+        // console.log('Releasing database client')
         client.release()
       }
     }
@@ -73,13 +73,13 @@ export class PostgresConnection {
 
   async close(): Promise<void> {
     try {
-      console.log('Closing database connection')
+      // console.log('Closing database connection')
       if (this.client) {
         const clients = await this.client.connect()
         await clients.release()
         await this.client.end()
       }
-      console.log('Database connection closed successfully')
+      // console.log('Database connection closed successfully')
     } catch (error) {
       console.error('Error closing database connection:', error)
       throw error

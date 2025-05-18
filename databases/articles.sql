@@ -1,6 +1,6 @@
 -- Create articles table
 CREATE TABLE IF NOT EXISTS articles (
-    id VARCHAR(255) PRIMARY KEY,
+    id UUID PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     excerpt TEXT NOT NULL,
     content TEXT NOT NULL,

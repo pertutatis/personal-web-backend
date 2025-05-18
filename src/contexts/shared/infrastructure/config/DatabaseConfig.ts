@@ -16,10 +16,10 @@ export const getArticlesConfig = (): DatabaseConfig => ({
 
 export const getBooksConfig = (): DatabaseConfig => ({
   host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.BOOKS_DB_PORT || '5433'),
+  port: parseInt(process.env.DB_PORT || '5432'),
   database: process.env.BOOKS_DB_NAME || 'test_books',
-  user: process.env.BOOKS_DB_USER || 'postgres',
-  password: process.env.BOOKS_DB_PASSWORD || 'postgres'
+  user: process.env.DB_USER || 'postgres',
+  password: process.env.DB_PASSWORD || 'postgres'
 });
 
 export const getTestConfig = (database: string): DatabaseConfig => {
@@ -35,7 +35,7 @@ export const getTestConfig = (database: string): DatabaseConfig => {
   
   return {
     host: 'localhost',
-    port: 5433,
+    port: 5432,
     database,
     user: 'postgres',
     password: 'postgres'

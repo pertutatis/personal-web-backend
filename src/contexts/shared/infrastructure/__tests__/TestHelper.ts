@@ -1,57 +1,56 @@
-import { PostgresMigrations } from '../PostgresMigrations'
 import { Logger } from '../Logger'
 import { Environment } from '../Environment'
 import { Pool } from 'pg'
+import { TestDatabase } from './TestDatabase'
+
+import { PostgresMigrations } from '../PostgresMigrations';
 
 export class TestHelper {
-  private static pools: Pool[] = []
+  private static readonly databases = {
+    articles: 'test_articles',
+    books: 'test_books',
+    auth: 'auth_test'
+  };
 
   static async waitForDatabases(): Promise<void> {
-    Logger.info('Waiting for databases to be ready...')
+    // Logger.info('Waiting for databases to be ready...')
     
     if (!Environment.isTest()) {
       throw new Error('waitForDatabases can only be run in test environment')
     }
 
     try {
-      // Cerrar cualquier conexión existente primero
-      await this.closeConnections()
+      // 1. Cerrar todas las conexiones existentes
+      await TestDatabase.closeAll()
 
-      const migrations = [
-        new PostgresMigrations('test_articles'),
-        new PostgresMigrations('test_books'),
-        new PostgresMigrations('auth_test')
-      ]
+      // 2. Limpiar y configurar las bases de datos
+      await Promise.all(Object.values(this.databases).map(async (dbName) => {
+        const migrations = new PostgresMigrations(dbName)
+        await migrations.clean()
+        await migrations.setup()
+      }))
 
-      // Crear nuevas conexiones
-      const pools = await Promise.all(
-        migrations.map(async (migration) => {
-          const pool = await migration.getPool()
-          // Verificar la conexión
-          await pool.query('SELECT 1')
-          return pool
-        })
-      )
+      // 3. Crear nuevas conexiones
+      await Promise.all([
+        TestDatabase.getArticlesConnection(),
+        TestDatabase.getBooksConnection(),
+        TestDatabase.getAuthConnection()
+      ])
 
-      this.pools = pools
-      Logger.info('✅ Database connections established')
+      // Logger.info('✅ Database connections established')
     } catch (error) {
       Logger.error('❌ Error connecting to databases:', error)
-      // Asegurar que cerramos las conexiones en caso de error
-      await this.closeConnections()
+      await TestDatabase.closeAll()
       throw error
     }
   }
 
   static async closeConnections(): Promise<void> {
-    Logger.info('Closing database connections...')
+    // Logger.info('Closing database connections...')
 
     try {
-      await Promise.all(
-        this.pools.map(pool => pool.end())
-      )
-      this.pools = []
-      Logger.info('✅ Database connections closed')
+      await TestDatabase.closeAll()
+      // Logger.info('✅ Database connections closed')
     } catch (error) {
       Logger.error('❌ Error closing database connections:', error)
       throw error
@@ -59,41 +58,21 @@ export class TestHelper {
   }
 
   static async cleanAllDatabases(): Promise<void> {
-    return this.cleanEnvironment()
+    await TestDatabase.cleanAll()
   }
 
   static async cleanEnvironment(): Promise<void> {
-    Logger.info('Cleaning up test environment...')
+    // Logger.info('Cleaning up test environment...')
     
     if (!Environment.isTest()) {
       throw new Error('cleanEnvironment can only be run in test environment')
     }
 
     try {
-      // Asegurar que todas las conexiones existentes estén cerradas
-      await this.closeConnections()
-
-      const articlesMigrations = new PostgresMigrations('test_articles')
-      const booksMigrations = new PostgresMigrations('test_books')
-      const authMigrations = new PostgresMigrations('auth_test')
-
-      // Obtener nuevas conexiones para la limpieza
-      const migrations = [articlesMigrations, booksMigrations, authMigrations]
-      const cleanOps = migrations.map(async (migration) => {
-        try {
-          await migration.clean()
-        } finally {
-          const pool = await migration.getPool()
-          if (pool) {
-            await pool.end()
-          }
-        }
-      })
-
-      await Promise.all(cleanOps)
-      Logger.info('✅ Test environment cleaned up')
+      await TestDatabase.cleanAll()
+      // Logger.info('✅ Test environment cleaned up')
     } catch (error) {
-      Logger.error('❌ Error cleaning up test environment:', error)
+      // Logger.error('❌ Error cleaning up test environment:', error)
       throw error
     }
   }
@@ -106,14 +85,16 @@ export class TestHelper {
     }
 
     try {
-      const articlesMigrations = new PostgresMigrations('test_articles')
-      const booksMigrations = new PostgresMigrations('test_books')
-      const authMigrations = new PostgresMigrations('auth_test')
+      // Configurar bases de datos en secuencia para evitar problemas de concurrencia
+      for (const dbName of Object.values(this.databases)) {
+        const migrations = new PostgresMigrations(dbName)
+        await migrations.setup()
+      }
 
       await Promise.all([
-        articlesMigrations.setup(),
-        booksMigrations.setup(),
-        authMigrations.setup()
+        TestDatabase.getArticlesConnection(),
+        TestDatabase.getBooksConnection(),
+        TestDatabase.getAuthConnection()
       ])
 
       Logger.info('✅ Test environment setup completed')
