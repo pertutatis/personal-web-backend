@@ -11,11 +11,360 @@
       "description": "API Base URL"
     }
   ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Tipo de error",
+            "example": "ValidationError"
+          },
+          "message": {
+            "type": "string",
+            "description": "Mensaje descriptivo del error",
+            "example": "El ID debe ser un UUID v4 válido"
+          }
+        },
+        "required": ["type", "message"]
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Email del usuario"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "description": "Contraseña del usuario"
+          }
+        },
+        "required": ["email", "password"]
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Email del usuario"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "description": "Contraseña del usuario"
+          }
+        },
+        "required": ["email", "password"]
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "JWT token"
+          },
+          "refreshToken": {
+            "type": "string",
+            "description": "Refresh token"
+          }
+        },
+        "required": ["token", "refreshToken"]
+      },
+      "Article": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Identificador único del artículo"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 100,
+            "description": "Título del artículo"
+          },
+          "content": {
+            "type": "string",
+            "maxLength": 10000,
+            "description": "Contenido del artículo"
+          },
+          "excerpt": {
+            "type": "string",
+            "maxLength": 160,
+            "description": "Resumen del artículo"
+          },
+          "slug": {
+            "type": "string",
+            "maxLength": 100,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+            "description": "URL-friendly identificador"
+          },
+          "bookIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Lista de IDs de libros relacionados"
+          },
+          "relatedLinks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "text": {
+                  "type": "string",
+                  "maxLength": 100,
+                  "description": "Texto descriptivo del enlace"
+                },
+                "url": {
+                  "type": "string",
+                  "format": "uri",
+                  "maxLength": 2000,
+                  "description": "URL del enlace"
+                }
+              },
+              "required": ["text", "url"]
+            },
+            "maxItems": 10,
+            "description": "Enlaces relacionados"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Fecha de creación"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Fecha de última actualización"
+          }
+        },
+        "required": ["id", "title", "content", "excerpt", "slug", "bookIds", "relatedLinks", "createdAt", "updatedAt"]
+      },
+      "Book": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Identificador único del libro"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 100,
+            "description": "Título del libro"
+          },
+          "author": {
+            "type": "string",
+            "maxLength": 100,
+            "description": "Autor del libro"
+          },
+          "isbn": {
+            "type": "string",
+            "pattern": "^(?=(?:\\D*\\d){10}(?:(?:\\D*\\d){3})?$)[\\d-]+$",
+            "description": "ISBN del libro"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 1000,
+            "description": "Descripción del libro"
+          },
+          "purchaseLink": {
+            "type": "string",
+            "format": "uri",
+            "maxLength": 2000,
+            "description": "Enlace de compra",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Fecha de creación"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Fecha de última actualización"
+          }
+        },
+        "required": ["id", "title", "author", "isbn", "description", "createdAt", "updatedAt"]
+      },
+      "Collection": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Article"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Página actual"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "description": "Elementos por página"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Total de elementos"
+          }
+        },
+        "required": ["items", "page", "limit", "total"]
+      }
+    }
+  },
   "paths": {
+    "/backoffice/auth/login": {
+      "post": {
+        "summary": "Login de usuario",
+        "description": "Autentica un usuario y devuelve tokens JWT",
+        "tags": ["Auth"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login exitoso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Credenciales inválidas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/backoffice/auth/register": {
+      "post": {
+        "summary": "Registro de usuario",
+        "description": "Registra un nuevo usuario",
+        "tags": ["Auth"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Usuario registrado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "El email ya está registrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/backoffice/auth/refresh-token": {
+      "post": {
+        "summary": "Refrescar token",
+        "description": "Obtiene un nuevo token JWT usando el refresh token",
+        "tags": ["Auth"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Token refrescado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token inválido o expirado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/backoffice/articles": {
       "get": {
         "summary": "Listar artículos",
         "description": "Obtiene una lista paginada de artículos",
+        "tags": ["Articles"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "page",
@@ -45,7 +394,17 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ArticleCollection"
+                  "$ref": "#/components/schemas/Collection"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No autorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -55,12 +414,18 @@
       "post": {
         "summary": "Crear artículo",
         "description": "Crea un nuevo artículo",
+        "tags": ["Articles"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateArticleRequest"
+                "$ref": "#/components/schemas/Article"
               }
             }
           }
@@ -79,177 +444,8 @@
               }
             }
           },
-          "409": {
-            "description": "El ID del artículo ya existe",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/backoffice/articles/{id}": {
-      "parameters": [
-        {
-          "name": "id",
-          "in": "path",
-          "required": true,
-          "description": "ID del artículo (UUID v4)",
-          "schema": {
-            "type": "string",
-            "format": "uuid",
-            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
-          }
-        }
-      ],
-      "get": {
-        "summary": "Obtener artículo",
-        "description": "Obtiene un artículo por su ID",
-        "responses": {
-          "200": {
-            "description": "Artículo encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Article"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Artículo no encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      },
-      "put": {
-        "summary": "Actualizar artículo",
-        "description": "Actualiza un artículo existente",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateArticleRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "204": {
-            "description": "Artículo actualizado correctamente"
-          },
-          "400": {
-            "description": "Error de validación",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Artículo no encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "summary": "Eliminar artículo",
-        "description": "Elimina un artículo existente",
-        "responses": {
-          "204": {
-            "description": "Artículo eliminado correctamente"
-          },
-          "404": {
-            "description": "Artículo no encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/backoffice/books": {
-      "get": {
-        "summary": "Listar libros",
-        "description": "Obtiene una lista paginada de libros",
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "description": "Número de página",
-            "schema": {
-              "type": "integer",
-              "default": 1,
-              "minimum": 1
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "Número de elementos por página",
-            "schema": {
-              "type": "integer",
-              "default": 10,
-              "minimum": 1,
-              "maximum": 100
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Lista de libros obtenida correctamente",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BookCollection"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "summary": "Crear libro",
-        "description": "Crea un nuevo libro",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateBookRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Libro creado correctamente"
-          },
-          "400": {
-            "description": "Error de validación",
+          "401": {
+            "description": "No autorizado",
             "content": {
               "application/json": {
                 "schema": {
@@ -259,200 +455,13 @@
             }
           },
           "409": {
-            "description": "El ID o ISBN del libro ya existe",
+            "description": "El ID o slug del artículo ya existe",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
                 }
               }
-            }
-          }
-        }
-      }
-    },
-    "/backoffice/books/{id}": {
-      "parameters": [
-        {
-          "name": "id",
-          "in": "path",
-          "required": true,
-          "description": "ID del libro (UUID v4)",
-          "schema": {
-            "type": "string",
-            "format": "uuid",
-            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
-          }
-        }
-      ],
-      "get": {
-        "summary": "Obtener libro",
-        "description": "Obtiene un libro por su ID",
-        "responses": {
-          "200": {
-            "description": "Libro encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Book"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Libro no encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      },
-      "put": {
-        "summary": "Actualizar libro",
-        "description": "Actualiza un libro existente",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateBookRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "204": {
-            "description": "Libro actualizado correctamente"
-          },
-          "400": {
-            "description": "Error de validación",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Libro no encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "summary": "Eliminar libro",
-        "description": "Elimina un libro existente",
-        "responses": {
-          "204": {
-            "description": "Libro eliminado correctamente"
-          },
-          "404": {
-            "description": "Libro no encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  },
-  "components": {
-    "schemas": {
-      "Error": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "type": "string",
-            "description": "Tipo de error",
-            "example": "ValidationError"
-          },
-          "message": {
-            "type": "string",
-            "description": "Mensaje descriptivo del error",
-            "example": "El ID debe ser un UUID v4 válido"
-          }
-        },
-        "required": [
-          "type",
-          "message"
-        ]
-      },
-      "Pagination": {
-        "type": "object",
-        "properties": {
-          "page": {
-            "type": "integer",
-            "minimum": 1,
-            "description": "Número de página"
-          },
-          "limit": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 100,
-            "description": "Elementos por página"
-          }
-        },
-        "required": [
-          "page",
-          "limit"
-        ]
-      }
-    },
-    "parameters": {
-      "page": {
-        "name": "page",
-        "in": "query",
-        "description": "Número de página",
-        "schema": {
-          "type": "integer",
-          "default": 1,
-          "minimum": 1
-        }
-      },
-      "limit": {
-        "name": "limit",
-        "in": "query",
-        "description": "Elementos por página",
-        "schema": {
-          "type": "integer",
-          "default": 10,
-          "minimum": 1,
-          "maximum": 100
-        }
-      }
-    },
-    "responses": {
-      "NotFound": {
-        "description": "Recurso no encontrado",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/Error"
-            }
-          }
-        }
-      },
-      "ValidationError": {
-        "description": "Error de validación",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/Error"
             }
           }
         }
