@@ -6,28 +6,12 @@ import { ArticleExcerpt } from '../domain/ArticleExcerpt';
 import { ArticleContent } from '../domain/ArticleContent';
 import { ArticleBookIds } from '../domain/ArticleBookIds';
 import { ArticleRelatedLinks } from '../domain/ArticleRelatedLinks';
-import { ArticleRelatedLink } from '../domain/ArticleRelatedLink';
 import { ArticleSlug } from '../domain/ArticleSlug';
 import { Collection } from '@/contexts/shared/domain/Collection';
 import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection';
-import { DomainError } from '@/contexts/shared/domain/DomainError';
-
-class ArticleNotFoundError extends DomainError {
-  readonly type = 'ArticleNotFoundError';
-  
-  constructor() {
-    super('Article not found');
-  }
-}
-
-class InvalidBookReferenceError extends DomainError {
-  readonly type = 'InvalidBookReferenceError';
-  
-  constructor() {
-    super('One or more referenced books do not exist');
-  }
-}
 import { BookId } from '@/contexts/backoffice/book/domain/BookId';
+import { InvalidBookReferenceError } from '@/contexts/backoffice/article/domain/InvalidBookReferenceError';
+import { ArticleNotFoundError } from '@/contexts/backoffice/article/domain/ArticleNotFoundError';
 
 interface ArticleRow {
   id: string;
@@ -52,23 +36,43 @@ export class PostgresArticleRepository implements ArticleRepository {
       return;
     }
 
-    const result = await this.booksConnection.execute<{ count: string }>(
-      'SELECT COUNT(*) as count FROM books WHERE id = ANY($1::text[])',
-      [bookIds]
-    );
+    try {
+      const result = await this.booksConnection.execute<{ id: string; exists: boolean }>(
+        `
+        WITH book_ids AS (
+          SELECT UNNEST($1::text[]) as id
+        )
+        SELECT
+          book_ids.id,
+          EXISTS (
+            SELECT 1 FROM books
+            WHERE books.id::text = book_ids.id::text
+          ) as exists
+        FROM book_ids
+        `,
+        [bookIds]
+      );
 
-    const existingCount = parseInt(result.rows[0].count);
-    if (existingCount !== bookIds.length) {
-      throw new InvalidBookReferenceError();
+
+      const missingIds = result.rows.filter(row => !row.exists).map(row => row.id);
+      
+      if (missingIds.length > 0) {
+        throw new InvalidBookReferenceError();
+      }
+    } catch (error) {
+      throw error;
     }
   }
 
   async save(article: Article): Promise<void> {
     const primitives = article.toPrimitives();
     try {
-      const bookIdsArray = Array.isArray(primitives.bookIds) ? primitives.bookIds : [];
+      const bookIdsArray = Array.isArray(primitives.bookIds)
+        ? primitives.bookIds
+        : [];
+
       await this.validateBookIds(bookIdsArray);
-      
+
       await this.articlesConnection.execute(
         `INSERT INTO articles (
           id, title, excerpt, content, book_ids, related_links, slug, created_at, updated_at
@@ -84,7 +88,7 @@ export class PostgresArticleRepository implements ArticleRepository {
           JSON.stringify(primitives.relatedLinks || []),
           primitives.slug,
           new Date(primitives.createdAt),
-          new Date(primitives.updatedAt)
+          new Date(primitives.updatedAt),
         ]
       );
     } catch (error) {
