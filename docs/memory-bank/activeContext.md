@@ -1,86 +1,83 @@
-# Active Context
+# Active Context: Implementación de Autenticación JWT
 
-## Current Focus
-1. Implementación de sistema de autenticación JWT para proteger las rutas de la API del backoffice
-2. Sistema de eventos para mejorar la comunicación entre módulos
-3. Mejora de documentación y guías de desarrollo
+## Estado Actual del Proyecto
+- El módulo de autenticación base está implementado (login, registro, JWT)
+- Las rutas de la API están documentadas para requerir autenticación
+- Falta implementar el middleware de autenticación para proteger las rutas
 
-## Recent Changes
-1. Implementación completa de generación de UUIDs en cliente
-2. Documentación OpenAPI/Swagger actualizada
-3. Creación de ADR para autenticación JWT
-4. Definición de reglas de negocio para autenticación (OBR)
-5. Planificación de nuevo contexto acotado para Auth
+## Trabajo en Curso
 
-## Next Steps
-1. Implementar el nuevo contexto de Auth siguiendo la arquitectura hexagonal:
-   - Crear dominio (User, Token, AuthRepository)
-   - Implementar casos de uso (Login, Register, ValidateToken)
-   - Desarrollar infraestructura (JWTService, PostgresAuthRepository)
+### Implementación de Auth Middleware
+Estamos trabajando en la implementación del middleware de autenticación JWT para proteger las rutas del backoffice.
 
-2. Implementar middleware de autenticación:
-   - Validación de tokens
-   - Inyección de contexto de usuario
-   - Manejo de errores
+#### Documentación Relacionada
+- [ADR-013: Autenticación JWT](../adr/013-autenticacion-jwt.md)
+- [OBR-003: Reglas de Autenticación](../obr/003-auth-rules.md)
+- [Plan de Implementación: Auth Middleware](../implementation-plans/auth-middleware.md)
 
-3. Implementar endpoints de autenticación:
-   - /api/backoffice/auth/login
-   - /api/backoffice/auth/register
-   - /api/backoffice/auth/refresh-token
+#### Componentes Principales
+```mermaid
+flowchart TD
+    subgraph Middleware
+        AM[AuthMiddleware]
+        JG[JWTGenerator]
+        TP[TokenPayload]
+    end
+    
+    subgraph Routes
+        AR[Articles]
+        BR[Books]
+        AuthR[Auth]
+    end
+    
+    AM --> JG
+    JG --> TP
+    AR --> AM
+    BR --> AM
+    AuthR --> AM
+```
 
-4. Implementar sistema de eventos:
-   - Event dispatcher
-   - Event subscribers
-   - Testing de eventos
+#### Estado de la Implementación
+1. **Completado ✅**
+   - Módulo de autenticación base
+   - Documentación de requisitos
+   - Plan de implementación del middleware
 
-5. Completar documentación:
-   - Crear Postman collection
-   - Desarrollar guías de contribución
-   - Actualizar ejemplos de código
+2. **En Progreso 🚧**
+   - Implementación del middleware usando TDD
+   - Tests unitarios del middleware
+   - Integración con rutas existentes
 
-## Active Decisions
-1. Uso de JWT para autenticación stateless
-2. Creación de nuevo contexto acotado para Auth
-3. Implementación de roles básicos (admin, editor)
-4. Client-side UUID generation para mejorar la experiencia del cliente
-5. Documentación OpenAPI como fuente única de verdad para la API
+3. **Pendiente 📋**
+   - Tests de integración
+   - Tests E2E
+   - Actualización de la documentación OpenAPI
 
-## Key Considerations
-1. **Seguridad**:
-   - Validación robusta de tokens
-   - Hashing seguro de passwords
-   - Protección contra ataques comunes
-   - Validación de UUIDs del cliente
+## Decisiones Técnicas Activas
+1. El middleware será implementado como un middleware de Next.js
+2. Se aplicará a todas las rutas bajo /api/backoffice/*
+3. Utilizará el JWTGenerator existente para la validación de tokens
+4. Seguirá un enfoque TDD estricto
 
-2. **Rendimiento**:
-   - Optimización de validación de tokens
-   - Caché de usuarios autenticados
-   - Manejo eficiente de refresh tokens
-   - Optimización de queries N+1
+## Próximos Pasos
+1. Implementar tests unitarios del middleware
+2. Desarrollar la implementación del middleware
+3. Integrar con las rutas existentes
+4. Ejecutar y validar tests E2E
+5. Actualizar la documentación
 
-3. **Mantenibilidad**:
-   - Separación clara de responsabilidades
-   - Tests exhaustivos
-   - Documentación actualizada
-   - Sistema de eventos para desacoplamiento
+## Métricas de Éxito
+- 100% de cobertura en tests unitarios
+- Tests E2E pasando
+- Tiempo de respuesta < 50ms para validación de token
+- Todas las rutas del backoffice protegidas correctamente
 
-4. **Integración**:
-   - Frontend Vue.js
-   - API Next.js
-   - Base de datos PostgreSQL
-   - Swagger UI para documentación interactiva
+## Riesgos y Mitigaciones
+1. **Riesgo**: Impacto en el rendimiento de la API
+   - **Mitigación**: Optimizar validación de tokens, considerar caché
 
-## Current Challenges
-1. Gestión eficiente de refresh tokens
-2. Implementación de roles y permisos
-3. Integración con el frontend existente
-4. Implementación del sistema de eventos
-5. Optimización de queries N+1 en listado de artículos
+2. **Riesgo**: Complejidad en la integración con rutas existentes
+   - **Mitigación**: Diseño modular y tests exhaustivos
 
-## Testing Strategy
-1. Unit tests para lógica de dominio
-2. Integration tests para persistencia
-3. E2E tests para flujos de autenticación
-4. Tests de seguridad
-5. Tests de eventos
-6. Tests de contratos API
+3. **Riesgo**: Seguridad del sistema de tokens
+   - **Mitigación**: Seguir mejores prácticas de JWT, validación robusta
