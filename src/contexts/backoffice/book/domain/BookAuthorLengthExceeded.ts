@@ -5,7 +5,5 @@ export class BookAuthorLengthExceeded extends DomainError {
     super('Book author cannot exceed 100 characters');
   }
 
-  get type(): string {
-    return 'BookAuthorLengthExceeded';
-  }
+  readonly type = 'ValidationError';
 }

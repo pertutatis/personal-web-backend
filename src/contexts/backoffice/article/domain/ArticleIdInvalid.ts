@@ -1,9 +1,9 @@
 import { DomainError } from '@/contexts/shared/domain/DomainError';
 
-export class BookTitleLengthExceeded extends DomainError {
+export class ArticleIdInvalid extends DomainError {
   readonly type = 'ValidationError';
 
   constructor() {
-    super('Book title cannot exceed 255 characters');
+    super('Article ID must be a valid UUID v4');
   }
 }

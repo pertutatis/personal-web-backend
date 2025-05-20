@@ -5,7 +5,5 @@ export class EmailAddressInvalid extends DomainError {
     super(`The email '${email}' is not valid`);
   }
 
-  get type(): string {
-    return 'EMAIL_ADDRESS_INVALID';
-  }
+  readonly type = 'ValidationError';
 }

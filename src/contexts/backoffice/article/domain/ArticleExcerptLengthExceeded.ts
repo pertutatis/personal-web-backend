@@ -5,7 +5,5 @@ export class ArticleExcerptLengthExceeded extends DomainError {
     super('Article excerpt cannot exceed 300 characters');
   }
 
-  get type(): string {
-    return 'ArticleExcerptLengthExceeded';
-  }
+  readonly type = 'ValidationError';
 }

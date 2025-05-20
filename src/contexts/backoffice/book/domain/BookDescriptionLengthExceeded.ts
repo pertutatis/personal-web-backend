@@ -6,5 +6,5 @@ export class BookDescriptionLengthExceeded extends DomainError {
     this.name = 'BookDescriptionLengthExceeded';
   }
 
-  readonly type = 'BookDescriptionLengthExceeded';
+  readonly type = 'ValidationError';
 }
