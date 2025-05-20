@@ -20,6 +20,12 @@
 - Environment configuration
 - Database connections
 
+✅ Authentication
+- JWT authentication implementation
+- Protected routes middleware
+- User authentication endpoints
+- E2E authentication tests
+
 ## Pending
 
 ### Testing
@@ -45,7 +51,7 @@
 - Add soft delete functionality
 - Add article/book relationships validation
 - Add input validation middleware
-- Add authentication and authorization
+- Add role-based authorization
 
 ### Performance
 - Add database indexes

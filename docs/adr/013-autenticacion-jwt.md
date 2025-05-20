@@ -1,7 +1,7 @@
 # ADR 013: Autenticación JWT en API
 
 ## Status
-Propuesto
+Implementado
 
 ## Context
 El sistema necesita implementar autenticación para proteger las rutas de la API del backoffice. Se requiere un sistema de autenticación que:
