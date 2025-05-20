@@ -15,13 +15,16 @@ src/
 └── lib/                  # Shared libraries and configuration
 ```
 
-## Requirements
+## Prerequisites
 
-- Node.js 20.x
+Before you begin, ensure you have the following installed:
+- Node.js (v20.x)
 - Docker and Docker Compose
-- PostgreSQL (handled by Docker)
+- PostgreSQL client (optional, for direct database access)
 
 ## Setup
+
+### 1. Initial Setup
 
 1. Clone the repository:
 ```bash
@@ -29,29 +32,53 @@ git clone <repository-url>
 cd personal-web-backend
 ```
 
-2. Copy environment variables:
-```bash
-cp .env.example .env
-```
-
-3. Install dependencies:
+2. Install dependencies:
 ```bash
 npm install
 ```
 
-4. Start the development environment:
+### 2. Environment Configuration
+
+1. Copy environment variables:
+```bash
+cp .env.example .env
+```
+
+2. Update the following variables in `.env`:
+- `DATABASE_URL`: PostgreSQL connection string
+- `JWT_SECRET`: Secret key for JWT authentication
+- `API_KEY`: Your API key for protected routes
+
+### 3. Database Setup
+
+1. Start the development environment:
 ```bash
 docker compose up -d
 ```
 
-5. Run database migrations (executed automatically by Docker):
+2. Database schemas will be automatically applied:
 - Articles database schema: `databases/articles.sql`
 - Books database schema: `databases/books.sql`
 
-6. Start the development server:
+### 4. Development Server
+
+Start the development server:
 ```bash
 npm run dev
 ```
+
+The application will be available at http://localhost:3000
+
+### Common Setup Issues
+
+#### Database Connection Issues
+- Ensure Docker is running
+- Check if PostgreSQL port (5432) is not in use
+- Verify database credentials in .env file
+
+#### Test Database Issues
+- Run `npm run test:setup` to recreate test database
+- Check test database credentials in .env.test
 
 ## API Documentation
 
@@ -180,11 +207,17 @@ Common error types:
 
 The project includes comprehensive test coverage:
 
-### Test Types
-- Unit tests for domain objects and value objects
-- Integration tests for repositories
-- Application tests for use cases
-- E2E tests for API endpoints
+### Test Setup
+
+1. Create test database:
+```bash
+npm run test:setup
+```
+
+2. Verify test environment:
+```bash
+npm run test:verify
+```
 
 ### Running Tests
 
@@ -202,19 +235,31 @@ npm run test:watch
 npm run test:coverage
 ```
 
-### Development Workflow
+### Test Types
+- Unit tests for domain objects and value objects
+- Integration tests for repositories
+- Application tests for use cases
+- E2E tests for API endpoints
 
-1. Coding Standards:
-   - TypeScript for type safety
-   - ESLint for code quality
-   - Prettier for code formatting
-   - Pre-commit hooks
+## Development Workflow
 
-2. Git Workflow:
-   - Feature branches
-   - Conventional commits
-   - Pull request workflow
-   - CI/CD integration
+### 1. Environment Setup
+
+#### VSCode Configuration
+- Install recommended extensions for TypeScript and Jest
+- Use provided debugging configurations for easier development
+
+### 2. Coding Standards
+- TypeScript for type safety
+- ESLint for code quality
+- Prettier for code formatting
+- Pre-commit hooks
+
+### 3. Git Workflow
+- Feature branches
+- Conventional commits
+- Pull request workflow
+- CI/CD integration
 
 ## Documentation
 

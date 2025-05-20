@@ -26,6 +26,8 @@
    - Scripts de testing
    - CI básico
    - Documentación OpenAPI/Swagger
+   - Autenticación JWT
+   - Middleware de protección de rutas
 
 ### Arquitectura
 1. **Hexagonal**
@@ -56,29 +58,42 @@
    - [x] Documentación de autenticación JWT
 
 ### Features Pendientes
-1. **Sistema de Autenticación**
-   - [ ] Contexto Auth completo
-   - [ ] Middleware de autenticación
-   - [ ] Endpoints de autenticación
-   - [ ] Gestión de refresh tokens
-   - [ ] Tests de seguridad
-
-2. **Sistema de Eventos**
+1. **Sistema de Eventos**
    - [ ] Event dispatcher
    - [ ] Event subscribers
    - [ ] Testing de eventos
    - [ ] Documentación de eventos
 
 3. **Documentación Adicional**
-   - [ ] Postman collection
-   - [ ] Guías de desarrollo y contribución
-   - [ ] Ejemplos de integración
+    - [ ] Postman collection
+    - [x] Guías de desarrollo
+    - [ ] Guías de contribución
+    - [ ] Ejemplos de integración
 
-4. **Optimizaciones**
-   - [ ] Caché
-   - [ ] Rate limiting
-   - [ ] Métricas
-   - [ ] Optimización de queries N+1
+4. **Funcionalidades**
+    - [ ] Búsqueda
+    - [ ] Filtrado y ordenación
+    - [ ] Borrado suave
+    - [ ] Validación de relaciones artículo/libro
+    - [ ] Validación de borrado de libros en artículos
+    - [ ] Middleware de validación de entrada
+
+5. **Optimizaciones**
+    - [ ] Caché
+    - [ ] Rate limiting
+    - [ ] Métricas
+    - [ ] Optimización de queries N+1
+    - [ ] Índices en base de datos
+    - [ ] Connection pooling
+    - [ ] Caché de respuestas
+
+6. **Seguridad**
+    - [ ] Rate limiting
+    - [ ] Sanitización de entrada
+    - [ ] Headers de seguridad
+    - [ ] Configuración CORS
+    - [ ] Validación de API key
+    - [ ] Autorización basada en roles
 
 ### Mejoras Técnicas
 1. **Testing**
