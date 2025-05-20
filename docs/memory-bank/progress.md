@@ -132,15 +132,18 @@
 
 ### Bugs
 1. **Alta Prioridad**
-   - Ninguno conocido
+   - Referencias huérfanas a libros eliminados
+   - Falta de validación en referencias de libros
 
 2. **Media Prioridad**
    - Optimizar queries N+1 en listado de artículos
    - Mejorar manejo de errores en cascada
+   - Transacciones no atómicas en operaciones relacionadas
 
 3. **Baja Prioridad**
    - Mejorar mensajes de error
    - Documentación de tipos incompleta
+   - Falta de índices en book_ids
 
 ### Technical Debt
 1. **Arquitectura**
@@ -164,16 +167,22 @@
 ## Next Actions 📝
 
 ### Inmediatas (Próximas 2 semanas)
-1. Implementar autenticación JWT
-2. Configurar middleware de autenticación
-3. Desarrollar gestión de refresh tokens
+1. Implementar integridad referencial libros-artículos
+   - Validación de existencia de libros
+   - Manejo de eliminación de libros
+   - Tests unitarios y de integración
+2. Implementar autenticación JWT
+3. Configurar middleware de autenticación
+4. Desarrollar gestión de refresh tokens
 
 ### Corto Plazo (Próximo mes)
 1. Implementar sistema de eventos
 2. Completar documentación (Postman, guías)
 3. Optimizar queries N+1
+4. Validar integridad de datos históricos
 
 ### Largo Plazo (Próximos 3 meses)
 1. Implementar observabilidad completa
 2. Automatizar despliegues
 3. Alcanzar 90% de cobertura de tests
+4. Mejorar manejo de transacciones y consistencia
