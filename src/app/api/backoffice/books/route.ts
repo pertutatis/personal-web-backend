@@ -9,6 +9,7 @@ import { ApiValidationError } from '@/contexts/shared/infrastructure/http/ApiVal
 import { getBooksConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
 import { BookIdDuplicated } from '@/contexts/backoffice/book/domain/BookIdDuplicated';
 import { BookIdInvalid } from '@/contexts/backoffice/book/domain/BookIdInvalid';
+import { BookIsbnDuplicated } from '@/contexts/backoffice/book/domain/BookIsbnDuplicated';
 
 // Crear conexión como promesa para asegurar una única instancia
 const booksConnectionPromise = PostgresConnection.create(getBooksConfig());
@@ -101,6 +102,15 @@ export async function POST(request: NextRequest) {
       if (!data.isbn) {
         throw new ApiValidationError('isbn is required');
       }
+      
+      // Validar que el purchaseLink sea una URL válida si está presente
+      if (data.purchaseLink && typeof data.purchaseLink === 'string') {
+        try {
+          new URL(data.purchaseLink);
+        } catch (e) {
+          throw new ApiValidationError('purchaseLink must be a valid URL');
+        }
+      }
 
       bookData = {
         id: data.id,
@@ -133,13 +143,19 @@ export async function POST(request: NextRequest) {
     } catch (error) {
       if (error instanceof BookIdDuplicated) {
         return HttpNextResponse.conflict({
-          type: 'BookIdDuplicated',
+          type: 'ValidationError',
           message: error.message
         });
       }
       if (error instanceof BookIdInvalid) {
         return HttpNextResponse.badRequest({
-          type: 'BookIdInvalid',
+          type: 'ValidationError',
+          message: error.message
+        });
+      }
+      if (error instanceof BookIsbnDuplicated) {
+        return HttpNextResponse.conflict({
+          type: 'ValidationError',
           message: error.message
         });
       }

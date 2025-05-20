@@ -1,48 +1,52 @@
-import { JWTGenerator } from '../domain/JWTGenerator'
-import { TokenPayload } from '../domain/TokenPayload'
+import { JWTGenerator, TokenPayload } from '../domain/JWTGenerator'
+import jwt from 'jsonwebtoken'
+import { Logger } from '../../../shared/infrastructure/Logger'
+import { AuthConfigType, TimeString } from '../../../shared/infrastructure/config/AuthConfig'
 import { InvalidToken } from '../domain/InvalidToken'
-import { sign, verify, JsonWebTokenError, TokenExpiredError, Secret, SignOptions } from 'jsonwebtoken'
-import { Logger } from '@/contexts/shared/infrastructure/Logger'
 
 export class JwtTokenGenerator implements JWTGenerator {
   constructor(
     private readonly secret: string,
-    private readonly expiresIn: number | string = '24h'
+    private readonly expiresIn: TimeString
   ) {}
 
   async generate(payload: TokenPayload): Promise<string> {
     try {
-      Logger.info('Generating JWT token for user:', { id: payload.id })
-      
-      const options = { expiresIn: this.expiresIn } as SignOptions
-      const token = sign(payload, this.secret as Secret, options)
+      const token = jwt.sign(payload as object, this.secret, {
+        expiresIn: this.expiresIn as jwt.SignOptions['expiresIn']
+      })
 
-      Logger.info('JWT token generated successfully')
+      Logger.info('Token generated successfully:', { 
+        userId: payload.id,
+        expiresIn: this.expiresIn
+      })
       return token
     } catch (error) {
-      Logger.error('Error generating JWT token:', error)
+      Logger.error('Error generating token:', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      })
       throw error
     }
   }
 
   async verify(token: string): Promise<TokenPayload> {
     try {
-      Logger.info('Verifying JWT token')
-      
-      const decoded = verify(token, this.secret as Secret) as TokenPayload
-      
+      const decoded = jwt.verify(token, this.secret) as TokenPayload
+
       if (!decoded.id || !decoded.email) {
+        Logger.error('Invalid token payload: missing required fields')
         throw new InvalidToken()
       }
-      
-      Logger.info('JWT token verified successfully')
+
+      Logger.info('Token verified successfully:', { userId: decoded.id })
       return decoded
     } catch (error) {
-      Logger.error('Error verifying JWT token:', error)
-      if (error instanceof JsonWebTokenError || error instanceof TokenExpiredError) {
-        throw new InvalidToken()
-      }
-      throw error
+      Logger.error('Error verifying token:', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      })
+      throw new InvalidToken()
     }
   }
 }

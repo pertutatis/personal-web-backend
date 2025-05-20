@@ -1,26 +1,32 @@
+type LogData = Record<string, unknown> | unknown
+
 export class Logger {
-  static debug(message: string, ...args: any[]): void {
-    if (process.env.NODE_ENV === 'test') {
-      console.log(`[DEBUG] ${message}`, ...args)
+  static info(message: string, data?: LogData): void {
+    console.log(`[INFO] ${message}`, data || '')
+  }
+
+  static error(message: string, data?: LogData): void {
+    console.error(`[ERROR] ${message}`, data || '')
+  }
+
+  static warn(message: string, data?: LogData): void {
+    console.warn(`[WARN] ${message}`, data || '')
+  }
+
+  static debug(message: string, data?: LogData): void {
+    if (process.env.NODE_ENV === 'development') {
+      console.debug(`[DEBUG] ${message}`, data || '')
     }
   }
 
-  static info(message: string, ...args: any[]): void {
-    if (process.env.NODE_ENV === 'test') {
-      console.log(`[INFO] ${message}`, ...args)
-    }
-  }
-
-  static error(message: string, error?: any): void {
-    if (process.env.NODE_ENV === 'test') {
-      console.error(`[ERROR] ${message}`)
-      if (error) {
-        if (error instanceof Error) {
-          console.error('Stack:', error.stack)
-        } else {
-          console.error('Error details:', error)
-        }
+  private static formatError(data: LogData): Record<string, unknown> {
+    if (data instanceof Error) {
+      return {
+        message: data.message,
+        stack: data.stack,
+        name: data.name
       }
     }
+    return data as Record<string, unknown>
   }
 }

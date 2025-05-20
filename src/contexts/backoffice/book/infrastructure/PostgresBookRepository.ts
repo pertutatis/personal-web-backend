@@ -7,6 +7,7 @@ import { BookIsbn } from '../domain/BookIsbn';
 import { BookDescription } from '../domain/BookDescription';
 import { BookPurchaseLink } from '../domain/BookPurchaseLink';
 import { BookIdDuplicated } from '../domain/BookIdDuplicated';
+import { BookIsbnDuplicated } from '../domain/BookIsbnDuplicated';
 import { Collection } from '@/contexts/shared/domain/Collection';
 import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection';
 
@@ -28,6 +29,12 @@ export class PostgresBookRepository implements BookRepository {
     const exists = await this.exists(book.id);
     if (exists) {
       throw new BookIdDuplicated(book.id.value);
+    }
+
+    // Verificar si el ISBN ya existe
+    const existingBookWithIsbn = await this.searchByIsbn(book.isbn.value);
+    if (existingBookWithIsbn) {
+      throw new BookIsbnDuplicated(book.isbn.value);
     }
 
     const primitives = book.toPrimitives();
