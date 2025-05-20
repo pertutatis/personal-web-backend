@@ -133,7 +133,8 @@ export const testArticles = {
         text: 'Learn DDD',
         url: 'https://example.com/learn-ddd'
       }
-    ]
+    ],
+    slug: 'understanding-domain-driven-design'
   },
   validWithBooks: {
     id: 'dd7d8194-e099-4e3a-a431-6b4412dc5f6b',
@@ -141,7 +142,8 @@ export const testArticles = {
     excerpt: 'Exploring the fundamentals of clean code',
     content: 'In this article we will explore clean code principles...',
     bookIds: [],
-    relatedLinks: []
+    relatedLinks: [],
+    slug: 'clean-code-principles'
   },
   invalidUuidFormat: {
     id: 'not-a-uuid',
@@ -149,7 +151,8 @@ export const testArticles = {
     excerpt: 'Test excerpt',
     content: 'Test content',
     bookIds: [],
-    relatedLinks: []
+    relatedLinks: [],
+    slug: 'test-article'
   },
   invalidUuidVersion: {
     id: 'cc8d8194-e099-5e3a-a431-6b4412dc5f6a', // UUID v5
@@ -157,7 +160,8 @@ export const testArticles = {
     excerpt: 'Test excerpt',
     content: 'Test content',
     bookIds: [],
-    relatedLinks: []
+    relatedLinks: [],
+    slug: 'test-article-v5'
   },
   missingId: {
     title: 'Test Article',
@@ -175,7 +179,8 @@ export const testArticles = {
     relatedLinks: Array.from({ length: 10 }, (_, i) => ({
       text: `Link ${i + 1}`,
       url: `https://example.com/link-${i + 1}`
-    }))
+    })),
+    slug: 'article-with-maximum-links'
   },
   invalidLinks: {
     id: 'ff7d8194-e099-4e3a-a431-6b4412dc5f6d',
@@ -188,7 +193,8 @@ export const testArticles = {
         text: 'A'.repeat(101),
         url: 'https://example.com'
       }
-    ]
+    ],
+    slug: 'article-with-invalid-links'
   },
   invalidLinkUrl: {
     id: 'gg7d8194-e099-4e3a-a431-6b4412dc5f6e',
@@ -201,7 +207,8 @@ export const testArticles = {
         text: 'Invalid URL',
         url: 'not-a-valid-url'
       }
-    ]
+    ],
+    slug: 'article-with-invalid-link-url'
   },
   duplicateLinks: {
     id: 'hh7d8194-e099-4e3a-a431-6b4412dc5f6f',
@@ -218,7 +225,8 @@ export const testArticles = {
         text: 'Link 2',
         url: 'https://example.com/duplicate'
       }
-    ]
+    ],
+    slug: 'article-with-duplicate-links'
   },
   tooManyLinks: {
     id: 'ii7d8194-e099-4e3a-a431-6b4412dc5f70',
@@ -229,7 +237,8 @@ export const testArticles = {
     relatedLinks: Array.from({ length: 11 }, (_, i) => ({
       text: `Link ${i + 1}`,
       url: `https://example.com/link-${i + 1}`
-    }))
+    })),
+    slug: 'article-with-too-many-links'
   },
   specialCharactersTitle: {
     id: 'jj7d8194-e099-4e3a-a431-6b4412dc5f71',
@@ -237,7 +246,8 @@ export const testArticles = {
     excerpt: 'Una guía práctica de Domain-Driven Design',
     content: 'Test content...',
     bookIds: [],
-    relatedLinks: []
+    relatedLinks: [],
+    slug: 'como-implementar-ddd-en-typescript'
   },
   invalid: {
     id: 'kk7d8194-e099-4e3a-a431-6b4412dc5f72',
@@ -245,7 +255,8 @@ export const testArticles = {
     excerpt: '',
     content: 'A'.repeat(10001),
     bookIds: ['invalid-id'],
-    relatedLinks: []
+    relatedLinks: [],
+    slug: ''
   },
   invalidBookIds: {
     id: 'll7d8194-e099-4e3a-a431-6b4412dc5f73',
@@ -253,7 +264,8 @@ export const testArticles = {
     excerpt: 'Test excerpt',
     content: 'Test content',
     bookIds: ['non-existent-id'],
-    relatedLinks: []
+    relatedLinks: [],
+    slug: 'test-article-with-invalid-book'
   },
   maxLengthTitle: {
     id: 'mm7d8194-e099-4e3a-a431-6b4412dc5f74',
@@ -261,7 +273,8 @@ export const testArticles = {
     excerpt: 'Valid excerpt',
     content: 'Valid content',
     bookIds: [],
-    relatedLinks: []
+    relatedLinks: [],
+    slug: 'article-with-max-length-title'
   },
   maxLengthContent: {
     id: 'nn7d8194-e099-4e3a-a431-6b4412dc5f75',
@@ -269,7 +282,8 @@ export const testArticles = {
     excerpt: 'Test excerpt',
     content: 'A'.repeat(10000),
     bookIds: [],
-    relatedLinks: []
+    relatedLinks: [],
+    slug: 'article-with-max-length-content'
   },
   maxLengthExcerpt: {
     id: 'oo7d8194-e099-4e3a-a431-6b4412dc5f76',
@@ -277,7 +291,8 @@ export const testArticles = {
     excerpt: 'A'.repeat(160),
     content: 'Test content',
     bookIds: [],
-    relatedLinks: []
+    relatedLinks: [],
+    slug: 'article-with-max-length-excerpt'
   },
   invalidExcerpt: {
     id: 'pp7d8194-e099-4e3a-a431-6b4412dc5f77',
@@ -285,7 +300,8 @@ export const testArticles = {
     excerpt: 'A'.repeat(161),
     content: 'Test content',
     bookIds: [],
-    relatedLinks: []
+    relatedLinks: [],
+    slug: 'article-with-invalid-excerpt'
   }
 };
 
@@ -320,10 +336,12 @@ export interface TestArticle {
   content: string;
   bookIds: string[];
   relatedLinks: RelatedLink[];
+  slug: string;
 }
 
 export interface CreateArticleRequest extends Omit<TestArticle, 'id'> {
   id: string;
+  slug: string;
 }
 
 export const generateValidIsbn = (index: number): string => {

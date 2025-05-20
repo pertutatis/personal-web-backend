@@ -1,50 +1,110 @@
-# 014 - Integridad Referencial entre Libros y Artículos
+# 14. Gestión de Integridad Referencial entre Libros y Artículos
+
+Fecha: 2025-05-20
 
 ## Estado
-
-Propuesto - 2025-05-20
+Aceptado
 
 ## Contexto
-
-Actualmente existe una relación entre libros y artículos donde los artículos pueden referenciar múltiples libros a través de sus IDs. Sin embargo, si un libro es eliminado, no se actualiza esta relación, dejando referencias huérfanas en los artículos. Esto puede llevar a inconsistencias en los datos y potenciales errores en la aplicación.
+Necesitamos asegurar la integridad referencial entre libros y artículos, específicamente cuando se elimina un libro que está referenciado en artículos.
 
 ## Decisión
 
-Implementaremos integridad referencial entre libros y artículos mediante los siguientes cambios:
+### Enfoque Final: Eventos y Caso de Uso Dedicado
+Implementaremos un sistema basado en:
 
-1. Validación al crear/actualizar artículos:
-   - Cuando se asignen libros a un artículo, verificaremos que todos los IDs de libros existan
-   - Se lanzará una excepción `InvalidBookReferenceError` si algún libro no existe
+1. Eventos de Dominio:
+   - `BookDeletedDomainEvent`: notifica la eliminación de un libro
+   - Proporciona comunicación desacoplada entre contextos
 
-2. Manejo de eliminación de libros:
-   - Al eliminar un libro, buscaremos todos los artículos que lo referencian
-   - Eliminaremos automáticamente la referencia al libro eliminado de estos artículos
-   - Publicaremos un evento de dominio `BookDeletedDomainEvent` que será escuchado por el módulo de artículos
+2. Subscriber dedicado:
+   - `ArticleBookReferenceRemover`: escucha eventos de eliminación
+   - Coordina la actualización de referencias
 
-3. Arquitectura hexagonal:
-   - El repositorio de artículos implementará un método `removeBookReference` para actualizar artículos
-   - El caso de uso `DeleteBook` será responsable de coordinar la eliminación y actualización de referencias
-   - Se mantendrá la separación de contextos usando eventos de dominio para la comunicación
+3. Caso de uso específico:
+   - `RemoveBookReference`: ejecuta la lógica de actualización
+   - Utiliza el repositorio para las operaciones
 
-4. Testing:
-   - Tests unitarios para validación de referencias de libros
-   - Tests de integración para el proceso de eliminación
-   - Tests e2e para verificar el comportamiento completo del sistema
+4. Simplificación del dominio:
+   - `ArticleBookIds`: objeto de valor puro sin validaciones externas
+   - Solo valida estructura y límites básicos
+
+### Flujo de Datos
+```
+DeleteBook -> BookDeletedDomainEvent -> ArticleBookReferenceRemover -> RemoveBookReference -> Repository
+```
+
+### Responsabilidades
+- ArticleBookIds: validación estructural
+- RemoveBookReference: lógica de actualización
+- Subscriber: orquestación del proceso
+- Repository: persistencia de cambios
 
 ## Consecuencias
 
 ### Positivas
-- Se mantiene la consistencia de datos eliminando referencias huérfanas
-- Mejor encapsulación de la lógica de negocio al validar referencias
-- Comportamiento predecible al eliminar libros
-- Mayor facilidad para detectar y depurar problemas relacionales
+- Clara separación de responsabilidades
+- Objetos de valor simples y puros
+- Lógica de negocio centralizada
+- Fácil de testear y mantener
+- Mejor rendimiento
+- Desacoplamiento entre contextos
 
 ### Negativas
-- Mayor complejidad en el proceso de eliminación de libros
-- Necesidad de coordinación entre módulos a través de eventos
-- Posible impacto en rendimiento al tener que verificar existencia de libros
+- Latencia en la actualización de referencias
+- Necesidad de gestionar consistencia eventual
 
-### Notas de implementación
-- La validación de referencias se realizará en el dominio mediante el value object `ArticleBookIds`
-- Se usará el patrón Observer para manejar la actualización de artículos
-- Se mantendrá la limitación actual de máximo 10 libros por artículo
+## Implementación
+
+### 1. Componentes Clave
+```typescript
+// Subscriber
+class ArticleBookReferenceRemover implements DomainEventSubscriber {
+  subscribedTo() {
+    return [BookDeletedDomainEvent.EVENT_NAME];
+  }
+
+  async on(event: BookDeletedDomainEvent) {
+    await this.removeReference.run(event.aggregateId);
+  }
+}
+
+// Caso de Uso
+class RemoveBookReference {
+  async run(bookId: string): Promise<void> {
+    await this.repository.removeBookReference(bookId);
+  }
+}
+
+// Value Object
+class ArticleBookIds {
+  static create(ids: string[]): ArticleBookIds {
+    if (!Array.isArray(ids)) throw new ArticleBookIdsEmpty();
+    if (ids.length > 10) throw new Error('Maximum exceeded');
+    return new ArticleBookIds([...new Set(ids)]);
+  }
+}
+```
+
+### 2. Configuración
+- Registrar subscriber en el contenedor DI
+- Configurar event bus
+- Implementar monitorización
+
+## Alternativas Consideradas
+
+### 1. Validación en ArticleBookIds (Rechazada)
+- Mezclaba responsabilidades
+- Complicaba el testing
+- Creaba dependencias innecesarias
+
+### 2. Actualización Síncrona (Rechazada)
+- Menos resiliente
+- Peor rendimiento
+- Acoplamiento fuerte
+
+## Notas
+- Priorizar simplicidad y separación de responsabilidades
+- Monitorizar tiempos de propagación
+- Mantener logs detallados
+- Implementar retry policy

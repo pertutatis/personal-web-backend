@@ -57,8 +57,7 @@ export class PostgresArticleRepository implements ArticleRepository {
       const missingIds = result.rows.filter(row => !row.exists).map(row => row.id);
       
       if (missingIds.length > 0) {
-        const error = new InvalidBookReferenceError();
-        throw error;
+        throw new InvalidBookReferenceError(missingIds[0]);
       }
     } catch (error) {
       throw error;
@@ -104,7 +103,7 @@ export class PostgresArticleRepository implements ArticleRepository {
       [bookId.value]
     );
 
-    return result.rows.map(row => this.createArticleFromRow(row));
+    return Promise.all(result.rows.map(row => this.createArticleFromRow(row)));
   }
 
   async search(id: ArticleId): Promise<Article | null> {
@@ -119,7 +118,7 @@ export class PostgresArticleRepository implements ArticleRepository {
       }
 
       const articleRow = result.rows[0];
-      return this.createArticleFromRow(articleRow);
+      return await this.createArticleFromRow(articleRow);
     } catch (error) {
       console.error('Error searching for article:', error);
       throw error;
@@ -138,7 +137,7 @@ export class PostgresArticleRepository implements ArticleRepository {
       }
 
       const articleRow = result.rows[0];
-      return this.createArticleFromRow(articleRow);
+      return await this.createArticleFromRow(articleRow);
     } catch (error) {
       console.error('Error searching for article by slug:', error);
       throw error;
@@ -150,7 +149,7 @@ export class PostgresArticleRepository implements ArticleRepository {
       'SELECT * FROM articles ORDER BY created_at DESC'
     );
 
-    return result.rows.map(row => this.createArticleFromRow(row));
+    return Promise.all(result.rows.map(row => this.createArticleFromRow(row)));
   }
 
   async searchByPage(page: number, limit: number): Promise<Collection<Article>> {
@@ -167,7 +166,7 @@ export class PostgresArticleRepository implements ArticleRepository {
       [limit, offset]
     );
 
-    const articles = result.rows.map(row => this.createArticleFromRow(row));
+    const articles = await Promise.all(result.rows.map(row => this.createArticleFromRow(row)));
 
     return new Collection(articles, {
       page,
@@ -242,7 +241,22 @@ export class PostgresArticleRepository implements ArticleRepository {
     }
   }
 
-  private createArticleFromRow(row: ArticleRow): Article {
+  async removeBookReference(bookId: string): Promise<void> {
+    try {
+      await this.articlesConnection.execute(
+        `UPDATE articles
+         SET book_ids = array_remove(book_ids, $1::text),
+             updated_at = timezone('UTC', NOW())
+         WHERE $1 = ANY(book_ids)`,
+        [bookId]
+      );
+    } catch (error) {
+      console.error('Error removing book reference from articles:', error);
+      throw error;
+    }
+  }
+
+  private async createArticleFromRow(row: ArticleRow): Promise<Article> {
     try {
       let relatedLinks: Array<{ text: string; url: string }> = [];
       if (typeof row.related_links === 'string') {
@@ -256,7 +270,7 @@ export class PostgresArticleRepository implements ArticleRepository {
         title: new ArticleTitle(row.title),
         excerpt: new ArticleExcerpt(row.excerpt),
         content: new ArticleContent(row.content),
-        bookIds: ArticleBookIds.fromValues(row.book_ids || []),
+        bookIds: await ArticleBookIds.create(row.book_ids || []),
         relatedLinks: ArticleRelatedLinks.create(relatedLinks),
         slug: new ArticleSlug(row.slug),
         createdAt: new Date(row.created_at),
