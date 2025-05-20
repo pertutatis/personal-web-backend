@@ -50,6 +50,7 @@
 - Add filtering and sorting
 - Add soft delete functionality
 - Add article/book relationships validation
+- Add book deletion validation in articles
 - Add input validation middleware
 - Add role-based authorization
 
