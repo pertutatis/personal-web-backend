@@ -25,6 +25,11 @@ export class HttpNextResponse {
     return NextResponse.json(response, { status: 400 });
   }
 
+  static forbidden(error: string | ErrorResponse): NextResponse {
+    const response = typeof error === 'string' ? { type: 'Forbidden', message: error } : error;
+    return NextResponse.json(response, { status: 403 });
+  }
+
   static notFound(error: string | ErrorResponse): NextResponse {
     const response = typeof error === 'string' ? { type: 'NotFound', message: error } : error;
     return NextResponse.json(response, { status: 404 });

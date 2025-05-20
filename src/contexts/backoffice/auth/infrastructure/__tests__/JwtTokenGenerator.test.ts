@@ -3,7 +3,7 @@ import { InvalidToken } from '../../domain/InvalidToken'
 import { TokenPayload } from '../../domain/JWTGenerator'
 
 describe('JwtTokenGenerator', () => {
-  const SECRET_KEY = 'test-secret-key'
+  const SECRET_KEY = 'test_secret'
   let generator: JwtTokenGenerator
 
   beforeEach(() => {

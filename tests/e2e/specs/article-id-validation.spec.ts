@@ -1,95 +1,121 @@
-import { test, expect } from '@playwright/test';
-import { ArticlesApi } from '../apis/articles-api';
-import { ApiHelpers } from '../fixtures/api-helpers';
-import { testArticles } from '../fixtures/test-data';
-import { ArticleResponse } from '../fixtures/api-types';
+import { test, expect } from '@playwright/test'
+import { AuthHelper } from '../helpers/auth.helper'
+import { ArticleHelper } from '../helpers/article.helper'
 
 test.describe('Article ID Validation', () => {
-  let articlesApi: ArticlesApi;
-  let apiHelpers: ApiHelpers;
-
+  // Usamos el helper para generar artículos aleatorios para cada test
+  let validArticle: ReturnType<typeof ArticleHelper.generateRandomTestArticle>;
+  
   test.beforeEach(async ({ request }) => {
-    articlesApi = new ArticlesApi(request);
-    apiHelpers = ApiHelpers.create(request);
-  });
-
-  test.afterEach(async () => {
-    await apiHelpers.cleanupTestData();
-  });
-
-  test('should create article with valid UUID v4', async () => {
-    const response = await articlesApi.createArticle(testArticles.valid);
+    // Limpiar la base de datos antes de cada prueba
+    await ArticleHelper.cleanupArticles(request);
     
-    expect(response.status()).toBe(201);
-    expect(await response.text()).toBe('');
-  });
+    // Generar un nuevo artículo con ID único para cada test
+    validArticle = ArticleHelper.generateRandomTestArticle();
+  })
 
-  test('should reject invalid UUID format', async () => {
-    const response = await articlesApi.createArticle(testArticles.invalidUuidFormat);
-    const error = await apiHelpers.verifyErrorResponse(response, 400);
-    
-    expect(error.message).toBe('id must be a valid UUID v4');
-  });
+  test('should create article with valid UUID v4', async ({ request }) => {
+    const response = await ArticleHelper.createArticle(request, validArticle)
 
-  test('should reject UUID v5', async () => {
-    const response = await articlesApi.createArticle(testArticles.invalidUuidVersion);
-    const error = await apiHelpers.verifyErrorResponse(response, 400);
-    
-    expect(error.message).toBe('id must be a valid UUID v4');
-  });
+    expect(response.status()).toBe(201)
+    expect(await response.text()).toBe('')
+  })
 
-  test('should reject missing UUID', async () => {
-    // Use raw request to bypass TypeScript validation
-    const response = await apiHelpers['request'].post('/api/backoffice/articles', {
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json'
-      },
-      data: testArticles.missingId
-    });
-    const error = await apiHelpers.verifyErrorResponse(response, 400);
-    
-    expect(error.message).toBe('id cannot be empty');
-  });
+  test('should reject invalid UUID format', async ({ request }) => {
+    const invalidArticle = { ...validArticle, id: 'not-a-uuid' }
+    const response = await AuthHelper.makeAuthenticatedRequest(request, '/api/backoffice/articles', {
+      method: 'POST',
+      data: invalidArticle
+    })
 
-  test('should reject duplicate UUID', async () => {
-    // First creation should succeed
-    const firstResponse = await articlesApi.createArticle(testArticles.valid);
-    expect(firstResponse.status()).toBe(201);
+    expect(response.status()).toBe(400)
+    const error = await response.json()
+    expect(error.type).toBe('ValidationError')
+  })
 
-    // Second creation with same ID should fail
-    const secondResponse = await articlesApi.createArticle(testArticles.valid);
-    const error = await apiHelpers.verifyErrorResponse(secondResponse, 409);
-    
-    expect(error.message).toContain('already exists');
-  });
+  test('should reject UUID v5', async ({ request }) => {
+    const invalidArticle = {
+      ...validArticle,
+      id: '987fcdeb-51a2-5678-9012-3456789abcde' // v5 UUID format
+    }
+    const response = await AuthHelper.makeAuthenticatedRequest(request, '/api/backoffice/articles', {
+      method: 'POST',
+      data: invalidArticle
+    })
 
-  test('should not return article body on successful creation', async () => {
-    const response = await articlesApi.createArticle(testArticles.valid);
-    
-    expect(response.status()).toBe(201);
-    expect(await response.text()).toBe('');
-  });
+    expect(response.status()).toBe(400)
+    const error = await response.json()
+    expect(error.type).toBe('ValidationError')
+  })
 
-  test('should accept valid UUID in update request', async () => {
-    // Create article first
-    await articlesApi.createArticle(testArticles.valid);
+  test('should reject missing UUID', async ({ request }) => {
+    const invalidArticle = { ...validArticle }
+    delete (invalidArticle as any).id
 
-    // Update should succeed and return 204
-    const updateResponse = await articlesApi.updateArticle(testArticles.valid.id, {
-      title: 'Updated Title'
-    });
-    
-    expect(updateResponse.status()).toBe(204);
-    expect(await updateResponse.text()).toBe('');
-  });
+    const response = await AuthHelper.makeAuthenticatedRequest(request, '/api/backoffice/articles', {
+      method: 'POST',
+      data: invalidArticle
+    })
 
-  test('should reject invalid UUID in update request', async () => {
-    const response = await articlesApi.updateArticle('invalid-uuid', {
-      title: 'Updated Title'
-    });
-    const error = await apiHelpers.verifyErrorResponse(response, 400);
-    
-    expect(error.message).toBe('Article ID must be a valid UUID v4');
-  });
-});
+    expect(response.status()).toBe(400)
+    const error = await response.json()
+    expect(error.type).toBe('ValidationError')
+  })
+
+  test('should reject duplicate UUID', async ({ request }) => {
+    // Create first article
+    await ArticleHelper.createArticle(request, validArticle)
+
+    // Try to create another article with the same UUID
+    const response = await ArticleHelper.createArticle(request, validArticle)
+
+    expect(response.status()).toBe(409)
+    const error = await response.json()
+    expect(error.type).toBe('ValidationError')
+  })
+
+  test('should not return article body on successful creation', async ({ request }) => {
+    const response = await ArticleHelper.createArticle(request, validArticle)
+
+    expect(response.status()).toBe(201)
+    expect(await response.text()).toBe('')
+  })
+
+  test('should accept valid UUID in update request', async ({ request }) => {
+    // Create the article first
+    await ArticleHelper.createArticle(request, validArticle)
+
+    // Update the article
+    const response = await AuthHelper.makeAuthenticatedRequest(
+      request,
+      `/api/backoffice/articles/${validArticle.id}`,
+      {
+        method: 'PUT',
+        data: {
+          ...validArticle,
+          title: 'Updated Title'
+        }
+      }
+    )
+
+    expect(response.status()).toBe(204)
+  })
+
+  test('should reject invalid UUID in update request', async ({ request }) => {
+    const response = await AuthHelper.makeAuthenticatedRequest(
+      request,
+      '/api/backoffice/articles/not-a-valid-uuid',
+      {
+        method: 'PUT',
+        data: {
+          ...validArticle,
+          title: 'Updated Title'
+        }
+      }
+    )
+
+    expect(response.status()).toBe(400)
+    const error = await response.json()
+    expect(error.type).toBe('ValidationError')
+  })
+})

@@ -95,6 +95,50 @@ export class PostgresTestSetup {
     }
   }
 
+  static async cleanupDatabase(): Promise<void> {
+    try {
+      console.log('Starting test data cleanup...')
+      console.log('Cleaning database directly with SQL...')
+      await Promise.all([
+        this.cleanupArticles(),
+        this.cleanupBooks()
+      ])
+      console.log('Database cleaned successfully')
+      console.log('Test data cleanup completed')
+    } catch (error) {
+      console.error('Error cleaning up test data:', error)
+      throw error
+    }
+  }
+
+  static async cleanupArticles(): Promise<void> {
+    const articlesDbPool = new Pool({
+      ...this.TEST_CONFIG,
+      database: 'test_articles'
+    })
+    try {
+      await articlesDbPool.query('TRUNCATE articles CASCADE')
+    } catch (error) {
+      console.error('Error cleaning articles database:', error)
+    } finally {
+      await articlesDbPool.end()
+    }
+  }
+
+  static async cleanupBooks(): Promise<void> {
+    const booksDbPool = new Pool({
+      ...this.TEST_CONFIG,
+      database: 'test_books'
+    })
+    try {
+      await booksDbPool.query('TRUNCATE books CASCADE')
+    } catch (error) {
+      console.error('Error cleaning books database:', error)
+    } finally {
+      await booksDbPool.end()
+    }
+  }
+
   private static async runQuery(pool: Pool, query: string, errorMessage?: string): Promise<void> {
     try {
       await pool.query(query)

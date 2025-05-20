@@ -11,6 +11,7 @@ import { ApiValidationError } from '@/contexts/shared/infrastructure/http/ApiVal
 import { validateRelatedLinks } from '@/contexts/shared/infrastructure/validation/validateRelatedLinks';
 import type { RelatedLink } from '@/contexts/shared/infrastructure/validation/validateRelatedLinks';
 import { UuidValidator } from '@/contexts/shared/domain/validation/UuidValidator';
+import { ArticleIdInvalid } from '@/contexts/backoffice/article/domain/ArticleIdInvalid';
 
 const articlesConnectionPromise = PostgresConnection.create(getArticlesConfig());
 const booksConnectionPromise = PostgresConnection.create(getBooksConfig());
@@ -30,7 +31,7 @@ export async function GET(
   return executeWithErrorHandling(async () => {
     // Validate UUID format
     if (!UuidValidator.isValidUuid(params.id)) {
-      throw new ApiValidationError('Article ID must be a valid UUID v4');
+      throw new ArticleIdInvalid();
     }
 
     const { articlesConnection, booksConnection } = await getConnections();
@@ -52,7 +53,7 @@ export async function PUT(
   return executeWithErrorHandling(async () => {
     // Validate UUID format
     if (!UuidValidator.isValidUuid(params.id)) {
-      throw new ApiValidationError('Article ID must be a valid UUID v4');
+      throw new ArticleIdInvalid();
     }
 
     const { articlesConnection, booksConnection } = await getConnections();
@@ -161,7 +162,7 @@ export async function DELETE(
   return executeWithErrorHandling(async () => {
     // Validate UUID format
     if (!UuidValidator.isValidUuid(params.id)) {
-      throw new ApiValidationError('Article ID must be a valid UUID v4');
+      throw new ArticleIdInvalid();
     }
 
     const { articlesConnection, booksConnection } = await getConnections();

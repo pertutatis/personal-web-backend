@@ -21,7 +21,10 @@ export async function POST(req: NextRequest) {
     const connection = await getAuthConnection()
     const repository = new PostgresAuthRepository(connection)
     const uuidGenerator = new OfficialUuidGenerator()
-    const jwtGenerator = new JwtTokenGenerator(process.env.JWT_SECRET || 'default-secret')
+    const jwtGenerator = new JwtTokenGenerator(
+      process.env.JWT_SECRET || 'default-secret',
+      process.env.JWT_EXPIRES_IN || '1h'
+    )
     
     const controller = new AuthController(repository, uuidGenerator, jwtGenerator)
     

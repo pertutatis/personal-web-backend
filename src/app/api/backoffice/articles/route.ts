@@ -35,7 +35,16 @@ export async function GET(request: NextRequest) {
     const listArticles = new ListArticles(repository);
 
     const collection = await listArticles.run({page, limit});
-    const response = collection.toPrimitives();
+    const { items, total, page: currentPage, limit: itemLimit } = collection.toPrimitives();
+
+    const response = {
+      data: items,
+      pagination: {
+        total,
+        page: currentPage,
+        limit: itemLimit
+      }
+    };
 
     return HttpNextResponse.ok(response);
   });
@@ -132,7 +141,10 @@ export async function POST(request: NextRequest) {
       return HttpNextResponse.created();
     } catch (error) {
       if (error instanceof ArticleIdDuplicated) {
-        return HttpNextResponse.conflict(error.message);
+        return HttpNextResponse.conflict({
+          type: 'ValidationError',
+          message: error.message
+        });
       }
       throw error;
     }

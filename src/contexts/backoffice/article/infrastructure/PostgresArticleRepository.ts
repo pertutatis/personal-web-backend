@@ -57,7 +57,8 @@ export class PostgresArticleRepository implements ArticleRepository {
       const missingIds = result.rows.filter(row => !row.exists).map(row => row.id);
       
       if (missingIds.length > 0) {
-        throw new InvalidBookReferenceError();
+        const error = new InvalidBookReferenceError();
+        throw error;
       }
     } catch (error) {
       throw error;
