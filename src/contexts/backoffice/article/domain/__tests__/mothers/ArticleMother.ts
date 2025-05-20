@@ -9,21 +9,21 @@ import { ArticleRelatedLinksMother } from './ArticleRelatedLinksMother';
 import { v4 as uuidv4 } from 'uuid';
 
 export class ArticleMother {
-  static create(id: string = 'cc8d8194-e099-4e3a-a431-6b4412dc5f6a'): Article {
+  static async create(id: string = 'cc8d8194-e099-4e3a-a431-6b4412dc5f6a'): Promise<Article> {
     return Article.create({
       id: new ArticleId(id),
       slug: new ArticleSlug('test-article'),
       title: new ArticleTitle('Test Article'),
       excerpt: new ArticleExcerpt('Test excerpt'),
       content: new ArticleContent('Test content'),
-      bookIds: ArticleBookIds.createEmpty(),
+      bookIds: await ArticleBookIds.createEmpty(),
       relatedLinks: ArticleRelatedLinksMother.createEmpty(),
       createdAt: new Date(),
       updatedAt: new Date()
     });
   }
 
-  static random(): Article {
+  static async random(): Promise<Article> {
     const id = uuidv4();
     return Article.create({
       id: new ArticleId(id),
@@ -31,7 +31,7 @@ export class ArticleMother {
       title: new ArticleTitle(`Test Article ${id}`),
       excerpt: new ArticleExcerpt(`Test excerpt ${id}`),
       content: new ArticleContent(`Test content ${id}`),
-      bookIds: ArticleBookIds.createEmpty(),
+      bookIds: await ArticleBookIds.createEmpty(),
       relatedLinks: ArticleRelatedLinksMother.random(),
       createdAt: new Date(),
       updatedAt: new Date()

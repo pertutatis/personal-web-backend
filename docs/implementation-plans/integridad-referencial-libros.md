@@ -1,161 +1,148 @@
 # Plan de Implementación: Integridad Referencial Libros-Artículos
 
-## 1. Configuración Inicial (TDD Setup)
+## Objetivo
+Implementar un sistema de integridad referencial entre libros y artículos basado en eventos y casos de uso específicos.
 
-```mermaid
-flowchart TD
-    A[Inicio] --> B[Crear Tests]
-    B --> C[Implementar Dominio]
-    C --> D[Implementar Casos de Uso]
-    D --> E[Integrar en API]
-    E --> F[Tests E2E]
-```
+## 1. Componentes Core
 
-### 1.1 Estructura de Tests
-
-```
-src/contexts/backoffice/article/domain/__tests__/
-  ├── ArticleBookIds.test.ts
-  └── mothers/
-      └── ArticleBookIdsMother.ts
-
-src/contexts/backoffice/book/application/__tests__/
-  └── DeleteBook.test.ts
-
-tests/e2e/
-  └── book-article-integrity.test.ts
-```
-
-## 2. Plan de Desarrollo TDD
-
-### Fase 1: Domain Layer
-
-1. **ArticleBookIds Value Object**
-   ```typescript
-   describe('ArticleBookIds', () => {
-     describe('validation', () => {
-       it('should throw InvalidBookReferenceError when book does not exist')
-       it('should accept valid book references')
-       it('should handle empty book references')
-       it('should prevent duplicate book references')
-     })
-   })
-   ```
-
-2. **Implement Domain Events**
-   ```typescript
-   // BookDeletedDomainEvent.ts
-   class BookDeletedDomainEvent extends DomainEvent {
-     constructor(
-       readonly aggregateId: string,
-       readonly occurredOn: Date
-     ) {}
-   }
-   ```
-
-### Fase 2: Application Layer
-
-1. **Modify DeleteBook Use Case**
-   ```typescript
-   describe('DeleteBook', () => {
-     it('should emit BookDeletedDomainEvent')
-     it('should coordinate article updates')
-     it('should maintain transaction atomicity')
-   })
-   ```
-
-2. **ArticleRepository Interface**
-   ```typescript
-   interface ArticleRepository {
-     removeBookReference(bookId: string): Promise<void>
-     findByBookId(bookId: string): Promise<Article[]>
-   }
-   ```
-
-### Fase 3: Infrastructure Layer
-
-1. **PostgresArticleRepository Implementation**
-   ```typescript
-   describe('PostgresArticleRepository', () => {
-     describe('removeBookReference', () => {
-       it('should remove book reference from articles')
-       it('should handle non-existing references')
-     })
-   })
-   ```
-
-2. **Transaction Management**
-   ```sql
-   -- SQL Transaction Example
-   BEGIN;
-   DELETE FROM books WHERE id = $1;
-   UPDATE articles SET book_ids = array_remove(book_ids, $1);
-   COMMIT;
-   ```
-
-### Fase 4: API Integration
-
-1. **Update Book DELETE Endpoint**
-   ```typescript
-   describe('/api/books/:id DELETE', () => {
-     it('should remove book and update articles')
-     it('should return 404 for non-existing book')
-     it('should handle concurrent requests')
-   })
-   ```
-
-## 3. Tests E2E
-
+### ArticleBookIds (Value Object)
 ```typescript
-describe('Book-Article Integrity', () => {
-  describe('when deleting a book', () => {
-    it('should remove book reference from all articles')
-    it('should maintain other article data intact')
-  })
+class ArticleBookIds {
+  static create(ids: string[]): ArticleBookIds {
+    if (!Array.isArray(ids)) throw new ArticleBookIdsEmpty();
+    if (ids.length > 10) throw new Error('Maximum exceeded');
+    return new ArticleBookIds([...new Set(ids)]);
+  }
 
-  describe('when creating an article', () => {
-    it('should validate book references exist')
-    it('should reject invalid book references')
-  })
-})
+  remove(id: string): ArticleBookIds {
+    return new ArticleBookIds(
+      this.value.filter(v => v !== id)
+    );
+  }
+}
 ```
 
-## 4. Plan de Ejecución
+### RemoveBookReference (Use Case)
+```typescript
+class RemoveBookReference {
+  constructor(private repository: ArticleRepository) {}
 
-### Sprint 1: Dominio y Tests Base
-1. ✅ Escribir tests para ArticleBookIds
-2. ✅ Implementar validación de libros en ArticleBookIds
-3. ✅ Crear BookDeletedDomainEvent
-4. ✅ Implementar tests base para DeleteBook
+  async run(bookId: string): Promise<void> {
+    await this.repository.removeBookReference(bookId);
+  }
+}
+```
 
-### Sprint 2: Casos de Uso y Repositorio
-1. ✅ Modificar DeleteBook use case
-2. ✅ Implementar nuevo método en ArticleRepository
-3. ✅ Actualizar PostgresArticleRepository
-4. ✅ Implementar manejo de transacciones
+### ArticleBookReferenceRemover (Subscriber)
+```typescript
+class ArticleBookReferenceRemover implements DomainEventSubscriber {
+  constructor(private removeReference: RemoveBookReference) {}
+  
+  subscribedTo(): string[] {
+    return [BookDeletedDomainEvent.EVENT_NAME];
+  }
+  
+  async on(event: BookDeletedDomainEvent): Promise<void> {
+    await this.removeReference.run(event.aggregateId);
+  }
+}
+```
 
-### Sprint 3: API y Tests E2E
-1. ✅ Actualizar endpoint DELETE /api/books/:id
-2. ✅ Implementar tests E2E
-3. ✅ Validar integridad en endpoints de artículos
-4. ✅ Documentar cambios en OpenAPI
+## 2. Plan de Implementación
 
-## 5. Validación y Monitoreo
+### Fase 1: Preparación
+1. Crear rama feature/book-article-integrity
+2. Backup de la base de datos
+3. Configurar entorno de pruebas
 
-### Métricas de Éxito
-- 100% cobertura en nuevos tests
-- 0 referencias huérfanas en producción
-- Tiempo de respuesta < 200ms en operaciones de borrado
+### Fase 2: Desarrollo
+1. Simplificar ArticleBookIds:
+   - Eliminar dependencias externas
+   - Mantener solo validaciones básicas
 
-### Monitoreo
-- Logs de operaciones de borrado
-- Métricas de integridad referencial
-- Alertas en caso de inconsistencias
+2. Implementar DeleteBook:
+   - Añadir emisión de evento
+   - Configurar event bus
 
-## 6. Rollback Plan
+3. Desarrollar RemoveBookReference:
+   - Implementar caso de uso
+   - Configurar DI
 
-### En caso de problemas
-1. Revertir cambios en endpoint DELETE
-2. Mantener referencias existentes
-3. Documentar inconsistencias encontradas
-4. Planificar migración de datos si es necesario
+4. Crear ArticleBookReferenceRemover:
+   - Implementar subscriber
+   - Registrar en el sistema
+
+### Fase 3: Testing
+1. Tests Unitarios:
+```typescript
+describe('ArticleBookIds', () => {
+  it('should handle empty array', () => {
+    const ids = ArticleBookIds.create([]);
+    expect(ids.isEmpty).toBe(true);
+  });
+});
+
+describe('RemoveBookReference', () => {
+  it('should remove references', async () => {
+    const useCase = new RemoveBookReference(repository);
+    await useCase.run('book-1');
+    expect(repository.removeBookReference)
+      .toHaveBeenCalledWith('book-1');
+  });
+});
+```
+
+2. Tests de Integración:
+```typescript
+describe('Book deletion flow', () => {
+  it('should update articles', async () => {
+    const book = await createBookWithReferences();
+    await deleteBook.run(book.id);
+    const articles = await findArticlesWithReference(book.id);
+    expect(articles).toHaveLength(0);
+  });
+});
+```
+
+3. Tests E2E:
+- Flujo completo de eliminación
+- Casos de error
+- Rendimiento
+
+### Fase 4: Despliegue
+1. Preparación:
+   - Verificar backups
+   - Preparar rollback plan
+   - Actualizar documentación
+
+2. Despliegue:
+   - Deploy en staging
+   - Validación completa
+   - Deploy en producción
+
+3. Monitorización:
+   - Verificar logs
+   - Monitorear rendimiento
+   - Validar integridad
+
+## 3. Métricas de Éxito
+- Tests passing: 100%
+- Cobertura: >95%
+- Tiempo de propagación: <5s
+- Referencias huérfanas: 0
+
+## 4. Plan de Rollback
+1. Script de restauración de referencias
+2. Procedimiento de reversión de cambios
+3. Plan de comunicación
+
+## 5. Monitorización
+1. Métricas clave:
+   - Tiempo de procesamiento
+   - Tasa de éxito
+   - Referencias huérfanas
+
+2. Alertas:
+   - Latencia excesiva
+   - Errores de procesamiento
+   - Inconsistencias detectadas

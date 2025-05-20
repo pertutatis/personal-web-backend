@@ -65,7 +65,7 @@ export class Article extends AggregateRoot {
     this.updatedAt = params.updatedAt;
   }
 
-  static create(params: CreateArticleParams): Article {
+  static async create(params: CreateArticleParams): Promise<Article> {
     const article = new Article(params);
     article.record(new ArticleCreatedDomainEvent({
       aggregateId: params.id.value,
@@ -82,7 +82,7 @@ export class Article extends AggregateRoot {
     return article;
   }
 
-  update(params: UpdateArticleParams): Article {
+  async update(params: UpdateArticleParams): Promise<Article> {
     if (Object.keys(params).length === 0) {
       return this;
     }
