@@ -6,5 +6,5 @@ export class BookPurchaseLinkInvalid extends DomainError {
     this.name = 'BookPurchaseLinkInvalid';
   }
 
-  readonly type = 'BookPurchaseLinkInvalid';
+  readonly type = 'ValidationError';
 }

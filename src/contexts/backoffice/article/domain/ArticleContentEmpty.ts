@@ -5,7 +5,5 @@ export class ArticleContentEmpty extends DomainError {
     super('Article content cannot be empty');
   }
 
-  get type(): string {
-    return 'ArticleContentEmpty';
-  }
+  readonly type = 'ValidationError';
 }

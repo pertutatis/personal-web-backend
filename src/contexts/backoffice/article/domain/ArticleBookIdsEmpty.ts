@@ -5,7 +5,5 @@ export class ArticleBookIdsEmpty extends DomainError {
     super('Article must have at least one related book');
   }
 
-  get type(): string {
-    return 'ArticleBookIdsEmpty';
-  }
+  readonly type = 'ValidationError';
 }

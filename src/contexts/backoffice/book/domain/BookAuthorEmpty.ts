@@ -5,7 +5,5 @@ export class BookAuthorEmpty extends DomainError {
     super('Book author cannot be empty');
   }
 
-  get type(): string {
-    return 'BookAuthorEmpty';
-  }
+  readonly type = 'ValidationError';
 }

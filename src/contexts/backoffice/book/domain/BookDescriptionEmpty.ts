@@ -6,5 +6,5 @@ export class BookDescriptionEmpty extends DomainError {
     this.name = 'BookDescriptionEmpty';
   }
 
-  readonly type = 'BookDescriptionEmpty';
+  readonly type = 'ValidationError';
 }

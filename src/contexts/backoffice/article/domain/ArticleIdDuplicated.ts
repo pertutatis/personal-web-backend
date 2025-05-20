@@ -6,7 +6,5 @@ export class ArticleIdDuplicated extends DomainError {
     this.name = 'ArticleIdDuplicated';
   }
 
-  get type(): string {
-    return 'article_id_duplicated';
-  }
+  readonly type = 'Conflict';
 }
