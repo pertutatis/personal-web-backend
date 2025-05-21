@@ -15,13 +15,6 @@ export class ArticleBookIds {
     return new ArticleBookIds(Array.from(new Set(value)));
   }
 
-  static fromValues(value: string[]): ArticleBookIds {
-    if (value.length > this.MAX_BOOK_IDS) {
-      throw new Error(`Maximum of ${this.MAX_BOOK_IDS} book ids allowed`);
-    }
-    return this.create(value);
-  }
-
   private static validateValue(value: string[]): void {
     if (!Array.isArray(value)) {
       throw new ArticleBookIdsEmpty();
