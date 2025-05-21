@@ -3,7 +3,7 @@
 Fecha: 2025-05-20
 
 ## Estado
-Aceptado
+Implementado
 
 ## Contexto
 Necesitamos asegurar la integridad referencial entre libros y artículos, específicamente cuando se elimina un libro que está referenciado en artículos.
