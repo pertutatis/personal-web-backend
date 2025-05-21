@@ -5,6 +5,7 @@ import { Book } from '../../domain/Book';
 import { BookId } from '../../domain/BookId';
 import { EventBus } from '@/contexts/shared/domain/EventBus';
 import { BookDeletedDomainEvent } from '../../domain/event/BookDeletedDomainEvent';
+import { v4 as uuidv4 } from 'uuid';
 
 describe('DeleteBook', () => {
   let repository: jest.Mocked<BookRepository>;
@@ -25,7 +26,7 @@ describe('DeleteBook', () => {
   });
 
   it('should delete an existing book and publish event', async () => {
-    const bookId = 'existing-book-id';
+    const bookId = uuidv4();
     const book = { id: new BookId(bookId) } as Book;
     
     repository.search.mockResolvedValue(book);
@@ -46,7 +47,7 @@ describe('DeleteBook', () => {
   });
 
   it('should throw BookNotFound when book does not exist', async () => {
-    const bookId = 'non-existing-book-id';
+    const bookId = uuidv4();
     repository.search.mockResolvedValue(null);
 
     await expect(deleteBook.run(bookId)).rejects.toThrow(BookNotFound);
@@ -55,7 +56,7 @@ describe('DeleteBook', () => {
   });
 
   it('should propagate repository errors', async () => {
-    const bookId = 'existing-book-id';
+    const bookId = uuidv4();
     const book = { id: new BookId(bookId) } as Book;
     const error = new Error('Database error');
 
@@ -67,7 +68,7 @@ describe('DeleteBook', () => {
   });
 
   it('should propagate event bus errors', async () => {
-    const bookId = 'existing-book-id';
+    const bookId = uuidv4();
     const book = { id: new BookId(bookId) } as Book;
     const error = new Error('Event bus error');
 

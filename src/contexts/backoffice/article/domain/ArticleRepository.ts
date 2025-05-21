@@ -13,5 +13,5 @@ export interface ArticleRepository {
   searchByBookId(bookId: BookId): Promise<Article[]>;
   update(article: Article): Promise<void>;
   delete(id: ArticleId): Promise<void>;
-  removeBookReference(bookId: string): Promise<void>;
+  removeBookReference(bookId: BookId): Promise<void>;
 }

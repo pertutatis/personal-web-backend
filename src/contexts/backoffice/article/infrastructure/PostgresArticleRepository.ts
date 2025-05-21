@@ -37,6 +37,9 @@ export class PostgresArticleRepository implements ArticleRepository {
     }
 
     try {
+      // Validate all IDs are valid UUIDs
+      bookIds.forEach(id => new BookId(id));
+
       const result = await this.booksConnection.execute<{ id: string; exists: boolean }>(
         `
         WITH book_ids AS (
@@ -240,14 +243,14 @@ export class PostgresArticleRepository implements ArticleRepository {
     }
   }
 
-  async removeBookReference(bookId: string): Promise<void> {
+  async removeBookReference(bookId: BookId): Promise<void> {
     try {
       await this.articlesConnection.execute(
         `UPDATE articles
          SET book_ids = array_remove(book_ids, $1::text),
              updated_at = timezone('UTC', NOW())
          WHERE $1 = ANY(book_ids)`,
-        [bookId]
+        [bookId.value]
       );
     } catch (error) {
       console.error('Error removing book reference from articles:', error);
