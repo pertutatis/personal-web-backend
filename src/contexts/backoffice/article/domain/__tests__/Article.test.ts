@@ -1,7 +1,6 @@
 import { Article } from '../Article';
 import { ArticleMother } from './mothers/ArticleMother';
 import { ArticleRelatedLinksMother } from './mothers/ArticleRelatedLinksMother';
-import { BookRepository } from '../BookRepository';
 import { ArticleId } from '../ArticleId';
 import { ArticleSlug } from '../ArticleSlug';
 import { ArticleTitle } from '../ArticleTitle';
@@ -17,20 +16,10 @@ describe('Article', () => {
   const content = new ArticleContent('Test content');
   const createdAt = new Date();
   const updatedAt = new Date();
-  let mockBookRepository: jest.Mocked<BookRepository>;
 
-  beforeEach(() => {
-    mockBookRepository = {
-      exists: jest.fn()
-    } as any;
-
-    ArticleBookIds.setBookRepository(mockBookRepository);
-    mockBookRepository.exists.mockResolvedValue(true);
-  });
-
-  it('should create article with all required fields', async () => {
-    const emptyBookIds = await ArticleBookIds.createEmpty();
-    const article = await Article.create({
+  it('should create article with all required fields', () => {
+    const emptyBookIds = ArticleBookIds.createEmpty();
+    const article = Article.create({
       id,
       slug,
       title,
@@ -51,9 +40,9 @@ describe('Article', () => {
     expect(article.bookIds.isEmpty).toBe(true);
   });
 
-  it('should create with empty book ids', async () => {
-    const emptyBookIds = await ArticleBookIds.createEmpty();
-    const article = await Article.create({
+  it('should create with empty book ids', () => {
+    const emptyBookIds = ArticleBookIds.createEmpty();
+    const article = Article.create({
       id,
       slug,
       title,
@@ -68,9 +57,9 @@ describe('Article', () => {
     expect(article.bookIds.isEmpty).toBe(true);
   });
 
-  it('should create with book ids', async () => {
-    const bookIds = await ArticleBookIds.fromValues(['book-1', 'book-2']);
-    const article = await Article.create({
+  it('should create with book ids', () => {
+    const bookIds = ArticleBookIds.create(['book-1', 'book-2']);
+    const article = Article.create({
       id,
       slug,
       title,
@@ -82,12 +71,12 @@ describe('Article', () => {
       updatedAt
     });
 
-    expect(article.bookIds.equals(bookIds)).toBe(true);
+    expect(article.bookIds.getValue()).toEqual(['book-1', 'book-2']);
   });
 
-  it('should handle related links', async () => {
-    const emptyBookIds = await ArticleBookIds.createEmpty();
-    const article = await Article.create({
+  it('should handle related links', () => {
+    const emptyBookIds = ArticleBookIds.createEmpty();
+    const article = Article.create({
       id,
       slug,
       title,
@@ -102,9 +91,9 @@ describe('Article', () => {
     expect(article.relatedLinks.length).toBe(10);
   });
 
-  it('should allow empty related links', async () => {
-    const emptyBookIds = await ArticleBookIds.createEmpty();
-    const article = await Article.create({
+  it('should allow empty related links', () => {
+    const emptyBookIds = ArticleBookIds.createEmpty();
+    const article = Article.create({
       id,
       slug,
       title,
@@ -119,11 +108,11 @@ describe('Article', () => {
     expect(article.relatedLinks.isEmpty).toBe(true);
   });
 
-  it('should update fields', async () => {
-    const article = await ArticleMother.random();
+  it('should update fields', () => {
+    const article = ArticleMother.create();
     const newTitle = new ArticleTitle('New Title');
 
-    const updatedArticle = await article.update({
+    const updatedArticle = article.update({
       title: newTitle
     });
 

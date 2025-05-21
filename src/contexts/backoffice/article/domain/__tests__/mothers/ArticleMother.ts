@@ -9,21 +9,21 @@ import { ArticleRelatedLinksMother } from './ArticleRelatedLinksMother';
 import { v4 as uuidv4 } from 'uuid';
 
 export class ArticleMother {
-  static async create(id: string = 'cc8d8194-e099-4e3a-a431-6b4412dc5f6a'): Promise<Article> {
+  static create(id: string = 'cc8d8194-e099-4e3a-a431-6b4412dc5f6a'): Article {
     return Article.create({
       id: new ArticleId(id),
       slug: new ArticleSlug('test-article'),
       title: new ArticleTitle('Test Article'),
       excerpt: new ArticleExcerpt('Test excerpt'),
       content: new ArticleContent('Test content'),
-      bookIds: await ArticleBookIds.createEmpty(),
+      bookIds: ArticleBookIds.createEmpty(),
       relatedLinks: ArticleRelatedLinksMother.createEmpty(),
       createdAt: new Date(),
       updatedAt: new Date()
     });
   }
 
-  static async random(): Promise<Article> {
+  static random(): Article {
     const id = uuidv4();
     return Article.create({
       id: new ArticleId(id),
@@ -31,8 +31,23 @@ export class ArticleMother {
       title: new ArticleTitle(`Test Article ${id}`),
       excerpt: new ArticleExcerpt(`Test excerpt ${id}`),
       content: new ArticleContent(`Test content ${id}`),
-      bookIds: await ArticleBookIds.createEmpty(),
+      bookIds: ArticleBookIds.createEmpty(),
       relatedLinks: ArticleRelatedLinksMother.random(),
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+  }
+
+  static withBookReferences(bookIds: string[]): Article {
+    const id = uuidv4();
+    return Article.create({
+      id: new ArticleId(id),
+      slug: new ArticleSlug(`test-article-${id}`),
+      title: new ArticleTitle(`Test Article ${id}`),
+      excerpt: new ArticleExcerpt(`Test excerpt ${id}`),
+      content: new ArticleContent(`Test content ${id}`),
+      bookIds: ArticleBookIds.create(bookIds),
+      relatedLinks: ArticleRelatedLinksMother.createEmpty(),
       createdAt: new Date(),
       updatedAt: new Date()
     });

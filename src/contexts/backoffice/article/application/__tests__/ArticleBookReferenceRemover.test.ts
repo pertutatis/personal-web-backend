@@ -1,9 +1,11 @@
 import { ArticleBookReferenceRemover } from '../ArticleBookReferenceRemover';
 import { ArticleRepository } from '../../domain/ArticleRepository';
 import { BookDeletedDomainEvent } from '@/contexts/backoffice/book/domain/event/BookDeletedDomainEvent';
+import { RemoveBookReference } from '../RemoveBookReference';
 
 describe('ArticleBookReferenceRemover', () => {
   let repository: jest.Mocked<ArticleRepository>;
+  let removeBookReference: RemoveBookReference;
   let remover: ArticleBookReferenceRemover;
 
   beforeEach(() => {
@@ -11,7 +13,8 @@ describe('ArticleBookReferenceRemover', () => {
       removeBookReference: jest.fn()
     } as any;
 
-    remover = new ArticleBookReferenceRemover(repository);
+    removeBookReference = new RemoveBookReference(repository);
+    remover = new ArticleBookReferenceRemover(removeBookReference);
   });
 
   it('should subscribe to BookDeletedDomainEvent', () => {

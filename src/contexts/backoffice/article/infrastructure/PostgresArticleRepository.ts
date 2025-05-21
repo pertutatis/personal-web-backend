@@ -53,7 +53,6 @@ export class PostgresArticleRepository implements ArticleRepository {
         [bookIds]
       );
 
-
       const missingIds = result.rows.filter(row => !row.exists).map(row => row.id);
       
       if (missingIds.length > 0) {
@@ -118,7 +117,7 @@ export class PostgresArticleRepository implements ArticleRepository {
       }
 
       const articleRow = result.rows[0];
-      return await this.createArticleFromRow(articleRow);
+      return this.createArticleFromRow(articleRow);
     } catch (error) {
       console.error('Error searching for article:', error);
       throw error;
@@ -137,7 +136,7 @@ export class PostgresArticleRepository implements ArticleRepository {
       }
 
       const articleRow = result.rows[0];
-      return await this.createArticleFromRow(articleRow);
+      return this.createArticleFromRow(articleRow);
     } catch (error) {
       console.error('Error searching for article by slug:', error);
       throw error;
@@ -256,7 +255,7 @@ export class PostgresArticleRepository implements ArticleRepository {
     }
   }
 
-  private async createArticleFromRow(row: ArticleRow): Promise<Article> {
+  private createArticleFromRow(row: ArticleRow): Article {
     try {
       let relatedLinks: Array<{ text: string; url: string }> = [];
       if (typeof row.related_links === 'string') {
@@ -270,7 +269,7 @@ export class PostgresArticleRepository implements ArticleRepository {
         title: new ArticleTitle(row.title),
         excerpt: new ArticleExcerpt(row.excerpt),
         content: new ArticleContent(row.content),
-        bookIds: await ArticleBookIds.create(row.book_ids || []),
+        bookIds: ArticleBookIds.create(row.book_ids || []),
         relatedLinks: ArticleRelatedLinks.create(relatedLinks),
         slug: new ArticleSlug(row.slug),
         createdAt: new Date(row.created_at),
