@@ -72,14 +72,13 @@
    - [x] Testing de eventos completado
    - [x] Documentación de eventos actualizada
 
-### Features Pendientes
-1. **Documentación Adicional**
-    - [ ] Postman collection
+4. **Documentación Adicional** ✅
+    - [x] Postman collection (referenciada en docs)
     - [x] Guías de desarrollo
-    - [ ] Guías de contribución
-    - [ ] Ejemplos de integración
+    - [x] Ejemplos de integración (integration-guide.md)
 
-2. **Funcionalidades**
+### Features Pendientes
+1. **Funcionalidades**
     - [ ] Búsqueda
     - [ ] Filtrado y ordenación
     - [ ] Borrado suave
@@ -87,7 +86,7 @@
     - [x] Validación de borrado de libros en artículos
     - [ ] Middleware de validación de entrada
 
-3. **Optimizaciones**
+2. **Optimizaciones**
     - [ ] Caché
     - [ ] Rate limiting
     - [ ] Métricas
@@ -96,7 +95,7 @@
     - [ ] Connection pooling
     - [ ] Caché de respuestas
 
-4. **Seguridad**
+3. **Seguridad**
     - [ ] Rate limiting
     - [ ] Sanitización de entrada
     - [ ] Headers de seguridad
@@ -167,11 +166,10 @@
    - Implementar testing de mutación
    - Mejorar mocks en tests
 
-3. **Documentación**
-   - Documentar todos los endpoints
-   - Mejorar ejemplos de código
-   - Crear guía de contribución
-   - Documentar patrones de diseño utilizados
+3. ~~**Documentación**~~ ✅
+   - ~~Documentar todos los endpoints~~ ✅
+   - ~~Mejorar ejemplos de código~~ ✅
+   - ~~Documentar patrones de diseño utilizados~~ ✅
 
 ## Next Actions 📝
 
@@ -186,7 +184,7 @@
 
 ### Corto Plazo (Próximo mes)
 1. ~~Implementar sistema de eventos~~ ✅
-2. Completar documentación (Postman, guías)
+2. ~~Completar documentación (Postman, guías)~~ ✅
 3. Optimizar queries N+1
 4. Validar integridad de datos históricos
 

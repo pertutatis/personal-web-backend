@@ -1,0 +1,143 @@
+# API Documentation
+
+## Authentication
+
+All protected endpoints require a JWT token in the Authorization header:
+```
+Authorization: Bearer <token>
+```
+
+## Articles API
+
+### GET /articles
+List articles with pagination
+- Query params: `page`, `limit`
+- Protected: No
+- Example: `GET /articles?page=1&limit=10`
+
+### GET /articles/:id
+Get single article by ID
+- URL params: `id` (UUID v4)
+- Protected: No
+- Example: `GET /articles/550e8400-e29b-41d4-a716-446655440000`
+
+### POST /articles
+Create new article
+- Protected: Yes
+- Body: 
+```json
+{
+  "title": "string",
+  "excerpt": "string",
+  "content": "string",
+  "bookIds": "string[]", // UUID v4 array
+  "relatedLinks": [
+    {
+      "text": "string",
+      "url": "string"
+    }
+  ]
+### PUT /articles/:id  
+Update article
+- URL params: `id` (UUID v4)
+- Protected: Yes
+- Body: Same as POST
+
+### DELETE /articles/:id
+Delete article
+- URL params: `id` (UUID v4)
+- Protected: Yes
+
+## Books API
+
+### GET /books
+List books with pagination
+- Query params: `page`, `limit`
+- Protected: No
+- Example: `GET /books?page=1&limit=10`
+
+### GET /books/:id
+Get single book by ID
+- URL params: `id` (UUID v4) 
+- Protected: No
+- Example: `GET /books/550e8400-e29b-41d4-a716-446655440000`
+
+### POST /books
+Create new book
+- Protected: Yes
+- Body:
+```json
+{
+  "title": "string",
+  "author": "string",
+  "isbn": "string",
+  "description": "string",
+  "purchaseLink": "string"
+}
+```
+
+### PUT /books/:id
+Update book
+- URL params: `id` (UUID v4)
+## Important Notes
+
+### UUID Validation
+- All IDs must be valid UUID v4 format
+- Invalid UUIDs will return 400 Bad Request
+
+### Book References
+- Articles can reference 0-10 books
+- Book IDs must exist in the database
+- When a book is deleted, its references are removed from articles
+
+### Error Responses
+All errors follow this format:
+```json
+{
+  "error": "string",
+  "message": "string"
+}
+```
+
+Common status codes:
+- 400: Invalid input/validation error
+- 401: Authentication required
+- 403: Insufficient permissions
+- 404: Resource not found
+- 500: Server error
+
+## Testing
+
+### Postman Collection
+A Postman collection is included at `./postman/personal-web-backend.postman_collection.json` with:
+- Pre-configured environments (dev, test)
+- Authentication setup
+- Example requests for all endpoints
+- Response validation tests
+
+### Environment Variables
+```
+BASE_URL=http://localhost:3000
+JWT_TOKEN=<your-jwt-token>
+```
+
+## Development Guidelines
+
+### UUID Generation
+- UUIDs should be generated on the client side
+- Must be version 4 (random)
+- Validated on both client and server
+
+### Book Reference Integrity
+- Validate book existence before creation/update
+- Handle book deletion gracefully
+- Monitor orphaned references
+- Protected: Yes
+- Body: Same as POST
+
+### DELETE /books/:id
+Delete book
+- URL params: `id` (UUID v4)
+- Protected: Yes
+- Note: Will remove references from articles
+}
