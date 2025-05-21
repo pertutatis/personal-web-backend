@@ -79,11 +79,15 @@
 
 ### Features Pendientes
 1. **Funcionalidades**
-     - [ ] Búsqueda
-     - [ ] Filtrado y ordenación
-     - [ ] Borrado suave
-     - [x] Validación de relaciones artículo/libro
-     - [x] Validación de borrado de libros en artículos
+      - [ ] Blog Read Model (En progreso)
+        - [ ] Nuevo contexto blog
+        - [ ] Endpoints públicos
+        - [ ] CORS para dominios permitidos
+      - [ ] Búsqueda
+      - [ ] Filtrado y ordenación
+      - [ ] Borrado suave
+      - [x] Validación de relaciones artículo/libro
+      - [x] Validación de borrado de libros en artículos
 
 2. **Optimizaciones**
     - [ ] Caché
@@ -173,10 +177,11 @@
 ## Next Actions 📝
 
 ### Inmediatas (Próximas 2 semanas)
-1. ~~Implementar integridad referencial libros-artículos~~ ✅
-   - ~~Validación de existencia de libros~~
-   - ~~Manejo de eliminación de libros~~
-   - ~~Tests unitarios y de integración~~
+1. Implementar Blog Read Model
+   - Crear nuevo contexto blog
+   - Implementar casos de uso ListArticles y GetArticleBySlug
+   - Configurar CORS para dominios permitidos
+   - Tests unitarios y e2e
 2. Implementar rate limiting
 3. Mejorar logging y trazabilidad de errores
 
