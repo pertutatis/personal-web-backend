@@ -11,6 +11,8 @@
    - Relación con libros
    - Generación de UUIDs en cliente
    - Excerpts y slugs
+   - Integridad referencial con libros ✨
+   - Sistema de eventos para referencias ✨
 
 2. **Libros**
    - CRUD completo
@@ -19,6 +21,8 @@
    - Tests E2E
    - Generación de UUIDs en cliente
    - Descripción y enlaces de compra
+   - Validación UUID v4 ✨
+   - Eventos de eliminación ✨
 
 3. **Infraestructura**
    - PostgreSQL configurado
@@ -28,6 +32,8 @@
    - Documentación OpenAPI/Swagger
    - Autenticación JWT
    - Middleware de protección de rutas
+   - Event Bus implementado ✨
+   - Event Subscribers configurados ✨
 
 ### Arquitectura
 1. **Hexagonal**
@@ -35,12 +41,15 @@
    - Interfaces definidas
    - Implementaciones separadas
    - Value Objects robustos
+   - Event-driven design ✨
 
 2. **Testing**
    - Framework configurado
    - Object Mothers
    - Tests funcionando
    - 80% de cobertura
+   - Tests de integración mejorados ✨
+   - Tests de eventos implementados ✨
 
 ## What's Left to Build 🚧
 
@@ -57,28 +66,28 @@
    - [x] Ejemplos de uso en OpenAPI
    - [x] Documentación de autenticación JWT
 
-### Features Pendientes
-1. **Sistema de Eventos**
-   - [ ] Event dispatcher
-   - [ ] Event subscribers
-   - [ ] Testing de eventos
-   - [ ] Documentación de eventos
+3. **Sistema de Eventos** ✅
+   - [x] Event dispatcher implementado
+   - [x] Event subscribers configurados
+   - [x] Testing de eventos completado
+   - [x] Documentación de eventos actualizada
 
-3. **Documentación Adicional**
+### Features Pendientes
+1. **Documentación Adicional**
     - [ ] Postman collection
     - [x] Guías de desarrollo
     - [ ] Guías de contribución
     - [ ] Ejemplos de integración
 
-4. **Funcionalidades**
+2. **Funcionalidades**
     - [ ] Búsqueda
     - [ ] Filtrado y ordenación
     - [ ] Borrado suave
-    - [ ] Validación de relaciones artículo/libro
-    - [ ] Validación de borrado de libros en artículos
+    - [x] Validación de relaciones artículo/libro
+    - [x] Validación de borrado de libros en artículos
     - [ ] Middleware de validación de entrada
 
-5. **Optimizaciones**
+3. **Optimizaciones**
     - [ ] Caché
     - [ ] Rate limiting
     - [ ] Métricas
@@ -87,7 +96,7 @@
     - [ ] Connection pooling
     - [ ] Caché de respuestas
 
-6. **Seguridad**
+4. **Seguridad**
     - [ ] Rate limiting
     - [ ] Sanitización de entrada
     - [ ] Headers de seguridad
@@ -131,9 +140,9 @@
 ## Known Issues 🐛
 
 ### Bugs
-1. **Alta Prioridad**
-   - Referencias huérfanas a libros eliminados
-   - Falta de validación en referencias de libros
+1. ~~**Alta Prioridad**~~
+   - ~~Referencias huérfanas a libros eliminados~~ ✅
+   - ~~Falta de validación en referencias de libros~~ ✅
 
 2. **Media Prioridad**
    - Optimizar queries N+1 en listado de artículos
@@ -147,7 +156,7 @@
 
 ### Technical Debt
 1. **Arquitectura**
-   - Implementar sistema de eventos
+   - ~~Implementar sistema de eventos~~ ✅
    - Refactorizar manejo de errores
    - Mejorar logging
    - Separar configuración por ambientes
@@ -167,16 +176,16 @@
 ## Next Actions 📝
 
 ### Inmediatas (Próximas 2 semanas)
-1. Implementar integridad referencial libros-artículos
-   - Validación de existencia de libros
-   - Manejo de eliminación de libros
-   - Tests unitarios y de integración
-2. Implementar autenticación JWT
-3. Configurar middleware de autenticación
-4. Desarrollar gestión de refresh tokens
+1. ~~Implementar integridad referencial libros-artículos~~ ✅
+   - ~~Validación de existencia de libros~~
+   - ~~Manejo de eliminación de libros~~
+   - ~~Tests unitarios y de integración~~
+2. Implementar middleware de validación de entrada
+3. Implementar rate limiting
+4. Mejorar logging y trazabilidad de errores
 
 ### Corto Plazo (Próximo mes)
-1. Implementar sistema de eventos
+1. ~~Implementar sistema de eventos~~ ✅
 2. Completar documentación (Postman, guías)
 3. Optimizar queries N+1
 4. Validar integridad de datos históricos
