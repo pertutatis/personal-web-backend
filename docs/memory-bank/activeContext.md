@@ -1,83 +1,46 @@
-# Active Context: Implementación de Autenticación JWT
+# Active Context
 
-## Estado Actual del Proyecto
-- El módulo de autenticación base está implementado (login, registro, JWT)
-- Las rutas de la API están documentadas para requerir autenticación
-- Falta implementar el middleware de autenticación para proteger las rutas
+## Current Focus
+Implementación del read model para el blog público, separando la gestión (backoffice) de la visualización (blog).
 
-## Trabajo en Curso
+## Recent Changes
+1. Completada la integridad referencial entre libros y artículos
+2. Implementado sistema de eventos para mantener consistencia
+3. Mejorada la documentación API y guías de integración
 
-### Implementación de Auth Middleware
-Estamos trabajando en la implementación del middleware de autenticación JWT para proteger las rutas del backoffice.
+## Active Development
+### Blog Read Model
+- Nuevo contexto separado del backoffice
+- Dos casos de uso principales:
+  * Listar todos los artículos (sin paginación)
+  * Obtener artículo por slug
+- Exposición conjunta de artículos y libros relacionados
+- Restricción de acceso mediante CORS a dominios específicos
 
-#### Documentación Relacionada
-- [ADR-013: Autenticación JWT](../adr/013-autenticacion-jwt.md)
-- [OBR-003: Reglas de Autenticación](../obr/003-auth-rules.md)
-- [Plan de Implementación: Auth Middleware](../implementation-plans/auth-middleware.md)
+### Architectural Decisions
+- ADR-015: Define la arquitectura del contexto blog
+- OBR-002: Define casos de uso y reglas de negocio
+- Uso de la misma base de datos sin duplicación
+- Modelos de dominio específicos para el blog
 
-#### Componentes Principales
-```mermaid
-flowchart TD
-    subgraph Middleware
-        AM[AuthMiddleware]
-        JG[JWTGenerator]
-        TP[TokenPayload]
-    end
-    
-    subgraph Routes
-        AR[Articles]
-        BR[Books]
-        AuthR[Auth]
-    end
-    
-    AM --> JG
-    JG --> TP
-    AR --> AM
-    BR --> AM
-    AuthR --> AM
-```
+## Next Steps
+1. Implementar estructura base del contexto blog
+2. Desarrollar casos de uso siguiendo TDD
+3. Configurar middleware CORS
+4. Añadir tests e2e
 
-#### Estado de la Implementación
-1. **Completado ✅**
-   - Módulo de autenticación base
-   - Documentación de requisitos
-   - Plan de implementación del middleware
+## Technical Considerations
+- No duplicar datos, usar read models optimizados
+- Mantener consistencia con el backoffice
+- Considerar futuras optimizaciones (caché, rate limiting)
+- Asegurar seguridad mediante CORS
 
-2. **En Progreso 🚧**
-   - Implementación del middleware usando TDD
-   - Tests unitarios del middleware
-   - Integración con rutas existentes
+## Current Challenges
+1. Balance entre compartir base de datos y mantener contextos separados
+2. Optimizar queries para incluir información de libros
+3. Asegurar rendimiento sin paginación inicial
 
-3. **Pendiente 📋**
-   - Tests de integración
-   - Tests E2E
-   - Actualización de la documentación OpenAPI
-
-## Decisiones Técnicas Activas
-1. El middleware será implementado como un middleware de Next.js
-2. Se aplicará a todas las rutas bajo /api/backoffice/*
-3. Utilizará el JWTGenerator existente para la validación de tokens
-4. Seguirá un enfoque TDD estricto
-
-## Próximos Pasos
-1. Implementar tests unitarios del middleware
-2. Desarrollar la implementación del middleware
-3. Integrar con las rutas existentes
-4. Ejecutar y validar tests E2E
-5. Actualizar la documentación
-
-## Métricas de Éxito
-- 100% de cobertura en tests unitarios
-- Tests E2E pasando
-- Tiempo de respuesta < 50ms para validación de token
-- Todas las rutas del backoffice protegidas correctamente
-
-## Riesgos y Mitigaciones
-1. **Riesgo**: Impacto en el rendimiento de la API
-   - **Mitigación**: Optimizar validación de tokens, considerar caché
-
-2. **Riesgo**: Complejidad en la integración con rutas existentes
-   - **Mitigación**: Diseño modular y tests exhaustivos
-
-3. **Riesgo**: Seguridad del sistema de tokens
-   - **Mitigación**: Seguir mejores prácticas de JWT, validación robusta
+## Documentation Status
+- ADRs actualizados con nuevo contexto
+- OBRs definen comportamiento esperado
+- Swagger pendiente de actualizar con nuevos endpoints
