@@ -1,45 +1,21 @@
 import { ArticleBookIdsEmpty } from './ArticleBookIdsEmpty';
-import { InvalidBookReferenceError } from './InvalidBookReferenceError';
-import { BookRepository } from './BookRepository';
 
 export class ArticleBookIds {
   static readonly MAX_BOOK_IDS = 10;
-  private static bookRepository: BookRepository;
 
   private constructor(private readonly value: readonly string[]) {
     Object.freeze(this.value);
   }
 
-  static setBookRepository(repository: BookRepository): void {
-    this.bookRepository = repository;
-  }
-
-  private static async validateBookIds(value: string[]): Promise<void> {
-    if (!this.bookRepository) {
-      throw new Error('BookRepository not set');
-    }
-
-    if (value.length === 0) {
-      return;
-    }
-
-    const uniqueIds = Array.from(new Set(value));
-    const existPromises = uniqueIds.map(id => this.bookRepository.exists(id));
-    const existResults = await Promise.all(existPromises);
-    
-    const nonExistentBookId = uniqueIds.find((_, index) => !existResults[index]);
-    if (nonExistentBookId) {
-      throw new InvalidBookReferenceError(nonExistentBookId);
-    }
-  }
-
-  static async create(value: string[]): Promise<ArticleBookIds> {
+  static create(value: string[]): ArticleBookIds {
     this.validateValue(value);
-    await this.validateBookIds(value);
+    if (value.length > this.MAX_BOOK_IDS) {
+      throw new Error(`Maximum of ${this.MAX_BOOK_IDS} book ids allowed`);
+    }
     return new ArticleBookIds(Array.from(new Set(value)));
   }
 
-  static async fromValues(value: string[]): Promise<ArticleBookIds> {
+  static fromValues(value: string[]): ArticleBookIds {
     if (value.length > this.MAX_BOOK_IDS) {
       throw new Error(`Maximum of ${this.MAX_BOOK_IDS} book ids allowed`);
     }
@@ -64,8 +40,8 @@ export class ArticleBookIds {
     return this.value.length;
   }
 
-  static async createEmpty(): Promise<ArticleBookIds> {
-    return this.create([]);
+  static createEmpty(): ArticleBookIds {
+    return new ArticleBookIds([]);
   }
 
   equals(other: ArticleBookIds | null): boolean {
@@ -87,7 +63,7 @@ export class ArticleBookIds {
     return this.value.includes(bookId);
   }
 
-  async add(bookId: string): Promise<ArticleBookIds> {
+  add(bookId: string): ArticleBookIds {
     if (this.includes(bookId)) {
       return this;
     }
@@ -96,7 +72,6 @@ export class ArticleBookIds {
       throw new Error(`Maximum of ${ArticleBookIds.MAX_BOOK_IDS} book ids allowed`);
     }
 
-    await ArticleBookIds.validateBookIds([bookId]);
     return new ArticleBookIds([...this.value, bookId]);
   }
 

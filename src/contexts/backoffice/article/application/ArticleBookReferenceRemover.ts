@@ -1,16 +1,15 @@
 import { DomainEventSubscriber } from '@/contexts/shared/domain/DomainEventSubscriber';
 import { BookDeletedDomainEvent } from '@/contexts/backoffice/book/domain/event/BookDeletedDomainEvent';
-import { ArticleRepository } from '../domain/ArticleRepository';
+import { RemoveBookReference } from './RemoveBookReference';
 
 export class ArticleBookReferenceRemover implements DomainEventSubscriber<BookDeletedDomainEvent> {
-  constructor(private readonly repository: ArticleRepository) {}
+  constructor(private readonly removeBookReference: RemoveBookReference) {}
 
-  subscribedTo(): string[] {
+  subscribedTo(): Array<string> {
     return [BookDeletedDomainEvent.EVENT_NAME];
   }
 
   async on(event: BookDeletedDomainEvent): Promise<void> {
-    const bookId = event.getAggregateId();
-    await this.repository.removeBookReference(bookId);
+    await this.removeBookReference.run(event.getAggregateId());
   }
 }

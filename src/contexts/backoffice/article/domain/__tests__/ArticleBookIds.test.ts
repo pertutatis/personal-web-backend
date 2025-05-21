@@ -1,92 +1,81 @@
 import { ArticleBookIds } from '../ArticleBookIds';
-import { BookRepository } from '../BookRepository';
-import { InvalidBookReferenceError } from '../InvalidBookReferenceError';
 import { ArticleBookIdsEmpty } from '../ArticleBookIdsEmpty';
 
 describe('ArticleBookIds', () => {
-  let mockBookRepository: jest.Mocked<BookRepository>;
-
-  beforeEach(() => {
-    mockBookRepository = {
-      exists: jest.fn()
-    };
-
-    ArticleBookIds.setBookRepository(mockBookRepository);
-  });
-
   describe('create', () => {
-    it('should create ArticleBookIds with valid book references', async () => {
+    it('should create ArticleBookIds with valid references', () => {
       const bookIds = ['book-1', 'book-2'];
-      mockBookRepository.exists.mockResolvedValueOnce(true).mockResolvedValueOnce(true);
-
-      const articleBookIds = await ArticleBookIds.create(bookIds);
-
+      const articleBookIds = ArticleBookIds.create(bookIds);
       expect(articleBookIds.getValue()).toEqual(bookIds);
-      expect(mockBookRepository.exists).toHaveBeenCalledTimes(2);
-      expect(mockBookRepository.exists).toHaveBeenCalledWith('book-1');
-      expect(mockBookRepository.exists).toHaveBeenCalledWith('book-2');
     });
 
-    it('should throw InvalidBookReferenceError when book does not exist', async () => {
-      const bookIds = ['book-1', 'invalid-book'];
-      mockBookRepository.exists.mockResolvedValueOnce(true).mockResolvedValueOnce(false);
-
-      await expect(ArticleBookIds.create(bookIds)).rejects.toThrow(InvalidBookReferenceError);
-      expect(mockBookRepository.exists).toHaveBeenCalledTimes(2);
+    it('should throw ArticleBookIdsEmpty when value is not an array', () => {
+      expect(() => ArticleBookIds.create(null as any)).toThrow(ArticleBookIdsEmpty);
     });
 
-    it('should throw ArticleBookIdsEmpty when value is not an array', async () => {
-      await expect(ArticleBookIds.create(null as any)).rejects.toThrow(ArticleBookIdsEmpty);
-      expect(mockBookRepository.exists).not.toHaveBeenCalled();
-    });
-
-    it('should remove duplicate book references', async () => {
+    it('should remove duplicate book references', () => {
       const bookIds = ['book-1', 'book-1', 'book-2'];
-      mockBookRepository.exists.mockResolvedValueOnce(true).mockResolvedValueOnce(true);
-
-      const articleBookIds = await ArticleBookIds.create(bookIds);
-
+      const articleBookIds = ArticleBookIds.create(bookIds);
       expect(articleBookIds.getValue()).toEqual(['book-1', 'book-2']);
-      expect(mockBookRepository.exists).toHaveBeenCalledTimes(2);
+    });
+
+    it('should throw error when exceeding max references', () => {
+      const maxIds = Array.from(
+        { length: ArticleBookIds.MAX_BOOK_IDS + 1 }, 
+        (_, i) => `book-${i}`
+      );
+      expect(() => ArticleBookIds.create(maxIds))
+        .toThrow(`Maximum of ${ArticleBookIds.MAX_BOOK_IDS} book ids allowed`);
     });
   });
 
   describe('add', () => {
-    it('should add a valid book reference', async () => {
-      const bookIds = await ArticleBookIds.create(['book-1']);
-      mockBookRepository.exists.mockResolvedValueOnce(true).mockResolvedValueOnce(true);
-
-      const newBookIds = await bookIds.add('book-2');
-
+    it('should add a new book reference', () => {
+      const bookIds = ArticleBookIds.create(['book-1']);
+      const newBookIds = bookIds.add('book-2');
       expect(newBookIds.getValue()).toEqual(['book-1', 'book-2']);
-      expect(mockBookRepository.exists).toHaveBeenCalledWith('book-2');
     });
 
-    it('should throw InvalidBookReferenceError when adding non-existent book', async () => {
-      const bookIds = await ArticleBookIds.create(['book-1']);
-      mockBookRepository.exists.mockResolvedValueOnce(true).mockResolvedValueOnce(false);
-
-      await expect(bookIds.add('invalid-book')).rejects.toThrow(InvalidBookReferenceError);
-    });
-
-    it('should not add duplicate book reference', async () => {
-      const bookIds = await ArticleBookIds.create(['book-1']);
-      mockBookRepository.exists.mockResolvedValueOnce(true);
-
-      const newBookIds = await bookIds.add('book-1');
-
+    it('should not add duplicate reference', () => {
+      const bookIds = ArticleBookIds.create(['book-1']);
+      const newBookIds = bookIds.add('book-1');
       expect(newBookIds.getValue()).toEqual(['book-1']);
-      expect(mockBookRepository.exists).not.toHaveBeenCalled();
     });
 
-    it('should throw error when exceeding max book references', async () => {
-      const maxIds = Array.from({ length: ArticleBookIds.MAX_BOOK_IDS }, (_, i) => `book-${i}`);
-      mockBookRepository.exists.mockResolvedValue(true);
-      
-      const bookIds = await ArticleBookIds.create(maxIds);
-      mockBookRepository.exists.mockResolvedValueOnce(true);
+    it('should throw error when exceeding max references', () => {
+      const maxIds = Array.from(
+        { length: ArticleBookIds.MAX_BOOK_IDS }, 
+        (_, i) => `book-${i}`
+      );
+      const bookIds = ArticleBookIds.create(maxIds);
+      expect(() => bookIds.add('new-book'))
+        .toThrow(`Maximum of ${ArticleBookIds.MAX_BOOK_IDS} book ids allowed`);
+    });
+  });
 
-      await expect(bookIds.add('new-book')).rejects.toThrow(`Maximum of ${ArticleBookIds.MAX_BOOK_IDS} book ids allowed`);
+  describe('remove', () => {
+    it('should remove existing reference', () => {
+      const bookIds = ArticleBookIds.create(['book-1', 'book-2']);
+      const newBookIds = bookIds.remove('book-1');
+      expect(newBookIds.getValue()).toEqual(['book-2']);
+    });
+
+    it('should do nothing when removing non-existent reference', () => {
+      const bookIds = ArticleBookIds.create(['book-1']);
+      const newBookIds = bookIds.remove('non-existent');
+      expect(newBookIds.getValue()).toEqual(['book-1']);
+    });
+  });
+
+  describe('isEmpty', () => {
+    it('should return true for empty book ids', () => {
+      const bookIds = ArticleBookIds.createEmpty();
+      expect(bookIds.isEmpty).toBe(true);
+    });
+
+    it('should return false for non-empty book ids', () => {
+      const bookIds = ArticleBookIds.create(['book-1']);
+      expect(bookIds.isEmpty).toBe(false);
     });
   });
 });
