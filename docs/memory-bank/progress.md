@@ -79,12 +79,11 @@
 
 ### Features Pendientes
 1. **Funcionalidades**
-    - [ ] Búsqueda
-    - [ ] Filtrado y ordenación
-    - [ ] Borrado suave
-    - [x] Validación de relaciones artículo/libro
-    - [x] Validación de borrado de libros en artículos
-    - [ ] Middleware de validación de entrada
+     - [ ] Búsqueda
+     - [ ] Filtrado y ordenación
+     - [ ] Borrado suave
+     - [x] Validación de relaciones artículo/libro
+     - [x] Validación de borrado de libros en artículos
 
 2. **Optimizaciones**
     - [ ] Caché
@@ -178,9 +177,8 @@
    - ~~Validación de existencia de libros~~
    - ~~Manejo de eliminación de libros~~
    - ~~Tests unitarios y de integración~~
-2. Implementar middleware de validación de entrada
-3. Implementar rate limiting
-4. Mejorar logging y trazabilidad de errores
+2. Implementar rate limiting
+3. Mejorar logging y trazabilidad de errores
 
 ### Corto Plazo (Próximo mes)
 1. ~~Implementar sistema de eventos~~ ✅
