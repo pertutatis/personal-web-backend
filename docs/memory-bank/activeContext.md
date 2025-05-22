@@ -10,24 +10,24 @@ Implementación del read model para el blog público, separando la gestión (bac
 
 ## Active Development
 ### Blog Read Model
-- Nuevo contexto separado del backoffice
-- Dos casos de uso principales:
-  * Listar todos los artículos (sin paginación)
-  * Obtener artículo por slug
-- Exposición conjunta de artículos y libros relacionados
-- Restricción de acceso mediante CORS a dominios específicos
+- Contexto blog implementado con:
+  * Modelos de dominio específicos (BlogArticle, BlogBook)
+  * Casos de uso implementados (GetArticleBySlug, ListArticles)
+  * Repositorios y tests implementados
+- Tests unitarios y de integración completos
+- Repositorio PostgreSQL implementado y testeado
 
 ### Architectural Decisions
-- ADR-015: Define la arquitectura del contexto blog
-- OBR-002: Define casos de uso y reglas de negocio
-- Uso de la misma base de datos sin duplicación
-- Modelos de dominio específicos para el blog
+- ADR-015: Implementada la arquitectura del contexto blog
+- OBR-002: Implementados casos de uso según especificaciones
+- Modelos read-only optimizados para consultas
+- Separación clara del contexto backoffice
 
 ## Next Steps
-1. Implementar estructura base del contexto blog
-2. Desarrollar casos de uso siguiendo TDD
-3. Configurar middleware CORS
-4. Añadir tests e2e
+1. Configurar middleware CORS
+2. Implementar rate limiting
+3. Optimizar queries N+1
+4. Añadir caché para mejorar rendimiento
 
 ## Technical Considerations
 - No duplicar datos, usar read models optimizados
