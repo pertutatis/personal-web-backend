@@ -7,21 +7,70 @@ All protected endpoints require a JWT token in the Authorization header:
 Authorization: Bearer <token>
 ```
 
-## Articles API
+## Blog API
 
-### GET /articles
+### GET /api/blog/articles
+List all blog articles with their related books
+- Protected: No
+- CORS: Restricted to allowed origins
+- Response:
+```json
+[
+  {
+    "id": "string",
+    "title": "string",
+    "excerpt": "string",
+    "content": "string",
+    "books": [
+      {
+        "id": "string",
+        "title": "string",
+        "author": "string",
+        "isbn": "string",
+        "description": "string",
+        "purchaseLink": "string | null",
+        "createdAt": "date",
+        "updatedAt": "date"
+      }
+    ],
+    "relatedLinks": [
+      {
+        "text": "string",
+        "url": "string"
+      }
+    ],
+    "slug": "string",
+    "createdAt": "date",
+    "updatedAt": "date"
+  }
+]
+```
+
+### GET /api/blog/articles/by-slug/{slug}
+Get single article by slug with its related books
+- URL params: `slug`
+- Protected: No
+- CORS: Restricted to allowed origins
+- Response: Same as single article from list endpoint
+- Error: 404 if article not found
+
+## Backoffice API
+
+### Articles API
+
+#### GET /api/backoffice/articles
 List articles with pagination
 - Query params: `page`, `limit`
-- Protected: No
-- Example: `GET /articles?page=1&limit=10`
+- Protected: Yes
+- Example: `GET /api/backoffice/articles?page=1&limit=10`
 
-### GET /articles/:id
+#### GET /api/backoffice/articles/{id}
 Get single article by ID
 - URL params: `id` (UUID v4)
-- Protected: No
-- Example: `GET /articles/550e8400-e29b-41d4-a716-446655440000`
+- Protected: Yes
+- Example: `GET /api/backoffice/articles/550e8400-e29b-41d4-a716-446655440000`
 
-### POST /articles
+#### POST /api/backoffice/articles
 Create new article
 - Protected: Yes
 - Body: 
@@ -36,33 +85,37 @@ Create new article
       "text": "string",
       "url": "string"
     }
-  ]
-### PUT /articles/:id  
+  ],
+  "slug": "string"
+}
+```
+
+#### PUT /api/backoffice/articles/{id}
 Update article
 - URL params: `id` (UUID v4)
 - Protected: Yes
 - Body: Same as POST
 
-### DELETE /articles/:id
+#### DELETE /api/backoffice/articles/{id}
 Delete article
 - URL params: `id` (UUID v4)
 - Protected: Yes
 
-## Books API
+### Books API
 
-### GET /books
+#### GET /api/backoffice/books
 List books with pagination
 - Query params: `page`, `limit`
-- Protected: No
-- Example: `GET /books?page=1&limit=10`
+- Protected: Yes
+- Example: `GET /api/backoffice/books?page=1&limit=10`
 
-### GET /books/:id
+#### GET /api/backoffice/books/{id}
 Get single book by ID
-- URL params: `id` (UUID v4) 
-- Protected: No
-- Example: `GET /books/550e8400-e29b-41d4-a716-446655440000`
+- URL params: `id` (UUID v4)
+- Protected: Yes
+- Example: `GET /api/backoffice/books/550e8400-e29b-41d4-a716-446655440000`
 
-### POST /books
+#### POST /api/backoffice/books
 Create new book
 - Protected: Yes
 - Body:
@@ -76,9 +129,32 @@ Create new book
 }
 ```
 
-### PUT /books/:id
+#### PUT /api/backoffice/books/{id}
 Update book
 - URL params: `id` (UUID v4)
+- Protected: Yes
+- Body: Same as POST
+
+#### DELETE /api/backoffice/books/{id}
+Delete book
+- URL params: `id` (UUID v4)
+- Protected: Yes
+- Note: Will remove references from articles
+
+## CORS Policy
+
+### Blog API
+- Allowed Origins:
+  * http://localhost:3000
+  * http://localhost:5173
+  * https://diegopertusa.netlify.app
+  * https://diegopertusa.com
+- Allowed Methods: GET, OPTIONS
+- Max Age: 3600 (1 hour)
+
+### Backoffice API
+- No CORS restrictions (protected by authentication)
+
 ## Important Notes
 
 ### UUID Validation
@@ -102,7 +178,7 @@ All errors follow this format:
 Common status codes:
 - 400: Invalid input/validation error
 - 401: Authentication required
-- 403: Insufficient permissions
+- 403: Insufficient permissions / CORS violation
 - 404: Resource not found
 - 500: Server error
 
@@ -132,12 +208,3 @@ JWT_TOKEN=<your-jwt-token>
 - Validate book existence before creation/update
 - Handle book deletion gracefully
 - Monitor orphaned references
-- Protected: Yes
-- Body: Same as POST
-
-### DELETE /books/:id
-Delete book
-- URL params: `id` (UUID v4)
-- Protected: Yes
-- Note: Will remove references from articles
-}
