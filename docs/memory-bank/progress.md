@@ -79,10 +79,10 @@
 
 ### Features Pendientes
 1. **Funcionalidades**
-      - [ ] Blog Read Model (En progreso)
-        - [ ] Nuevo contexto blog
-        - [ ] Endpoints públicos
-        - [ ] CORS para dominios permitidos
+      - [x] Blog Read Model ✅
+        - [x] Nuevo contexto blog implementado
+        - [x] Endpoints públicos creados
+        - [x] CORS para dominios permitidos
       - [ ] Búsqueda
       - [ ] Filtrado y ordenación
       - [ ] Borrado suave
@@ -177,13 +177,9 @@
 ## Next Actions 📝
 
 ### Inmediatas (Próximas 2 semanas)
-1. Implementar Blog Read Model
-   - Crear nuevo contexto blog
-   - Implementar casos de uso ListArticles y GetArticleBySlug
-   - Configurar CORS para dominios permitidos
-   - Tests unitarios y e2e
 2. Implementar rate limiting
 3. Mejorar logging y trazabilidad de errores
+4. Optimizar queries y añadir caché
 
 ### Corto Plazo (Próximo mes)
 1. ~~Implementar sistema de eventos~~ ✅

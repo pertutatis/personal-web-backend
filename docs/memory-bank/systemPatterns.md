@@ -112,10 +112,20 @@ Ejemplos: ArticleTitle, BookIsbn, ArticleContent
 ### Articles Context
 ```mermaid
 flowchart LR
-    A[Article] --> AVO[Value Objects]
-    A --> B[Book References]
-    AR[ArticleRepository] --> A
-    UC[Use Cases] --> AR
+    subgraph Backoffice
+        A[Article] --> AVO[Value Objects]
+        A --> B[Book References]
+        AR[ArticleRepository] --> A
+        UC[Use Cases] --> AR
+    end
+
+    subgraph Blog
+        BA[BlogArticle] --> BB[BlogBook]
+        BAR[BlogArticleRepository] --> BA
+        BUC[Blog Use Cases] --> BAR
+    end
+
+    A --> BA
 ```
 
 ### Books Context
