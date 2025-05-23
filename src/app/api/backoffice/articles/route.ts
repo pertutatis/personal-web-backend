@@ -1,4 +1,5 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { corsMiddleware } from '@/contexts/blog/shared/infrastructure/security/CorsMiddleware';
 import { PostgresArticleRepository } from '@/contexts/backoffice/article/infrastructure/PostgresArticleRepository';
 import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection';
 import { CreateArticle } from '@/contexts/backoffice/article/application/CreateArticle';
@@ -25,7 +26,8 @@ async function getConnections() {
 }
 
 export async function GET(request: NextRequest) {
-  return executeWithErrorHandling(async () => {
+  return executeWithErrorHandling(
+    async () => {
     const { articlesConnection, booksConnection } = await getConnections();
     const searchParams = request.nextUrl.searchParams;
     const page = parseInt(searchParams.get('page') ?? '1');
@@ -46,12 +48,15 @@ export async function GET(request: NextRequest) {
       }
     };
 
-    return HttpNextResponse.ok(response);
-  });
+    return HttpNextResponse.ok(response, request.headers.get('origin'));
+    },
+    request
+  );
 }
 
 export async function POST(request: NextRequest) {
-  return executeWithErrorHandling(async () => {
+  return executeWithErrorHandling(
+    async () => {
     const { articlesConnection, booksConnection } = await getConnections();
 
     // Validate request content type
@@ -138,17 +143,25 @@ export async function POST(request: NextRequest) {
 
     try {
       await createArticle.run(articleData);
-      return HttpNextResponse.created();
+      return HttpNextResponse.created(request.headers.get('origin'));
     } catch (error) {
       if (error instanceof ArticleIdDuplicated) {
         return HttpNextResponse.conflict({
           type: 'ValidationError',
           message: error.message
-        });
+        }, request.headers.get('origin'));
       }
       throw error;
     }
-  });
+      },
+      request
+    );
+}
+
+// Handle OPTIONS requests for CORS
+export async function OPTIONS(request: NextRequest) {
+  const response = await corsMiddleware(request);
+  return response;
 }
 
 // Asegurarse de que las conexiones están listas al iniciar

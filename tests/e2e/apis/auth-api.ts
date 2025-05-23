@@ -11,6 +11,9 @@ export class AuthAPI {
         data: {
           email,
           password
+        },
+        headers: {
+          'Content-Type': 'application/json'
         }
       })
 
@@ -39,6 +42,9 @@ export class AuthAPI {
         data: {
           email,
           password
+        },
+        headers: {
+          'Content-Type': 'application/json'
         }
       })
 

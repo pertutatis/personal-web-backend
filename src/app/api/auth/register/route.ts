@@ -1,57 +1,53 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { corsMiddleware, applyCorsHeaders } from '@/contexts/blog/shared/infrastructure/security/CorsMiddleware'
+import { executeWithErrorHandling } from '@/contexts/shared/infrastructure/http/executeWithErrorHandling'
+import { HttpNextResponse } from '@/contexts/shared/infrastructure/http/HttpNextResponse'
 import { PostgresAuthRepository } from '@/contexts/backoffice/auth/infrastructure/PostgresAuthRepository'
 import { AuthController } from '@/contexts/backoffice/auth/infrastructure/rest/AuthController'
 import { OfficialUuidGenerator } from '@/contexts/shared/infrastructure/OfficialUuidGenerator'
 import { JwtTokenGenerator } from '@/contexts/backoffice/auth/infrastructure/JwtTokenGenerator'
 import { getAuthConnection } from '../config/database'
-import { Logger } from '@/contexts/shared/infrastructure/Logger'
 
-export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json()
-    const { email, password } = body
+export async function POST(request: NextRequest) {
+  return executeWithErrorHandling(
+    async () => {
+      const body = await request.json()
+      const { email, password } = body
 
-    if (!email || !password) {
-      return new Response(
-        JSON.stringify({ error: 'Email and password are required' }),
-        { status: 400 }
+      if (!email || !password) {
+        return HttpNextResponse.badRequest('Email and password are required')
+      }
+
+      const connection = await getAuthConnection()
+      const repository = new PostgresAuthRepository(connection)
+      const uuidGenerator = new OfficialUuidGenerator()
+      const jwtGenerator = new JwtTokenGenerator(
+        process.env.JWT_SECRET || 'default-secret',
+        process.env.JWT_EXPIRES_IN || '1h'
       )
-    }
-
-    const connection = await getAuthConnection()
-    const repository = new PostgresAuthRepository(connection)
-    const uuidGenerator = new OfficialUuidGenerator()
-    const jwtGenerator = new JwtTokenGenerator(process.env.JWT_SECRET || 'default-secret')
-    
-    const controller = new AuthController(repository, uuidGenerator, jwtGenerator)
-    
-    const { id } = await controller.register({ email, password })
-    
-    await connection.close()
-    
-    return new Response(
-      JSON.stringify({ id }),
-      { 
-        status: 201,
-        headers: {
-          'Content-Type': 'application/json'
+      
+      const controller = new AuthController(repository, uuidGenerator, jwtGenerator)
+      
+      try {
+        const { id } = await controller.register({ email, password })
+        await connection.close()
+        return HttpNextResponse.created({ id }, request.headers.get('origin'))
+      } catch (error: any) {
+        await connection.close()
+        if (error.status === 409) {
+          const response = NextResponse.json({
+            error: error.error
+          }, { status: 409 })
+          return applyCorsHeaders(response, request.headers.get('origin'))
         }
+        throw error
       }
-    )
-  } catch (error: any) {
-    Logger.error('Error in register route:', error)
+    },
+    request
+  )
+}
 
-    const status = error.status || 500
-    const message = error.message || 'Internal server error'
-
-    return new Response(
-      JSON.stringify({ error: message }),
-      { 
-        status,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }
-    )
-  }
+export async function OPTIONS(request: NextRequest) {
+  const response = await corsMiddleware(request)
+  return response
 }

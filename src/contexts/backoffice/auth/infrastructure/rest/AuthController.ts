@@ -31,11 +31,14 @@ export class AuthController {
     } catch (error) {
       if (error instanceof UserAlreadyExists) {
         Logger.info('Registration failed - user already exists:', { email: params.email })
-        throw { status: 409, message: 'User already exists' }
+        throw {
+          status: 409,
+          error: 'User already exists'
+        }
       }
       
       Logger.error('Registration failed:', error)
-      throw { status: 500, message: 'Internal server error' }
+      throw { status: 500, error: 'Internal server error' }
     }
   }
 
@@ -50,11 +53,14 @@ export class AuthController {
     } catch (error) {
       if (error instanceof InvalidCredentials) {
         Logger.info('Login failed - invalid credentials:', { email: params.email })
-        throw { status: 401, message: 'Invalid credentials' }
+        throw {
+          status: 401,
+          error: 'Invalid credentials'
+        }
       }
       
       Logger.error('Login failed:', error)
-      throw { status: 500, message: 'Internal server error' }
+      throw { status: 500, error: 'Internal server error' }
     }
   }
 }

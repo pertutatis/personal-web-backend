@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server';
+import { corsMiddleware } from '@/contexts/blog/shared/infrastructure/security/CorsMiddleware';
 import { PostgresArticleRepository } from '@/contexts/backoffice/article/infrastructure/PostgresArticleRepository';
 import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection';
 import { GetArticle } from '@/contexts/backoffice/article/application/GetArticle';
@@ -42,8 +43,8 @@ export async function GET(
     const getArticle = new GetArticle(repository);
 
     const article = await getArticle.run(params.id);
-    return HttpNextResponse.ok(article.toPrimitives());
-  });
+    return HttpNextResponse.ok(article.toPrimitives(), request.headers.get('origin'));
+  }, request);
 }
 
 export async function PUT(
@@ -151,8 +152,8 @@ export async function PUT(
     // Execute update only with changed fields
     await updateArticle.run(updateData);
 
-    return HttpNextResponse.noContent();
-  });
+    return HttpNextResponse.noContent(request.headers.get('origin'));
+  }, request);
 }
 
 export async function DELETE(
@@ -171,8 +172,13 @@ export async function DELETE(
 
     await deleteArticle.run(params.id);
 
-    return HttpNextResponse.noContent();
-  });
+    return HttpNextResponse.noContent(request.headers.get('origin'));
+  }, request);
+}
+
+export async function OPTIONS(request: NextRequest) {
+  const response = await corsMiddleware(request);
+  return response;
 }
 
 // Asegurarse de que las conexiones están listas al iniciar

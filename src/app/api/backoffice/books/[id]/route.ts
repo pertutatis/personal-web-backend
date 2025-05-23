@@ -1,4 +1,6 @@
 import { NextRequest } from 'next/server';
+import { corsMiddleware } from '@/contexts/blog/shared/infrastructure/security/CorsMiddleware';
+import { EventBusFactory } from '@/contexts/shared/infrastructure/eventBus/EventBusFactory';
 import { PostgresBookRepository } from '@/contexts/backoffice/book/infrastructure/PostgresBookRepository';
 import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection';
 import { GetBook } from '@/contexts/backoffice/book/application/GetBook';
@@ -21,21 +23,25 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  return executeWithErrorHandling(async () => {
+  return executeWithErrorHandling(
+    async () => {
     const connection = await getConnection();
     const repository = new PostgresBookRepository(connection);
     const getBook = new GetBook(repository);
 
     const book = await getBook.run(params.id);
-    return HttpNextResponse.ok(book.toFormattedPrimitives());
-  });
+    return HttpNextResponse.ok(book.toFormattedPrimitives(), request.headers.get('origin'));
+    },
+    request
+  );
 }
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  return executeWithErrorHandling(async () => {
+  return executeWithErrorHandling(
+    async () => {
     const connection = await getConnection();
     const repository = new PostgresBookRepository(connection);
     const updateBook = new UpdateBook(repository);
@@ -94,22 +100,33 @@ export async function PUT(
       purchaseLink: data.purchaseLink
     });
 
-    return HttpNextResponse.noContent();
-  });
+    return HttpNextResponse.noContent(request.headers.get('origin'));
+    },
+    request
+  );
 }
 
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  return executeWithErrorHandling(async () => {
+  return executeWithErrorHandling(
+    async () => {
     const connection = await getConnection();
     const repository = new PostgresBookRepository(connection);
-    const deleteBook = new DeleteBookAction(repository);
+    const eventBus = EventBusFactory.getInstance();
+    const deleteBook = new DeleteBookAction(repository, eventBus);
 
     await deleteBook.run(params.id);
-    return HttpNextResponse.noContent();
-  });
+    return HttpNextResponse.noContent(request.headers.get('origin'));
+    },
+    request
+  );
+}
+
+export async function OPTIONS(request: NextRequest) {
+  const response = await corsMiddleware(request);
+  return response;
 }
 
 // Asegurarse de que la conexión está lista al iniciar

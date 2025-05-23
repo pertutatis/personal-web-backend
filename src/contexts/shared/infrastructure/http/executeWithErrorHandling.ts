@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { DomainError } from '../../domain/DomainError';
 import { HttpNextResponse } from './HttpNextResponse';
 import { NotFoundError } from '../../domain/NotFoundError';
@@ -11,7 +11,11 @@ interface ErrorInfo {
   details?: unknown;
 }
 
-export async function executeWithErrorHandling(action: () => Promise<NextResponse>): Promise<NextResponse> {
+export async function executeWithErrorHandling(
+  action: () => Promise<NextResponse>,
+  request?: NextRequest
+): Promise<NextResponse> {
+  const origin = request?.headers.get('origin') ?? null;
   try {
     return await action();
   } catch (error: unknown) {
@@ -26,7 +30,7 @@ export async function executeWithErrorHandling(action: () => Promise<NextRespons
       return HttpNextResponse.notFound({
         type: error.type,
         message: error.message
-      });
+      }, origin);
     }
 
     if (error instanceof ValidationError) {
@@ -34,14 +38,14 @@ export async function executeWithErrorHandling(action: () => Promise<NextRespons
         type: 'ValidationError',
         message: error.message,
         details: { errorCode: error.code }
-      });
+      }, origin);
     }
 
     if (error instanceof DomainError) {
       return HttpNextResponse.badRequest({
         type: error.type,
         message: error.message
-      });
+      }, origin);
     }
 
     // Handle database errors
@@ -51,7 +55,7 @@ export async function executeWithErrorHandling(action: () => Promise<NextRespons
         return HttpNextResponse.badRequest({
           type: 'ValidationError',
           message: 'A record with this unique identifier already exists'
-        });
+        }, origin);
       }
 
       // Handle other database errors
@@ -60,7 +64,7 @@ export async function executeWithErrorHandling(action: () => Promise<NextRespons
         return HttpNextResponse.internalServerError({
           type: 'DatabaseError',
           message: 'Database connection error'
-        });
+        }, origin);
       }
     }
 
@@ -72,12 +76,12 @@ export async function executeWithErrorHandling(action: () => Promise<NextRespons
         type: 'InternalServerError',
         message: error instanceof Error ? error.message : 'An unexpected error occurred',
         stack: error instanceof Error ? error.stack : undefined
-      });
+      }, origin);
     }
 
     return HttpNextResponse.internalServerError({
       type: 'InternalServerError',
       message: 'An unexpected error occurred'
-    });
+    }, origin);
   }
 }

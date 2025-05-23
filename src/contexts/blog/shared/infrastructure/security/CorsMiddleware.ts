@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const ALLOWED_ORIGINS = [
+export const ALLOWED_ORIGINS = [
   'http://localhost:3000',
   'http://localhost:5173', // Vite default port
   'https://diegopertusa.netlify.app',
@@ -32,7 +32,7 @@ export function corsMiddleware(request: NextRequest) {
     status: 200,
     headers: {
       'Access-Control-Allow-Origin': origin,
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
       'Access-Control-Max-Age': '3600', // Cache preflight requests for 1 hour
     },
@@ -49,7 +49,7 @@ export function applyCorsHeaders(
   // Only apply headers if origin is allowed
   if (origin && ALLOWED_ORIGINS.includes(origin)) {
     response.headers.set('Access-Control-Allow-Origin', origin);
-    response.headers.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   }
 

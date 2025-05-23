@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server';
+import { corsMiddleware } from '@/contexts/blog/shared/infrastructure/security/CorsMiddleware';
 import { PostgresBookRepository } from '@/contexts/backoffice/book/infrastructure/PostgresBookRepository';
 import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection';
 import { CreateBook } from '@/contexts/backoffice/book/application/CreateBook';
@@ -19,7 +20,8 @@ async function getConnection() {
 }
 
 export async function GET(request: NextRequest) {
-  return executeWithErrorHandling(async () => {
+  return executeWithErrorHandling(
+    async () => {
     const connection = await getConnection();
 
     const searchParams = request.nextUrl.searchParams;
@@ -36,12 +38,15 @@ export async function GET(request: NextRequest) {
       page: books.pagination.page,
       limit: books.pagination.limit,
       total: books.pagination.total
-    });
-  });
+    }, request.headers.get('origin'));
+    },
+    request
+  );
 }
 
 export async function POST(request: NextRequest) {
-  return executeWithErrorHandling(async () => {
+  return executeWithErrorHandling(
+    async () => {
     const contentType = request.headers.get('content-type');
     if (!contentType || !contentType.includes('application/json')) {
       throw new ApiValidationError('Content-Type must be application/json');
@@ -139,29 +144,36 @@ export async function POST(request: NextRequest) {
 
     try {
       await createBook.run(bookData);
-      return HttpNextResponse.created();
+      return HttpNextResponse.created(request.headers.get('origin'));
     } catch (error) {
       if (error instanceof BookIdDuplicated) {
         return HttpNextResponse.conflict({
           type: 'ValidationError',
           message: error.message
-        });
+        }, request.headers.get('origin'));
       }
       if (error instanceof BookIdInvalid) {
         return HttpNextResponse.badRequest({
           type: 'ValidationError',
           message: error.message
-        });
+        }, request.headers.get('origin'));
       }
       if (error instanceof BookIsbnDuplicated) {
         return HttpNextResponse.conflict({
           type: 'ValidationError',
           message: error.message
-        });
+        }, request.headers.get('origin'));
       }
       throw error;
     }
-  });
+    },
+    request
+  );
+}
+
+export async function OPTIONS(request: NextRequest) {
+  const response = await corsMiddleware(request);
+  return response;
 }
 
 // Asegurarse de que la conexión está lista al iniciar
