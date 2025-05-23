@@ -48,6 +48,8 @@ export async function middleware(request: NextRequest) {
       '/api/auth/login',
       '/api/auth/register',
       '/api/auth/token',
+      '/api/backoffice/auth/login',
+      '/api/backoffice/auth/register',
       '/api/debug/auth',
       '/api/test-helpers'
     ]

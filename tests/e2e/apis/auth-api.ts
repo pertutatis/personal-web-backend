@@ -7,7 +7,7 @@ export class AuthAPI {
     try {
       console.log('[AuthAPI] Sending register request:', { email, password })
       
-      const response = await this.request.post('/api/auth/register', {
+      const response = await this.request.post('/api/backoffice/auth/register', {
         data: {
           email,
           password
@@ -38,7 +38,7 @@ export class AuthAPI {
     try {
       console.log('[AuthAPI] Sending login request:', { email, password })
       
-      const response = await this.request.post('/api/auth/login', {
+      const response = await this.request.post('/api/backoffice/auth/login', {
         data: {
           email,
           password

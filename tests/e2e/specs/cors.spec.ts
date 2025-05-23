@@ -66,8 +66,8 @@ test.describe('CORS Implementation', () => {
   })
 
   const endpoints = [
-    '/api/auth/login',
-    '/api/auth/register',
+    '/api/backoffice/auth/login',
+    '/api/backoffice/auth/register',
     '/api/backoffice/articles',
     '/api/backoffice/books'
   ]
