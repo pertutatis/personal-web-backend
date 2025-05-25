@@ -41,11 +41,9 @@ export async function GET(request: NextRequest) {
 
     const response = {
       items: items,
-      pagination: {
-        total,
-        page: currentPage,
-        limit: itemLimit
-      }
+      total,
+      page: currentPage,
+      limit: itemLimit
     };
 
     return HttpNextResponse.ok(response, request.headers.get('origin'));
