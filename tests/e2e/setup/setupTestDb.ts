@@ -16,6 +16,7 @@ export class PostgresTestSetup {
 
       // Setup Auth Database
       const authPool = new Pool(baseConfig)
+      await this.terminateConnections(authPool, config.databases.auth)
       await this.runQuery(authPool, `DROP DATABASE IF EXISTS ${config.databases.auth}`)
       await this.runQuery(authPool, `CREATE DATABASE ${config.databases.auth}`)
       await authPool.end()
@@ -41,6 +42,7 @@ export class PostgresTestSetup {
 
       // Setup Articles Database
       const articlesPool = new Pool(baseConfig)
+      await this.terminateConnections(articlesPool, config.databases.articles)
       await this.runQuery(articlesPool, `DROP DATABASE IF EXISTS ${config.databases.articles}`)
       await this.runQuery(articlesPool, `CREATE DATABASE ${config.databases.articles}`)
       await articlesPool.end()
@@ -70,6 +72,7 @@ export class PostgresTestSetup {
 
       // Setup Books Database
       const booksPool = new Pool(baseConfig)
+      await this.terminateConnections(booksPool, config.databases.books)
       await this.runQuery(booksPool, `DROP DATABASE IF EXISTS ${config.databases.books}`)
       await this.runQuery(booksPool, `CREATE DATABASE ${config.databases.books}`)
       await booksPool.end()
@@ -90,6 +93,21 @@ export class PostgresTestSetup {
     } catch (error) {
       console.error('❌ Error setting up test databases:', error)
       throw error
+    }
+  }
+
+  private static async terminateConnections(pool: Pool, database: string): Promise<void> {
+    const query = `
+      SELECT pg_terminate_backend(pg_stat_activity.pid)
+      FROM pg_stat_activity
+      WHERE pg_stat_activity.datname = '${database}'
+      AND pid <> pg_backend_pid();
+    `;
+    try {
+      await pool.query(query);
+    } catch (error) {
+      // Ignore errors here as the database might not exist yet
+      console.log(`Note: Could not terminate connections for ${database} - might not exist yet`);
     }
   }
 

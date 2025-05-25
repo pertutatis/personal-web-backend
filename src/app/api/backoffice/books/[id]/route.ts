@@ -12,8 +12,19 @@ import { HttpNextResponse } from '@/contexts/shared/infrastructure/http/HttpNext
 import { ApiValidationError } from '@/contexts/shared/infrastructure/http/ApiValidationError';
 import { BookIsbn } from '@/contexts/backoffice/book/domain/BookIsbn';
 
-// Crear conexión como promesa para asegurar una única instancia
+// Crear conexiones como promesas para asegurar una única instancia
 const booksConnectionPromise = PostgresConnection.create(getBooksConfig());
+import { ArticleSubscribers } from '@/contexts/backoffice/article/infrastructure/DependencyInjection/ArticleSubscribers';
+import { getArticlesConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
+
+// Inicializar las conexiones y suscriptores
+const articlesConnectionPromise = PostgresConnection.create(getArticlesConfig());
+
+Promise.all([booksConnectionPromise, articlesConnectionPromise])
+  .then(async ([booksConnection, articlesConnection]) => {
+    await ArticleSubscribers.init(articlesConnection, booksConnection);
+  })
+  .catch(console.error);
 
 async function getConnection() {
   return await booksConnectionPromise;

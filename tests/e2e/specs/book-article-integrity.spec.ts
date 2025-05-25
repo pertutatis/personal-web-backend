@@ -2,8 +2,35 @@ import { test, expect } from '@playwright/test';
 import { v4 as uuid } from 'uuid';
 import { ArticlesApi } from '../apis/articles-api';
 import { BooksApi } from '../apis/books-api';
+import { ApiHelpers } from '../fixtures/api-helpers';
 
 test.describe('Book-Article Integrity', () => {
+  let apiHelpers: ApiHelpers;
+
+  test.beforeEach(async ({ request }) => {
+    apiHelpers = ApiHelpers.create(request);
+    await apiHelpers.cleanupTestData();
+  });
+
+  test.afterEach(async () => {
+    await apiHelpers.dispose();
+  });
+
+  const validTestIsbns = [
+    '978-0132350884',  // Clean Code
+    '978-0201633610',  // Design Patterns
+    '978-0134494166',  // Clean Architecture
+    '978-0137081073',  // The Clean Coder
+    '978-0735619678',  // Code Complete
+    '978-0134757599'   // Refactoring
+  ];
+
+  let isbnIndex = 0;
+  function getNextIsbn(): string {
+    const isbn = validTestIsbns[isbnIndex];
+    isbnIndex = (isbnIndex + 1) % validTestIsbns.length;
+    return isbn;
+  }
   let articlesApi: ArticlesApi;
   let booksApi: BooksApi;
 
@@ -17,7 +44,7 @@ test.describe('Book-Article Integrity', () => {
     const bookId = uuid();
     const bookResponse = await booksApi.createBook({
       id: bookId,
-      isbn: '978-0131103627',  // Valid ISBN-13
+      isbn: getNextIsbn(),
       title: 'Test Book',
       author: 'Test Author',
       description: 'Test Description',
@@ -48,6 +75,9 @@ test.describe('Book-Article Integrity', () => {
     const deleteResponse = await booksApi.deleteBook(bookId);
     expect(deleteResponse.status()).toBe(204);
 
+    // Wait a bit for the event to be processed
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
     // Verify the article no longer has the book reference
     const articleAfterDelete = await articlesApi.getArticle(articleId);
     expect(articleAfterDelete.status()).toBe(200);
@@ -61,7 +91,7 @@ test.describe('Book-Article Integrity', () => {
     const book2Id = uuid();
     const createBook1Response = await booksApi.createBook({
       id: book1Id,
-      isbn: '978-0134685991',  // Valid ISBN-13
+      isbn: getNextIsbn(),
       title: 'Test Book 1',
       author: 'Test Author 1',
       description: 'Test Description 1',
@@ -71,7 +101,7 @@ test.describe('Book-Article Integrity', () => {
 
     const createBook2Response = await booksApi.createBook({
       id: book2Id,
-      isbn: '978-0321125217',  // Valid ISBN-13
+      isbn: getNextIsbn(),
       title: 'Test Book 2',
       author: 'Test Author 2',
       description: 'Test Description 2',
@@ -121,6 +151,9 @@ test.describe('Book-Article Integrity', () => {
     // Delete book 1
     const deleteResponse = await booksApi.deleteBook(book1Id);
     expect(deleteResponse.status()).toBe(204);
+
+    // Wait a bit for the event to be processed
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
     // Verify both articles no longer have book1 reference but still have book2
     const article1AfterDelete = await articlesApi.getArticle(article1Id);
