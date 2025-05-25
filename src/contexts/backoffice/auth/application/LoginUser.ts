@@ -4,7 +4,7 @@ import { PasswordHash } from '../domain/PasswordHash'
 import { EmailVO } from '../domain/EmailVO'
 import { InvalidCredentials } from './InvalidCredentials'
 import { Logger } from '@/contexts/shared/infrastructure/Logger'
-import { TokenPayload } from '../domain/TokenPayload'
+import { TokenPayload } from '../domain/JWTGenerator'
 
 export class LoginUser {
   constructor(

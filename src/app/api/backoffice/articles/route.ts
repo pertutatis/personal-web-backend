@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     const { items, total, page: currentPage, limit: itemLimit } = collection.toPrimitives();
 
     const response = {
-      data: items,
+      items: items,
       pagination: {
         total,
         page: currentPage,
