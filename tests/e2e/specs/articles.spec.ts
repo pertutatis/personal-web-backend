@@ -50,12 +50,12 @@ test.describe('Articles API', () => {
     expect(response.status()).toBe(200)
     const result = await response.json()
     
-    expect(result.data.length).toBeGreaterThan(0)
-    expect(result.pagination.page).toBe(1)
-    expect(result.pagination.limit).toBe(10)
-    expect(result.pagination.total).toBeGreaterThan(0)
+    expect(result.items.length).toBeGreaterThan(0)
+    expect(result.page).toBe(1)
+    expect(result.limit).toBe(10)
+    expect(result.total).toBeGreaterThan(0)
 
-    const article = result.data[0]
+    const article = result.items[0]
     expect(article.id).toBeDefined()
     expect(article.title).toBeDefined()
     expect(article.content).toBeDefined()

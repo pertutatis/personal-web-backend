@@ -33,7 +33,7 @@ test.describe('Auth Headers', () => {
     expect(response.status()).toBe(200)
     
     const body = await response.json()
-    expect(Array.isArray(body.data)).toBe(true)
+    expect(Array.isArray(body.items)).toBe(true)
   })
 
   test('should reject invalid tokens', async ({ request }) => {
