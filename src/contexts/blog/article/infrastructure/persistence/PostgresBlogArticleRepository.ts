@@ -10,6 +10,7 @@ interface ArticleRow {
   excerpt: string;
   content: string;
   book_ids: string[];
+  book_ids_debug?: string;
   related_links: string;
   slug: string;
   created_at: Date;
@@ -18,6 +19,7 @@ interface ArticleRow {
 
 interface BookRow {
   id: string;
+  id_text?: string;
   title: string;
   author: string;
   isbn: string | null;
@@ -36,7 +38,7 @@ export class PostgresBlogArticleRepository implements BlogArticleRepository {
   async findAll(): Promise<BlogArticle[]> {
     // First get all articles
     const articlesQuery = `
-      SELECT 
+      SELECT
         a.id,
         a.title,
         a.excerpt,
@@ -65,9 +67,13 @@ export class PostgresBlogArticleRepository implements BlogArticleRepository {
     let books: BookRow[] = [];
     if (allBookIds.length > 0) {
       const booksQuery = `
-        SELECT * FROM books 
-        WHERE id = ANY($1::uuid[])
-        ORDER BY title;
+        WITH clean_ids AS (
+          SELECT DISTINCT trim(unnest($1::text[])) as id
+        )
+        SELECT b.*, b.id::text as id_text
+        FROM books b
+        JOIN clean_ids c ON b.id::text = c.id
+        ORDER BY b.title;
       `;
       const booksResult = await this.booksConnection.execute<BookRow>(booksQuery, [allBookIds]);
       books = booksResult.rows;
@@ -108,9 +114,15 @@ export class PostgresBlogArticleRepository implements BlogArticleRepository {
     let books: BookRow[] = [];
     if (bookIds.length > 0) {
       const booksQuery = `
-        SELECT * FROM books 
-        WHERE id = ANY($1::uuid[])
-        ORDER BY title;
+        SELECT
+          b.*,
+          b.id::text as id_text
+        FROM books b
+        WHERE b.id::text = ANY(
+          SELECT regexp_replace(x, '[{}]', '', 'g')
+          FROM unnest($1::text[]) AS x
+        )
+        ORDER BY b.title;
       `;
       const booksResult = await this.booksConnection.execute<BookRow>(booksQuery, [bookIds]);
       books = booksResult.rows;
@@ -121,7 +133,7 @@ export class PostgresBlogArticleRepository implements BlogArticleRepository {
 
   private mapToArticle(article: ArticleRow, books: BookRow[]): BlogArticle {
     const mappedBooks = books.map(book => new BlogBook(
-      book.id,
+      book.id_text || book.id,
       book.title,
       book.author,
       book.isbn ?? '',
