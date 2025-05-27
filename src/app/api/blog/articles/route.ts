@@ -1,15 +1,11 @@
 import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection';
-import { PostgresConfig } from '@/contexts/shared/config/PostgresConfig';
+import { getArticlesConfig, getBooksConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
 import { PostgresBlogArticleRepository } from '@/contexts/blog/article/infrastructure/persistence/PostgresBlogArticleRepository';
 import { NextResponse } from 'next/server';
 
 async function getConnections() {
-  const articlesConnection = await PostgresConnection.create(
-    PostgresConfig.getArticlesDbConfig()
-  );
-  const booksConnection = await PostgresConnection.create(
-    PostgresConfig.getBooksDbConfig()
-  );
+  const articlesConnection = await PostgresConnection.create(getArticlesConfig());
+  const booksConnection = await PostgresConnection.create(getBooksConfig());
   return { articlesConnection, booksConnection };
 }
 
