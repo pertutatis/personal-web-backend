@@ -1,16 +1,23 @@
 import { APIRequestContext } from '@playwright/test';
 import { ArticleResponse, PaginatedResponse } from '../fixtures/api-types';
 import { CreateArticleRequest, TestArticle } from '../fixtures/test-data';
+import { AuthHelper } from '../helpers/auth.helper';
 
 export class ArticlesApi {
   constructor(private request: APIRequestContext) {}
 
+  private async getAuthHeaders() {
+    const token = await AuthHelper.generateToken();
+    return {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${token}`
+    };
+  }
+
   async createArticle(article: CreateArticleRequest) {
     const response = await this.request.post('/api/backoffice/articles', {
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json'
-      },
+      headers: await this.getAuthHeaders(),
       data: article
     });
     
@@ -36,27 +43,30 @@ export class ArticlesApi {
 
   async getArticle(id: string | object) {
     const articleId = this.getIdValue(id);
-    return this.request.get(`/api/backoffice/articles/${articleId}`);
+    return this.request.get(`/api/backoffice/articles/${articleId}`, {
+      headers: await this.getAuthHeaders()
+    });
   }
 
   async getArticleBySlug(slug: string) {
-    return this.request.get(`/api/backoffice/articles/by-slug/${slug}`);
+    return this.request.get(`/api/backoffice/articles/by-slug/${slug}`, {
+      headers: await this.getAuthHeaders()
+    });
   }
 
   async updateArticle(id: string | object, article: Partial<TestArticle>) {
     const articleId = this.getIdValue(id);
     return this.request.put(`/api/backoffice/articles/${articleId}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json'
-      },
+      headers: await this.getAuthHeaders(),
       data: article
     });
   }
 
   async deleteArticle(id: string | object) {
     const articleId = this.getIdValue(id);
-    return this.request.delete(`/api/backoffice/articles/${articleId}`);
+    return this.request.delete(`/api/backoffice/articles/${articleId}`, {
+      headers: await this.getAuthHeaders()
+    });
   }
 
   async listArticles({ page, limit }: { page?: number; limit?: number } = {}) {
@@ -66,7 +76,9 @@ export class ArticlesApi {
     
     const queryString = searchParams.toString();
     const url = `/api/backoffice/articles${queryString ? `?${queryString}` : ''}`;
-    return this.request.get(url);
+    return this.request.get(url, {
+      headers: await this.getAuthHeaders()
+    });
   }
 
   // Helper methods para obtener datos tipados

@@ -7,6 +7,10 @@ export class InvalidCredentials extends DomainError {
   }
 
   get type(): string {
-    return 'INVALID_CREDENTIALS'
+    return 'InvalidCredentials'
+  }
+
+  get message(): string {
+    return 'Invalid credentials'
   }
 }

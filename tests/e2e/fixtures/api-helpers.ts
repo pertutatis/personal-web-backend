@@ -70,11 +70,20 @@ export class ApiHelpers {
     }
   }
 
-  async createTestArticle(article: Omit<TestArticle, 'id'>): Promise<ArticleResponse> {
+  async createTestArticle(article: Partial<Omit<TestArticle, 'id'>>): Promise<ArticleResponse> {
     const articleId = uuidv4()
+    const slug = article.title
+      ? article.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+      : `test-article-${articleId}`
+
     const articleWithId: CreateArticleRequest = {
-      ...article,
-      id: articleId
+      id: articleId,
+      title: article.title || 'Test Article',
+      excerpt: article.excerpt || 'Test excerpt',
+      content: article.content || 'Test content',
+      bookIds: article.bookIds || [],
+      relatedLinks: article.relatedLinks || [],
+      slug
     }
 
     const response = await this.articlesApi.createArticle(articleWithId)
@@ -94,10 +103,11 @@ export class ApiHelpers {
 
       const articlesResponse = await this.articlesApi.listArticles({ limit: 100 })
       if (articlesResponse.ok()) {
-        const articles = await articlesResponse.json() as PaginatedResponse<ArticleResponse>
-        console.log(`Found ${articles.items.length} articles to delete`)
+        const response = await articlesResponse.json();
+        const articles = response?.data || [];
+        console.log(`Found ${articles.length} articles to delete`)
         
-        for (const article of articles.items) {
+        for (const article of articles) {
           try {
             const id = typeof article.id === 'object' && article.id !== null && 'value' in article.id
               ? (article.id as any).value
@@ -123,10 +133,11 @@ export class ApiHelpers {
 
       const booksResponse = await this.booksApi.listBooks({ limit: 100 })
       if (booksResponse.ok()) {
-        const books = await booksResponse.json() as PaginatedResponse<BookResponse>
-        console.log(`Found ${books.items.length} books to delete`)
+        const response = await booksResponse.json();
+        const books = response?.data || [];
+        console.log(`Found ${books.length} books to delete`)
         
-        for (const book of books.items) {
+        for (const book of books) {
           try {
             const deleteResponse = await this.booksApi.deleteBook(book.id)
             if (!deleteResponse.ok()) {

@@ -17,23 +17,31 @@ export class PostgresConnection {
     database: string
   }): Promise<PostgresConnection> {
     try {
-      // console.log('Creating postgres connection with config:', {
-      //   ...config,
-      //   password: '***'
-      // })
-
       const pool = new Pool(config)
-
-      // Verify connection
       const client = await pool.connect()
-      // console.log('Database connection established successfully')
       await client.query('SELECT 1')
       client.release()
 
       return new PostgresConnection(pool, config.database)
     } catch (error) {
-      console.error('Error creating postgres connection:', error)
-      throw error
+      const errorMsg = error instanceof Error ? error.message : String(error)
+      
+      if (errorMsg.includes('database') && errorMsg.includes('does not exist')) {
+        const error = new Error('DatabaseConnectionError')
+        error.name = 'DatabaseConnectionError'
+        error.message = `La base de datos "${config.database}" no existe o no es accesible. Por favor, verifica la configuración y los permisos.`
+        throw error
+      }
+
+      console.error('Error creating postgres connection:', {
+        error: errorMsg,
+        host: config.host,
+        port: config.port,
+        database: config.database,
+        user: config.user
+      })
+
+      throw new Error(`Failed to connect to database: ${errorMsg}`)
     }
   }
 
@@ -51,37 +59,28 @@ export class PostgresConnection {
     query: string,
     values?: any[]
   ): Promise<QueryResult<T>> {
-    let client: PoolClient | null = null
     try {
-      // console.log('Executing query:', query.trim(), 'with values:', values)
-      
-      client = await this.client.connect()
-      const result = await client.query<T>(query, values)
-      
-      // console.log('Query executed successfully. Row count:', result.rowCount)
-      return result
+      return await this.client.query<T>(query, values)
     } catch (error) {
-      console.error('Error executing query:', error)
+      console.error('Error executing query:', {
+        error: error instanceof Error ? error.message : String(error),
+        database: this.database,
+        query: query.trim().slice(0, 100) + '...'
+      })
       throw error
-    } finally {
-      if (client) {
-        // console.log('Releasing database client')
-        client.release()
-      }
     }
   }
 
   async close(): Promise<void> {
     try {
-      // console.log('Closing database connection')
       if (this.client) {
-        const clients = await this.client.connect()
-        await clients.release()
         await this.client.end()
       }
-      // console.log('Database connection closed successfully')
     } catch (error) {
-      console.error('Error closing database connection:', error)
+      console.error('Error closing database connection:', {
+        error: error instanceof Error ? error.message : String(error),
+        database: this.database
+      })
       throw error
     }
   }

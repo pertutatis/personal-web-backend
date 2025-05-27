@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { corsMiddleware, applyCorsHeaders } from '@/contexts/blog/shared/infrastructure/security/CorsMiddleware'
+import { NextRequest } from 'next/server'
+import { corsMiddleware } from '@/contexts/blog/shared/infrastructure/security/CorsMiddleware'
 import { executeWithErrorHandling } from '@/contexts/shared/infrastructure/http/executeWithErrorHandling'
 import { HttpNextResponse } from '@/contexts/shared/infrastructure/http/HttpNextResponse'
 import { PostgresAuthRepository } from '@/contexts/backoffice/auth/infrastructure/PostgresAuthRepository'
@@ -12,11 +12,16 @@ import { Logger } from '@/contexts/shared/infrastructure/Logger'
 export async function POST(request: NextRequest) {
   return executeWithErrorHandling(
     async () => {
-      const body = await request.json()
-      const { email, password } = body
+      const authToken = request.headers.get('Authorization')?.replace('Bearer ', '')
 
-      if (!email || !password) {
-        return HttpNextResponse.badRequest('Email and password are required')
+      if (!authToken) {
+        return HttpNextResponse.unauthorized(
+          {
+            type: 'Unauthorized',
+            message: 'Authorization header is required'
+          },
+          request.headers.get('origin')
+        )
       }
 
       const connection = await getAuthConnection()
@@ -30,39 +35,23 @@ export async function POST(request: NextRequest) {
       const controller = new AuthController(repository, uuidGenerator, jwtGenerator)
       
       try {
-        const { token } = await controller.login({ email, password })
+        const result = await controller.refreshToken(authToken)
         await connection.close()
-        return HttpNextResponse.ok({ token }, request.headers.get('origin'))
+        return HttpNextResponse.ok(result, request.headers.get('origin'))
       } catch (error: any) {
         await connection.close()
         
-        // Log connection details for debugging
-        Logger.info('Connection details:', {
-          host: process.env.DB_HOST,
-          port: process.env.DB_PORT,
-          database: process.env.AUTH_DB_NAME,
-          user: process.env.DB_USER
-        })
-
         if (error.status === 401) {
           return HttpNextResponse.unauthorized(
             {
-              type: 'InvalidCredentials',
-              message: 'Invalid credentials'
+              type: 'InvalidToken',
+              message: 'Invalid token'
             },
             request.headers.get('origin')
           )
         }
 
-        if (error instanceof Error && error.name === 'DatabaseConnectionError') {
-          Logger.error('Database connection error:', error)
-          return HttpNextResponse.internalServerError(
-            error.message,
-            request.headers.get('origin')
-          )
-        }
-
-        Logger.error('Login error:', error)
+        Logger.error('Refresh token error:', error)
         throw error
       }
     },

@@ -1,18 +1,25 @@
 import { APIRequestContext } from '@playwright/test';
 import { BookResponse, PaginatedResponse } from '../fixtures/api-types';
 import { TestBook } from '../fixtures/test-data';
+import { AuthHelper } from '../helpers/auth.helper';
 
 export class BooksApi {
   constructor(private request: APIRequestContext) {}
+
+  private async getAuthHeaders() {
+    const token = await AuthHelper.generateToken();
+    return {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${token}`
+    };
+  }
 
   async createBook(book: TestBook) {
     try {
       console.log('Sending create book request:', book);
       const response = await this.request.post('/api/backoffice/books', {
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json'
-        },
+        headers: await this.getAuthHeaders(),
         data: book,
         timeout: 10000 // Aumentar el timeout a 10 segundos
       });
@@ -46,23 +53,24 @@ export class BooksApi {
 
   async getBook(id: string | number | object) {
     const bookId = this.formatId(id);
-    return this.request.get(`/api/backoffice/books/${bookId}`);
+    return this.request.get(`/api/backoffice/books/${bookId}`, {
+      headers: await this.getAuthHeaders()
+    });
   }
 
   async updateBook(id: string | number | object, book: Partial<TestBook>) {
     const bookId = this.formatId(id);
     return this.request.put(`/api/backoffice/books/${bookId}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json'
-      },
+      headers: await this.getAuthHeaders(),
       data: book
     });
   }
 
   async deleteBook(id: string | number | object) {
     const bookId = this.formatId(id);
-    return this.request.delete(`/api/backoffice/books/${bookId}`);
+    return this.request.delete(`/api/backoffice/books/${bookId}`, {
+      headers: await this.getAuthHeaders()
+    });
   }
 
   async listBooks({ page, limit }: { page?: number; limit?: number } = {}) {
@@ -72,7 +80,9 @@ export class BooksApi {
     
     const queryString = searchParams.toString();
     const url = `/api/backoffice/books${queryString ? `?${queryString}` : ''}`;
-    return this.request.get(url);
+    return this.request.get(url, {
+      headers: await this.getAuthHeaders()
+    });
   }
 
   // Helper methods para obtener datos tipados

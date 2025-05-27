@@ -10,6 +10,7 @@ import { Logger } from '@/contexts/shared/infrastructure/Logger'
 export class AuthController {
   private registerUseCase: RegisterUser
   private loginUseCase: LoginUser
+  private jwtGenerator: JWTGenerator
 
   constructor(
     repository: AuthRepository,
@@ -18,6 +19,33 @@ export class AuthController {
   ) {
     this.registerUseCase = new RegisterUser(repository, uuidGenerator)
     this.loginUseCase = new LoginUser(repository, jwtGenerator)
+    this.jwtGenerator = jwtGenerator
+  }
+
+  async refreshToken(token: string): Promise<{ token: string }> {
+    try {
+      Logger.info('Processing token refresh request')
+      
+      // Verificar el token actual
+      const payload = await this.jwtGenerator.verify(token)
+      
+      if (!payload || !payload.id || !payload.email) {
+        throw new Error('Invalid token payload')
+      }
+      
+      // Generar un nuevo token con el mismo payload
+      const newToken = await this.jwtGenerator.generate({
+        id: payload.id,
+        email: payload.email
+      })
+
+      Logger.info('Token refreshed successfully:', { userId: payload.id })
+      
+      return { token: newToken }
+    } catch (error) {
+      Logger.error('Token refresh failed:', error)
+      throw { status: 401, error: 'Invalid token' }
+    }
   }
 
   async register(params: { email: string; password: string }): Promise<{ id: string }> {
@@ -53,9 +81,13 @@ export class AuthController {
     } catch (error) {
       if (error instanceof InvalidCredentials) {
         Logger.info('Login failed - invalid credentials:', { email: params.email })
+        const errorData = {
+          type: (error as InvalidCredentials).type,
+          message: (error as InvalidCredentials).message
+        }
         throw {
           status: 401,
-          error: 'Invalid credentials'
+          error: errorData
         }
       }
       

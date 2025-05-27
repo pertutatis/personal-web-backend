@@ -6,17 +6,17 @@ export async function getAuthConnection(): Promise<PostgresConnection> {
   
   Logger.info('Connecting to auth database:', {
     host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
-    user: process.env.DB_USER,
+    port: process.env.AUTH_DB_PORT,
+    user: process.env.AUTH_DB_USER,
     database: dbName,
     environment: process.env.NODE_ENV
   })
 
   const config = {
     host: process.env.DB_HOST || 'localhost',
-    port: Number(process.env.DB_PORT) || 5434,
-    user: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASSWORD || 'postgres',
+    port: Number(process.env.AUTH_DB_PORT) || 5432,
+    user: process.env.AUTH_DB_USER || 'postgres',
+    password: process.env.AUTH_DB_PASSWORD || 'postgres',
     database: dbName
   }
   
