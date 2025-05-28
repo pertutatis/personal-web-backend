@@ -1,13 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { corsMiddleware, applyCorsHeaders } from '@/contexts/blog/shared/infrastructure/security/CorsMiddleware'
+import { NextRequest } from 'next/server'
+import { corsMiddleware } from '@/contexts/blog/shared/infrastructure/security/CorsMiddleware'
 import { executeWithErrorHandling } from '@/contexts/shared/infrastructure/http/executeWithErrorHandling'
 import { HttpNextResponse } from '@/contexts/shared/infrastructure/http/HttpNextResponse'
-import { PostgresAuthRepository } from '@/contexts/backoffice/auth/infrastructure/PostgresAuthRepository'
-import { AuthController } from '@/contexts/backoffice/auth/infrastructure/rest/AuthController'
-import { OfficialUuidGenerator } from '@/contexts/shared/infrastructure/OfficialUuidGenerator'
-import { JwtTokenGenerator } from '@/contexts/backoffice/auth/infrastructure/JwtTokenGenerator'
-import { getAuthConnection } from '../config/database'
 import { Logger } from '@/contexts/shared/infrastructure/Logger'
+import { initializeContainer, AuthControllerToken } from '@/contexts/backoffice/auth/infrastructure/DependencyInjection/container'
+
+let containerInitialized = false
+let container: any
 
 export async function POST(request: NextRequest) {
   return executeWithErrorHandling(
@@ -19,31 +18,17 @@ export async function POST(request: NextRequest) {
         return HttpNextResponse.badRequest('Email and password are required')
       }
 
-      const connection = await getAuthConnection()
-      const repository = new PostgresAuthRepository(connection)
-      const uuidGenerator = new OfficialUuidGenerator()
-      const jwtGenerator = new JwtTokenGenerator(
-        process.env.JWT_SECRET || 'default-secret',
-        process.env.JWT_EXPIRES_IN || '1h'
-      )
-      
-      const controller = new AuthController(repository, uuidGenerator, jwtGenerator)
+      if (!containerInitialized) {
+        container = await initializeContainer()
+        containerInitialized = true
+      }
+
+      const controller = container.get(AuthControllerToken)
       
       try {
         const { token } = await controller.login({ email, password })
-        await connection.close()
         return HttpNextResponse.ok({ token }, request.headers.get('origin'))
       } catch (error: any) {
-        await connection.close()
-        
-        // Log connection details for debugging
-        Logger.info('Connection details:', {
-          host: process.env.DB_HOST,
-          port: process.env.DB_PORT,
-          database: process.env.AUTH_DB_NAME,
-          user: process.env.DB_USER
-        })
-
         if (error.status === 401) {
           return HttpNextResponse.unauthorized(
             {

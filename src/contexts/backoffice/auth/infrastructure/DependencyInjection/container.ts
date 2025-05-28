@@ -1,22 +1,46 @@
-import { Container } from 'typedi'
+import { Container, Token } from 'typedi'
 import { AuthController } from '../rest/AuthController'
 import { PostgresAuthRepository } from '../PostgresAuthRepository'
-import { UuidGeneratorNode } from '@/contexts/shared/infrastructure/UuidGeneratorNode'
+import { OfficialUuidGenerator } from '@/contexts/shared/infrastructure/OfficialUuidGenerator'
 import { JwtTokenGenerator } from '../JwtTokenGenerator'
+import { UuidGenerator } from '@/contexts/shared/domain/UuidGenerator'
+import { AuthRepository } from '../../domain/AuthRepository'
+import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection'
 
-const container = new Container()
+export const AuthRepositoryToken = new Token<AuthRepository>('authRepository')
+export const UuidGeneratorToken = new Token<UuidGenerator>('uuidGenerator')
+export const JwtGeneratorToken = new Token<JwtTokenGenerator>('jwtGenerator')
+export const AuthControllerToken = new Token<AuthController>('authController')
 
-container.set('authRepository', new PostgresAuthRepository())
-container.set('uuidGenerator', new UuidGeneratorNode())
-container.set('jwtGenerator', new JwtTokenGenerator(process.env.JWT_SECRET || 'secret'))
+export async function initializeContainer(): Promise<Container> {
+  const connection = await PostgresConnection.create({
+    host: process.env.DB_HOST || 'localhost',
+    port: Number(process.env.AUTH_DB_PORT) || 5432,
+    user: process.env.AUTH_DB_USER || 'postgres',
+    password: process.env.AUTH_DB_PASSWORD || 'postgres',
+    database: process.env.AUTH_DB_NAME || 'auth'
+  })
 
-container.set(
-  'authController',
-  new AuthController(
-    container.get('authRepository'),
-    container.get('uuidGenerator'),
-    container.get('jwtGenerator')
+  const authRepository = new PostgresAuthRepository(connection)
+  Container.set({ id: AuthRepositoryToken, value: authRepository })
+
+  const uuidGenerator = new OfficialUuidGenerator()
+  Container.set({ id: UuidGeneratorToken, value: uuidGenerator })
+
+  const jwtGenerator = new JwtTokenGenerator(
+    process.env.JWT_SECRET || 'secret',
+    process.env.JWT_EXPIRES_IN || '1h'
   )
-)
+  Container.set({ id: JwtGeneratorToken, value: jwtGenerator })
 
-export { container }
+  const authController = new AuthController(
+    Container.get(AuthRepositoryToken),
+    Container.get(UuidGeneratorToken),
+    Container.get(JwtGeneratorToken)
+  )
+  Container.set({ id: AuthControllerToken, value: authController })
+
+  return Container
+}
+
+export { Container as container }
