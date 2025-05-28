@@ -7,6 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "init-db": "node scripts/init-db.js",
     "lint": "eslint . --ext .ts,.tsx",
     "test": "npm run test:unit",
     "test:watch": "jest -c jest.unit.config.js --watch",
