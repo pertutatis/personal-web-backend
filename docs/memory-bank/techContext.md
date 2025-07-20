@@ -10,11 +10,16 @@
   - Built-in performance optimizations
 
 ### Database
-- **PostgreSQL**
+- **PostgreSQL (Desarrollo/Test)**
   - Relational database
   - ACID compliance
   - JSON support
   - Robust indexing
+- **Supabase (Producción)**
+  - PostgreSQL as a service
+  - Built-in connection pooling
+  - Automatic backups
+  - Escalabilidad automática
 
 ### Language
 - **TypeScript**
@@ -42,6 +47,10 @@ src/
 │   │   ├── article/  # Article aggregate
 │   │   └── book/     # Book aggregate
 │   └── shared/       # Shared kernel
+│       └── infrastructure/
+│           ├── persistence/
+│           │   ├── PostgresRepository.ts
+│           │   └── SupabaseRepository.ts
 └── types/           # TypeScript definitions
 ```
 
@@ -63,20 +72,33 @@ src/
 
 ## Technical Constraints
 
+### Database Configuration
+```bash
+# Producción (Supabase)
+NEXT_PUBLIC_SUPABASE_URL=https://puawbpuoeqhgprxadrxd.supabase.co
+NEXT_PUBLIC_SUPABASE_KEY=sb_publishable_Iejo04gqjj897USZg_7VyQ_9Rbxf7Xe
+
+# Desarrollo/Test (PostgreSQL)
+DATABASE_URL=postgresql://user:password@localhost:5432/dbname
+```
+
 ### Performance Requirements
 - Response time < 200ms
 - Efficient pagination
 - Optimized database queries
+- Consistent performance across environments
 
 ### Security Constraints
 - Input validation
 - SQL injection prevention
 - Rate limiting (pendiente)
+- Environment-specific security configs
 
 ### Scalability Requirements
 - Stateless API design
 - Connection pooling
 - Caching (pendiente)
+- Environment-specific optimizations
 
 ## Dependencies
 
@@ -87,6 +109,7 @@ src/
   "react": "^18.0.0",
   "react-dom": "^18.0.0",
   "pg": "^8.0.0",
+  "@supabase/supabase-js": "^2.0.0",
   "typescript": "^5.0.0"
 }
 ```
@@ -129,15 +152,6 @@ src/
 }
 ```
 
-### Environment Variables
-```bash
-# Database
-DATABASE_URL=postgresql://user:password@localhost:5432/dbname
-
-# API
-API_URL=http://localhost:3000
-```
-
 ## Database Schema
 
 ### Articles Table
@@ -162,3 +176,10 @@ CREATE TABLE books (
   created_at TIMESTAMP NOT NULL,
   updated_at TIMESTAMP NOT NULL
 );
+```
+
+## Environment Management
+- Producción: Supabase
+- Desarrollo: PostgreSQL local
+- Testing: PostgreSQL local en contenedor
+- CI/CD: PostgreSQL en pipeline
