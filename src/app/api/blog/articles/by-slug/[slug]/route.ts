@@ -1,34 +1,27 @@
-import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection';
-import { getArticlesConfig, getBooksConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
-import { PostgresBlogArticleRepository } from '@/contexts/blog/article/infrastructure/persistence/PostgresBlogArticleRepository';
+import { DatabaseConnectionFactory } from '@/contexts/shared/infrastructure/persistence/DatabaseConnectionFactory';
+import { getBlogDatabaseConfig } from '@/contexts/shared/infrastructure/config/database';
 import { NextRequest, NextResponse } from 'next/server';
-
-async function getConnections() {
-  const articlesConnection = await PostgresConnection.create(getArticlesConfig());
-  const booksConnection = await PostgresConnection.create(getBooksConfig());
-  return { articlesConnection, booksConnection };
-}
+import { Logger } from '@/contexts/shared/infrastructure/Logger';
+import { PostgresBlogArticleRepository } from '@/contexts/blog/article/infrastructure/persistence/BlogArticleRepository';
+import { DatabaseConnection } from '@/contexts/shared/infrastructure/persistence/DatabaseConnection';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { slug: string } }
 ) {
-  let articlesConnection: PostgresConnection | undefined;
-  let booksConnection: PostgresConnection | undefined;
+  let connection: DatabaseConnection | undefined;
 
   try {
-    const connections = await getConnections();
-    articlesConnection = connections.articlesConnection;
-    booksConnection = connections.booksConnection;
+    Logger.info('Processing GET /api/blog/articles/by-slug request', {
+      slug: params.slug
+    });
 
-    const repository = new PostgresBlogArticleRepository(
-      articlesConnection,
-      booksConnection
-    );
-
+    connection = await DatabaseConnectionFactory.create(getBlogDatabaseConfig());
+    const repository = new PostgresBlogArticleRepository(connection);
     const article = await repository.findBySlug(params.slug);
 
     if (!article) {
+      Logger.info('Article not found', { slug: params.slug });
       return NextResponse.json(
         { error: 'Article not found' },
         { status: 404 }
@@ -38,18 +31,17 @@ export async function GET(
     return NextResponse.json(article);
 
   } catch (error) {
-    console.error('Error fetching article:', error);
+    Logger.error('Error fetching article:', {
+      error,
+      slug: params.slug
+    });
     return NextResponse.json(
       { error: 'Internal Server Error' },
       { status: 500 }
     );
-
   } finally {
-    if (articlesConnection) {
-      await articlesConnection.close();
-    }
-    if (booksConnection) {
-      await booksConnection.close();
+    if (connection) {
+      await connection.close();
     }
   }
 }
