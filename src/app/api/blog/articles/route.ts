@@ -1,44 +1,32 @@
-import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection';
-import { getArticlesConfig, getBooksConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
-import { PostgresBlogArticleRepository } from '@/contexts/blog/article/infrastructure/persistence/PostgresBlogArticleRepository';
+import { BlogArticleRepositoryFactory } from '@/contexts/blog/article/infrastructure/persistence/BlogArticleRepositoryFactory';
+import { DatabaseConnectionFactory } from '@/contexts/shared/infrastructure/persistence/DatabaseConnectionFactory';
+import { getBlogDatabaseConfig } from '@/contexts/shared/infrastructure/config/database';
 import { NextResponse } from 'next/server';
-
-async function getConnections() {
-  const articlesConnection = await PostgresConnection.create(getArticlesConfig());
-  const booksConnection = await PostgresConnection.create(getBooksConfig());
-  return { articlesConnection, booksConnection };
-}
+import { Logger } from '@/contexts/shared/infrastructure/Logger';
+import { PostgresBlogArticleRepository } from '@/contexts/blog/article/infrastructure/persistence/BlogArticleRepository';
+import { DatabaseConnection } from '@/contexts/shared/infrastructure/persistence/DatabaseConnection';
 
 export async function GET() {
-  let articlesConnection: PostgresConnection | undefined;
-  let booksConnection: PostgresConnection | undefined;
-
+  let connection: DatabaseConnection | undefined;
+  
   try {
-    const connections = await getConnections();
-    articlesConnection = connections.articlesConnection;
-    booksConnection = connections.booksConnection;
-
-    const repository = new PostgresBlogArticleRepository(
-      articlesConnection,
-      booksConnection
-    );
-
+    Logger.info('Processing GET /api/blog/articles request');
+    
+    connection = await DatabaseConnectionFactory.create(getBlogDatabaseConfig());
+    const repository = new PostgresBlogArticleRepository(connection);
     const articles = await repository.findAll();
+    
     return NextResponse.json(articles);
 
   } catch (error) {
-    console.error('Error fetching articles:', error);
+    Logger.error('Error fetching articles:', error);
     return NextResponse.json(
       { error: 'Internal Server Error' },
       { status: 500 }
     );
-
   } finally {
-    if (articlesConnection) {
-      await articlesConnection.close();
-    }
-    if (booksConnection) {
-      await booksConnection.close();
+    if (connection) {
+      await connection.close();
     }
   }
 }
