@@ -1,13 +1,7 @@
 import { CreateArticle } from '../CreateArticle';
 import { ArticleRepository } from '../../domain/ArticleRepository';
 import { Article } from '../../domain/Article';
-import { ArticleTitle } from '../../domain/ArticleTitle';
-import { ArticleExcerpt } from '../../domain/ArticleExcerpt';
-import { ArticleContent } from '../../domain/ArticleContent';
-import { ArticleBookIds } from '../../domain/ArticleBookIds';
-import { ArticleRelatedLinks } from '../../domain/ArticleRelatedLinks';
 import { ArticleIdDuplicated } from '../../domain/ArticleIdDuplicated';
-import { ArticleIdMother } from '../../domain/__tests__/mothers/ArticleIdMother';
 
 describe('CreateArticle', () => {
   let repository: jest.Mocked<ArticleRepository>;
