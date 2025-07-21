@@ -1,4 +1,4 @@
-import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection';
+import { DatabaseConnection } from '@/contexts/shared/infrastructure/persistence/DatabaseConnection';
 import { PostgresArticleRepository } from '../PostgresArticleRepository';
 import { Article } from '../../domain/Article';
 import { ArticleTitle } from '../../domain/ArticleTitle';
@@ -12,16 +12,15 @@ import { InvalidBookReferenceError } from '../../domain/InvalidBookReferenceErro
 import { BookId } from '@/contexts/backoffice/book/domain/BookId';
 import { v4 as uuidv4 } from 'uuid';
 import { TestDatabase } from '@/contexts/shared/infrastructure/__tests__/TestDatabase';
+import { Logger } from '@/contexts/shared/infrastructure/Logger';
 
 describe('PostgresArticleRepository', () => {
-  let articlesConnection: PostgresConnection;
-  let booksConnection: PostgresConnection;
+  let connection: DatabaseConnection;
   let repository: PostgresArticleRepository;
 
   beforeAll(async () => {
-    articlesConnection = await TestDatabase.getArticlesConnection();
-    booksConnection = await TestDatabase.getBooksConnection();
-    repository = new PostgresArticleRepository(articlesConnection, booksConnection);
+    connection = await TestDatabase.getConnection();
+    repository = new PostgresArticleRepository(connection);
   });
 
   afterAll(async () => {
@@ -36,7 +35,7 @@ describe('PostgresArticleRepository', () => {
     it('should update articles removing book reference', async () => {
       // First create a book
       const bookId = new BookId(uuidv4());
-      await booksConnection.execute(
+      await connection.execute(
         `INSERT INTO books (id, title, author, isbn, description) 
          VALUES ($1, 'Test Book', 'Test Author', '1234567890', 'Test Description')`,
         [bookId.value]
@@ -70,17 +69,12 @@ describe('PostgresArticleRepository', () => {
       await repository.removeBookReference(bookId);
       // If no error is thrown, the test passes
     });
-
-    it('should validate UUID format', async () => {
-      // This test is no longer needed as BookId validation is handled by the BookId class
-      // and is tested in its own test suite
-    });
   });
 
   describe('validateBookIds', () => {
     it('should validate existing book references', async () => {
       const bookId = uuidv4();
-      await booksConnection.execute(
+      await connection.execute(
         `INSERT INTO books (id, title, author, isbn, description) 
          VALUES ($1, 'Test Book', 'Test Author', '1234567890', 'Test Description')`,
         [bookId]

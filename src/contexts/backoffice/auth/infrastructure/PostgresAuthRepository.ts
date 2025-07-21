@@ -2,11 +2,11 @@ import { AuthRepository } from '../domain/AuthRepository'
 import { User } from '../domain/User'
 import { EmailVO } from '../domain/EmailVO'
 import { UserId } from '../domain/UserId'
-import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection'
+import { DatabaseConnection } from '@/contexts/shared/infrastructure/persistence/DatabaseConnection'
 import { Logger } from '@/contexts/shared/infrastructure/Logger'
 
 export class PostgresAuthRepository implements AuthRepository {
-  constructor(private connection: PostgresConnection) {}
+  constructor(private connection: DatabaseConnection) {}
 
   async save(user: User): Promise<void> {
     const data = user.toPrimitives()
@@ -15,9 +15,9 @@ export class PostgresAuthRepository implements AuthRepository {
     try {
       await this.connection.execute(
         `INSERT INTO users (id, email, password_hash)
-        VALUES ($1, $2, $3)
-        ON CONFLICT (id) DO UPDATE
-        SET email = $2, password_hash = $3`,
+         VALUES ($1, $2, $3)
+         ON CONFLICT (id) DO UPDATE
+         SET email = $2, password_hash = $3`,
         [data.id, data.email, data.password_hash]
       )
 
@@ -32,14 +32,18 @@ export class PostgresAuthRepository implements AuthRepository {
     Logger.info('Finding user by email:', { email: email.value })
 
     try {
-      const result = await this.connection.execute(
+      const result = await this.connection.execute<{
+        id: string
+        email: string
+        password_hash: string
+      }>(
         `SELECT id, email, password_hash
-        FROM users
-        WHERE email = $1`,
+         FROM users
+         WHERE email = $1`,
         [email.value]
       )
 
-      if (result.rowCount === 0) {
+      if (result.rows.length === 0) {
         Logger.info('User not found')
         return null
       }
@@ -62,14 +66,18 @@ export class PostgresAuthRepository implements AuthRepository {
     Logger.info('Finding user by id:', { id: id.value })
 
     try {
-      const result = await this.connection.execute(
+      const result = await this.connection.execute<{
+        id: string
+        email: string
+        password_hash: string
+      }>(
         `SELECT id, email, password_hash
-        FROM users
-        WHERE id = $1`,
+         FROM users
+         WHERE id = $1`,
         [id.value]
       )
 
-      if (result.rowCount === 0) {
+      if (result.rows.length === 0) {
         Logger.info('User not found')
         return null
       }
