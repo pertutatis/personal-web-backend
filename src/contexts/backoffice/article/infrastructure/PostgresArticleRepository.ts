@@ -8,10 +8,11 @@ import { ArticleBookIds } from '../domain/ArticleBookIds';
 import { ArticleRelatedLinks } from '../domain/ArticleRelatedLinks';
 import { ArticleSlug } from '../domain/ArticleSlug';
 import { Collection } from '@/contexts/shared/domain/Collection';
-import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection';
+import { DatabaseConnection } from '@/contexts/shared/infrastructure/persistence/DatabaseConnection';
 import { BookId } from '@/contexts/backoffice/book/domain/BookId';
 import { InvalidBookReferenceError } from '@/contexts/backoffice/article/domain/InvalidBookReferenceError';
 import { ArticleNotFoundError } from '@/contexts/backoffice/article/domain/ArticleNotFoundError';
+import { Logger } from '@/contexts/shared/infrastructure/Logger';
 
 interface ArticleRow {
   id: string;
@@ -27,8 +28,7 @@ interface ArticleRow {
 
 export class PostgresArticleRepository implements ArticleRepository {
   constructor(
-    private readonly articlesConnection: PostgresConnection,
-    private readonly booksConnection: PostgresConnection
+    private readonly connection: DatabaseConnection
   ) {}
 
   private async validateBookIds(bookIds: string[]): Promise<void> {
@@ -40,7 +40,7 @@ export class PostgresArticleRepository implements ArticleRepository {
       // Validate all IDs are valid UUIDs
       bookIds.forEach(id => new BookId(id));
 
-      const result = await this.booksConnection.execute<{ id: string; exists: boolean }>(
+      const result = await this.connection.execute<{ id: string; exists: boolean }>(
         `
         WITH book_ids AS (
           SELECT UNNEST($1::text[]) as id
@@ -62,6 +62,7 @@ export class PostgresArticleRepository implements ArticleRepository {
         throw new InvalidBookReferenceError(missingIds[0]);
       }
     } catch (error) {
+      Logger.error('Error validating book IDs:', error);
       throw error;
     }
   }
@@ -75,7 +76,7 @@ export class PostgresArticleRepository implements ArticleRepository {
 
       await this.validateBookIds(bookIdsArray);
 
-      await this.articlesConnection.execute(
+      await this.connection.execute(
         `INSERT INTO articles (
           id, title, excerpt, content, book_ids, related_links, slug, created_at, updated_at
         ) VALUES (
@@ -94,13 +95,13 @@ export class PostgresArticleRepository implements ArticleRepository {
         ]
       );
     } catch (error) {
-      console.error('Error saving article:', error);
+      Logger.error('Error saving article:', error);
       throw error;
     }
   }
 
   async searchByBookId(bookId: BookId): Promise<Article[]> {
-    const result = await this.articlesConnection.execute<ArticleRow>(
+    const result = await this.connection.execute<ArticleRow>(
       'SELECT * FROM articles WHERE $1 = ANY(book_ids)',
       [bookId.value]
     );
@@ -110,7 +111,7 @@ export class PostgresArticleRepository implements ArticleRepository {
 
   async search(id: ArticleId): Promise<Article | null> {
     try {
-      const result = await this.articlesConnection.execute<ArticleRow>(
+      const result = await this.connection.execute<ArticleRow>(
         'SELECT * FROM articles WHERE id = $1',
         [id.value]
       );
@@ -122,14 +123,14 @@ export class PostgresArticleRepository implements ArticleRepository {
       const articleRow = result.rows[0];
       return this.createArticleFromRow(articleRow);
     } catch (error) {
-      console.error('Error searching for article:', error);
+      Logger.error('Error searching for article:', error);
       throw error;
     }
   }
 
   async searchBySlug(slug: string): Promise<Article | null> {
     try {
-      const result = await this.articlesConnection.execute<ArticleRow>(
+      const result = await this.connection.execute<ArticleRow>(
         'SELECT * FROM articles WHERE slug = $1',
         [slug]
       );
@@ -141,13 +142,13 @@ export class PostgresArticleRepository implements ArticleRepository {
       const articleRow = result.rows[0];
       return this.createArticleFromRow(articleRow);
     } catch (error) {
-      console.error('Error searching for article by slug:', error);
+      Logger.error('Error searching for article by slug:', error);
       throw error;
     }
   }
 
   async searchAll(): Promise<Article[]> {
-    const result = await this.articlesConnection.execute<ArticleRow>(
+    const result = await this.connection.execute<ArticleRow>(
       'SELECT * FROM articles ORDER BY created_at DESC'
     );
 
@@ -157,13 +158,13 @@ export class PostgresArticleRepository implements ArticleRepository {
   async searchByPage(page: number, limit: number): Promise<Collection<Article>> {
     const offset = (page - 1) * limit;
     
-    const countResult = await this.articlesConnection.execute<{ total: string }>(
+    const countResult = await this.connection.execute<{ total: string }>(
       'SELECT COUNT(*) as total FROM articles'
     );
     
     const total = parseInt(countResult.rows[0].total);
 
-    const result = await this.articlesConnection.execute<ArticleRow>(
+    const result = await this.connection.execute<ArticleRow>(
       'SELECT * FROM articles ORDER BY created_at DESC LIMIT $1 OFFSET $2',
       [limit, offset]
     );
@@ -192,7 +193,7 @@ export class PostgresArticleRepository implements ArticleRepository {
         await this.validateBookIds(primitives.bookIds);
       }
 
-      await this.articlesConnection.execute(
+      await this.connection.execute(
         `UPDATE articles
          SET title = $1,
              excerpt = $2,
@@ -223,14 +224,14 @@ export class PostgresArticleRepository implements ArticleRepository {
         throw new Error('Article not found after update');
       }
     } catch (error) {
-      console.error('Error updating article:', error);
+      Logger.error('Error updating article:', error);
       throw error;
     }
   }
 
   async delete(id: ArticleId): Promise<void> {
     try {
-      const result = await this.articlesConnection.execute(
+      const result = await this.connection.execute(
         'DELETE FROM articles WHERE id = $1',
         [id.value]
       );
@@ -238,14 +239,14 @@ export class PostgresArticleRepository implements ArticleRepository {
         throw new Error('Article not found');
       }
     } catch (error) {
-      console.error('Error deleting article:', error);
+      Logger.error('Error deleting article:', error);
       throw error;
     }
   }
 
   async removeBookReference(bookId: BookId): Promise<void> {
     try {
-      await this.articlesConnection.execute(
+      await this.connection.execute(
         `UPDATE articles
          SET book_ids = array_remove(book_ids, $1::text),
              updated_at = timezone('UTC', NOW())
@@ -253,7 +254,7 @@ export class PostgresArticleRepository implements ArticleRepository {
         [bookId.value]
       );
     } catch (error) {
-      console.error('Error removing book reference from articles:', error);
+      Logger.error('Error removing book reference from articles:', error);
       throw error;
     }
   }
@@ -279,7 +280,7 @@ export class PostgresArticleRepository implements ArticleRepository {
         updatedAt: new Date(row.updated_at)
       });
     } catch (error) {
-      console.error('Error creating article from row:', error);
+      Logger.error('Error creating article from row:', error);
       throw error;
     }
   }
