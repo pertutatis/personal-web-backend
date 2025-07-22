@@ -1,12 +1,11 @@
-import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection';
+import { DatabaseConnection } from '@/contexts/shared/infrastructure/persistence/DatabaseConnection';
 import { ArticleSubscribers } from './ArticleSubscribers';
 
 export class ArticleModule {
   static async init(
-    articlesConnection: PostgresConnection,
-    booksConnection: PostgresConnection
+    blogConnection: DatabaseConnection
   ): Promise<void> {
     // Initialize event subscribers
-    await ArticleSubscribers.init(articlesConnection, booksConnection);
+    await ArticleSubscribers.init(blogConnection);
   }
 }

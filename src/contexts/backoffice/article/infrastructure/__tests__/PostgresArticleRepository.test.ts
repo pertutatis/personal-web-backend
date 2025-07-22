@@ -1,4 +1,7 @@
+import '../../../../blog/article/infrastructure/__tests__/setupTestEnv'; // Ensure the test environment is set up before running tests
 import { DatabaseConnection } from '@/contexts/shared/infrastructure/persistence/DatabaseConnection';
+import { DatabaseConnectionFactory } from '@/contexts/shared/infrastructure/persistence/DatabaseConnectionFactory';
+import { getBlogDatabaseConfig } from '@/contexts/shared/infrastructure/config/database';
 import { PostgresArticleRepository } from '../PostgresArticleRepository';
 import { Article } from '../../domain/Article';
 import { ArticleTitle } from '../../domain/ArticleTitle';
@@ -12,14 +15,13 @@ import { InvalidBookReferenceError } from '../../domain/InvalidBookReferenceErro
 import { BookId } from '@/contexts/backoffice/book/domain/BookId';
 import { v4 as uuidv4 } from 'uuid';
 import { TestDatabase } from '@/contexts/shared/infrastructure/__tests__/TestDatabase';
-import { Logger } from '@/contexts/shared/infrastructure/Logger';
 
 describe('PostgresArticleRepository', () => {
   let connection: DatabaseConnection;
   let repository: PostgresArticleRepository;
 
   beforeAll(async () => {
-    connection = await TestDatabase.getConnection();
+    connection = await DatabaseConnectionFactory.create(getBlogDatabaseConfig());
     repository = new PostgresArticleRepository(connection);
   });
 

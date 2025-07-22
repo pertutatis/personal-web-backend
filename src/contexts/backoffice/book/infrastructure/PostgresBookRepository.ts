@@ -9,7 +9,7 @@ import { BookPurchaseLink } from '../domain/BookPurchaseLink';
 import { BookIdDuplicated } from '../domain/BookIdDuplicated';
 import { BookIsbnDuplicated } from '../domain/BookIsbnDuplicated';
 import { Collection } from '@/contexts/shared/domain/Collection';
-import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection';
+import { DatabaseConnection } from '@/contexts/shared/infrastructure/persistence/DatabaseConnection';
 
 interface BookRow {
   id: string;
@@ -23,7 +23,7 @@ interface BookRow {
 }
 
 export class PostgresBookRepository implements BookRepository {
-  constructor(private readonly connection: PostgresConnection) {}
+  constructor(private readonly connection: DatabaseConnection) {}
 
   async save(book: Book): Promise<void> {
     const exists = await this.exists(book.id);

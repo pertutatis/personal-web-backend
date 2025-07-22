@@ -84,7 +84,6 @@ export class PostgresMigrations {
           await this.setupAuthTables(conn)
         } else if (this.databaseName === 'test_articles') {
           await this.setupArticlesTables(conn)
-        } else if (this.databaseName === 'test_books') {
           await this.setupBooksTables(conn)
         }
       } finally {
