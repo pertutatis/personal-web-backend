@@ -1,7 +1,7 @@
 import { BlogArticle } from '../../domain/BlogArticle';
 import { BlogArticleRepository } from '../../domain/BlogArticleRepository';
 import { BlogBook } from '../../domain/BlogBook';
-import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection';
+import { PostgresConnection } from '@/contexts/shared/infrastructure/persistence/PostgresConnection';
 import { QueryResult } from 'pg';
 
 interface ArticleRow {

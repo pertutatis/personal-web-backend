@@ -23,7 +23,7 @@ describe('PostgresBookRepository', () => {
   const validTestId = '123e4567-e89b-4456-a456-426614174000';
 
   beforeAll(async () => {
-    connection = await DatabaseConnectionFactory.create(getBlogDatabaseConfig());
+    connection = await TestDatabase.getArticlesConnection();
     repository = new PostgresBookRepository(connection);
   });
 

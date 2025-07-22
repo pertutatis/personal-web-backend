@@ -1,5 +1,5 @@
 import { Pool } from 'pg'
-import { PostgresConnection } from './PostgresConnection'
+import { PostgresConnection } from './persistence/PostgresConnection'
 import { Logger } from './Logger'
 
 export class PostgresMigrations {

@@ -5,7 +5,6 @@ import { getBlogDatabaseConfig } from '@/contexts/shared/infrastructure/config/d
 import { ArticleModule } from '../DependencyInjection/article.module';
 import { BookDeletedDomainEvent } from '@/contexts/backoffice/book/domain/event/BookDeletedDomainEvent';
 import { EventBusFactory } from '@/contexts/shared/infrastructure/eventBus/EventBusFactory';
-import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection';
 import { TestDatabase } from '@/contexts/shared/infrastructure/__tests__/TestDatabase';
 import { ArticleMother } from '../../domain/__tests__/mothers/ArticleMother';
 import { PostgresArticleRepository } from '../PostgresArticleRepository';
@@ -14,11 +13,9 @@ import { v4 as uuidv4 } from 'uuid';
 describe('ArticleModule', () => {
   let repository: PostgresArticleRepository;
   let connection: DatabaseConnection;
-  let blogConnection: DatabaseConnection;
 
   beforeAll(async () => {
-    blogConnection = await TestDatabase.getArticlesConnection();
-    connection = await DatabaseConnectionFactory.create(getBlogDatabaseConfig());
+    connection = await TestDatabase.getArticlesConnection();
     repository = new PostgresArticleRepository(connection);
   });
 
@@ -32,11 +29,11 @@ describe('ArticleModule', () => {
 
   it('should remove book references when handling BookDeletedDomainEvent', async () => {
     // Initialize module
-    await ArticleModule.init(blogConnection);
+    await ArticleModule.init(connection);
 
     // Create test book in database
     const bookId = uuidv4();
-    await blogConnection.execute(
+    await connection.execute(
       `INSERT INTO books (
         id, 
         title, 
@@ -58,7 +55,7 @@ describe('ArticleModule', () => {
     );
 
     // Verify book exists
-    const bookExists = await blogConnection.execute(
+    const bookExists = await connection.execute(
       'SELECT EXISTS(SELECT 1 FROM books WHERE id = $1)',
       [bookId]
     );

@@ -2,8 +2,6 @@ import './setupTestEnv';
 import { TestDatabase } from '@/contexts/shared/infrastructure/__tests__/TestDatabase';
 import { TestHelper } from '@/contexts/shared/infrastructure/__tests__/TestHelper';
 import { DatabaseConnection } from '@/contexts/shared/infrastructure/persistence/DatabaseConnection';
-import { DatabaseConnectionFactory } from '@/contexts/shared/infrastructure/persistence/DatabaseConnectionFactory';
-import { getBlogDatabaseConfig } from '@/contexts/shared/infrastructure/config/database';
 import { PostgresBlogArticleRepository } from '../persistence/BlogArticleRepository';
 import { BlogArticle } from '../../domain/BlogArticle';
 import { BlogBook } from '../../domain/BlogBook';
@@ -12,11 +10,10 @@ import { v4 as uuid } from 'uuid';
 describe('PostgresBlogArticleRepository', () => {
   let connection: DatabaseConnection;
   let repository: PostgresBlogArticleRepository;
-  let articlesConnection: DatabaseConnection;
+
   
   beforeAll(async () => {
-    articlesConnection = await TestDatabase.getArticlesConnection();
-    connection = await DatabaseConnectionFactory.create(getBlogDatabaseConfig());
+    connection = await TestDatabase.getArticlesConnection();
     repository = new PostgresBlogArticleRepository(connection);
   });
 
@@ -25,7 +22,6 @@ describe('PostgresBlogArticleRepository', () => {
   })
 
   afterAll(async () => {
-    await connection.close();
     await TestDatabase.closeAll();
   });
 
@@ -41,7 +37,7 @@ describe('PostgresBlogArticleRepository', () => {
       new Date('2024-01-02')
     );
 
-    await articlesConnection.execute(
+    await connection.execute(
       `INSERT INTO books (id, title, author, isbn, description, purchase_link, created_at, updated_at)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING *`,
@@ -73,7 +69,7 @@ describe('PostgresBlogArticleRepository', () => {
       new Date()
     );
 
-    await articlesConnection.execute(
+    await connection.execute(
       `INSERT INTO articles (id, title, excerpt, content, book_ids, related_links, slug, created_at, updated_at)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING *`,
@@ -125,12 +121,12 @@ describe('PostgresBlogArticleRepository', () => {
       const article1 = await createTestArticle();
       const article2 = await createTestArticle();
 
-      await articlesConnection.execute(
+      await connection.execute(
         'UPDATE articles SET created_at = $1 WHERE id = $2',
         [olderDate, article1.id]
       );
 
-      await articlesConnection.execute(
+      await connection.execute(
         'UPDATE articles SET created_at = $1 WHERE id = $2',
         [newerDate, article2.id]
       );

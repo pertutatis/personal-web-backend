@@ -5,7 +5,7 @@ import { OfficialUuidGenerator } from '@/contexts/shared/infrastructure/Official
 import { JwtTokenGenerator } from '../JwtTokenGenerator'
 import { UuidGenerator } from '@/contexts/shared/domain/UuidGenerator'
 import { AuthRepository } from '../../domain/AuthRepository'
-import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection'
+import { PostgresConnection } from '@/contexts/shared/infrastructure/persistence/PostgresConnection'
 
 export const AuthRepositoryToken = new Token<AuthRepository>('authRepository')
 export const UuidGeneratorToken = new Token<UuidGenerator>('uuidGenerator')
