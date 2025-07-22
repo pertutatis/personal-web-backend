@@ -1,4 +1,3 @@
-import './setupTestEnv';
 import { TestDatabase } from '@/contexts/shared/infrastructure/__tests__/TestDatabase';
 import { TestHelper } from '@/contexts/shared/infrastructure/__tests__/TestHelper';
 import { DatabaseConnection } from '@/contexts/shared/infrastructure/persistence/DatabaseConnection';
