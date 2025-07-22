@@ -61,7 +61,7 @@ export class PostgresConnection implements DatabaseConnection {
       user: process.env.TEST_DB_USER || 'postgres',
       password: process.env.TEST_DB_PASSWORD || 'postgres',
       database
-    });
+    })
   }
 
   async execute<T extends QueryResultRow = any>(

@@ -21,7 +21,7 @@ describe('PostgresArticleRepository', () => {
   let repository: PostgresArticleRepository;
 
   beforeAll(async () => {
-    connection = await DatabaseConnectionFactory.create(getBlogDatabaseConfig());
+    connection = await TestDatabase.getArticlesConnection();
     repository = new PostgresArticleRepository(connection);
   });
 

@@ -1,4 +1,4 @@
-import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection'
+import { PostgresConnection } from '@/contexts/shared/infrastructure/persistence/PostgresConnection'
 import { Logger } from '@/contexts/shared/infrastructure/Logger'
 
 export async function getAuthConnection(): Promise<PostgresConnection> {

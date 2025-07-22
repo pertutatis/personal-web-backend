@@ -1,4 +1,4 @@
-import { PostgresConnection } from '../PostgresConnection';
+import { PostgresConnection } from '../persistence/PostgresConnection';
 import { PostgresMigrations } from '../PostgresMigrations';
 import { getTestConfig } from '../config/DatabaseConfig';
 import { Logger } from '../Logger';

@@ -32,13 +32,12 @@ jest.setTimeout(30000);
 // Setup global beforeAll
 beforeAll(async () => {
   try {
-    const articlesMigrations = new PostgresMigrations('test_articles')
-    const booksMigrations = new PostgresMigrations('test_books')
+    const blogMigrations = new PostgresMigrations('test_articles')
+    // const booksMigrations = new PostgresMigrations('test_books')
     const authMigrations = new PostgresMigrations('auth_test')
 
     await Promise.all([
-      articlesMigrations.setup(),
-      booksMigrations.setup(),
+      blogMigrations.setup(),
       authMigrations.setup()
     ])
 
