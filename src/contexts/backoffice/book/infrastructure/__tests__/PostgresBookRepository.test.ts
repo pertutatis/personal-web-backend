@@ -1,4 +1,3 @@
-import '../../../../blog/article/infrastructure/__tests__/setupTestEnv'; // Ensure the test environment is set up before running tests
 import { Book } from '../../domain/Book';
 import { BookId } from '../../domain/BookId';
 import { BookTitle } from '../../domain/BookTitle';

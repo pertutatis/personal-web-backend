@@ -1,4 +1,3 @@
-import '../../../../blog/article/infrastructure/__tests__/setupTestEnv'; // Ensure the test environment is set up before running tests
 import { DatabaseConnection } from '@/contexts/shared/infrastructure/persistence/DatabaseConnection';
 import { DatabaseConnectionFactory } from '@/contexts/shared/infrastructure/persistence/DatabaseConnectionFactory';
 import { getBlogDatabaseConfig } from '@/contexts/shared/infrastructure/config/database';
