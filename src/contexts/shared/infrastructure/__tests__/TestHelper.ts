@@ -8,7 +8,6 @@ import { PostgresMigrations } from '../PostgresMigrations';
 export class TestHelper {
   private static readonly databases = {
     articles: 'test_articles',
-    books: 'test_books',
     auth: 'auth_test'
   };
 
@@ -33,7 +32,7 @@ export class TestHelper {
       // 3. Crear nuevas conexiones
       await Promise.all([
         TestDatabase.getArticlesConnection(),
-        TestDatabase.getBooksConnection(),
+        // TestDatabase.getBooksConnection(),
         TestDatabase.getAuthConnection()
       ])
 
@@ -93,7 +92,7 @@ export class TestHelper {
 
       await Promise.all([
         TestDatabase.getArticlesConnection(),
-        TestDatabase.getBooksConnection(),
+        // TestDatabase.getBooksConnection(),
         TestDatabase.getAuthConnection()
       ])
 

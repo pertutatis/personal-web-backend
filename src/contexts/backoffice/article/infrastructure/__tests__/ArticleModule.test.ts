@@ -1,3 +1,7 @@
+import '../../../../blog/article/infrastructure/__tests__/setupTestEnv'; // Ensure the test environment is set up before running tests
+import { DatabaseConnection } from '@/contexts/shared/infrastructure/persistence/DatabaseConnection';
+import { DatabaseConnectionFactory } from '@/contexts/shared/infrastructure/persistence/DatabaseConnectionFactory';
+import { getBlogDatabaseConfig } from '@/contexts/shared/infrastructure/config/database';
 import { ArticleModule } from '../DependencyInjection/article.module';
 import { BookDeletedDomainEvent } from '@/contexts/backoffice/book/domain/event/BookDeletedDomainEvent';
 import { EventBusFactory } from '@/contexts/shared/infrastructure/eventBus/EventBusFactory';
@@ -8,14 +12,14 @@ import { PostgresArticleRepository } from '../PostgresArticleRepository';
 import { v4 as uuidv4 } from 'uuid';
 
 describe('ArticleModule', () => {
-  let articlesConnection: PostgresConnection;
-  let booksConnection: PostgresConnection;
   let repository: PostgresArticleRepository;
+  let connection: DatabaseConnection;
+  let blogConnection: DatabaseConnection;
 
   beforeAll(async () => {
-    articlesConnection = await TestDatabase.getArticlesConnection();
-    booksConnection = await TestDatabase.getBooksConnection();
-    repository = new PostgresArticleRepository(articlesConnection, booksConnection);
+    blogConnection = await TestDatabase.getArticlesConnection();
+    connection = await DatabaseConnectionFactory.create(getBlogDatabaseConfig());
+    repository = new PostgresArticleRepository(connection);
   });
 
   afterAll(async () => {
@@ -28,11 +32,11 @@ describe('ArticleModule', () => {
 
   it('should remove book references when handling BookDeletedDomainEvent', async () => {
     // Initialize module
-    await ArticleModule.init(articlesConnection, booksConnection);
+    await ArticleModule.init(blogConnection);
 
     // Create test book in database
     const bookId = uuidv4();
-    await booksConnection.execute(
+    await blogConnection.execute(
       `INSERT INTO books (
         id, 
         title, 
@@ -54,7 +58,7 @@ describe('ArticleModule', () => {
     );
 
     // Verify book exists
-    const bookExists = await booksConnection.execute(
+    const bookExists = await blogConnection.execute(
       'SELECT EXISTS(SELECT 1 FROM books WHERE id = $1)',
       [bookId]
     );

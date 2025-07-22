@@ -9,6 +9,12 @@ export class TestDatabase {
   static async createTestDatabase(dbName: string): Promise<void> {
     const pgConnection = await PostgresConnection.create(getTestConfig('postgres'));
     try {
+      // Terminar conexiones activas antes de eliminar la base de datos
+      await pgConnection.execute(`
+        SELECT pg_terminate_backend(pid)
+        FROM pg_stat_activity
+        WHERE datname = '${dbName}' AND pid <> pg_backend_pid();
+      `);
       await pgConnection.execute(`DROP DATABASE IF EXISTS ${dbName}`);
       await pgConnection.execute(`CREATE DATABASE ${dbName}`);
     } finally {
@@ -43,17 +49,6 @@ export class TestDatabase {
     return this.connections.auth;
   }
 
-  static async getBooksConnection(): Promise<PostgresConnection> {
-    if (!this.connections.books) {
-      await this.createTestDatabase('test_books');
-      await this.setupTestDatabase('test_books');
-      this.connections.books = await PostgresConnection.create(
-        getTestConfig('test_books')
-      );
-    }
-    return this.connections.books;
-  }
-
   static async closeAll(): Promise<void> {
     for (const conn of Object.values(this.connections)) {
       await conn.close();
@@ -64,10 +59,6 @@ export class TestDatabase {
   static async cleanArticles(): Promise<void> {
     const conn = await this.getArticlesConnection();
     await conn.execute('DELETE FROM articles');
-  }
-
-  static async cleanBooks(): Promise<void> {
-    const conn = await this.getBooksConnection();
     await conn.execute('DELETE FROM books');
   }
 
@@ -104,7 +95,6 @@ export class TestDatabase {
       // Asegurar que tenemos todas las conexiones
       await Promise.all([
         this.getArticlesConnection(),
-        this.getBooksConnection(),
         this.getAuthConnection()
       ]);
 
@@ -114,7 +104,6 @@ export class TestDatabase {
       // Limpiar tablas dentro de la transacción
       await Promise.all([
         this.cleanArticles(),
-        this.cleanBooks(),
         this.cleanAuth()
       ]);
 

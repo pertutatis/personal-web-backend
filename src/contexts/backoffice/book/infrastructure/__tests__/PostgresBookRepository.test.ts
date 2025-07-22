@@ -1,3 +1,4 @@
+import '../../../../blog/article/infrastructure/__tests__/setupTestEnv'; // Ensure the test environment is set up before running tests
 import { Book } from '../../domain/Book';
 import { BookId } from '../../domain/BookId';
 import { BookTitle } from '../../domain/BookTitle';
@@ -10,18 +11,28 @@ import { PostgresBookRepository } from '../PostgresBookRepository';
 import { TestDatabase } from '@/contexts/shared/infrastructure/__tests__/TestDatabase';
 import { BookMother } from '../../domain/__tests__/mothers/BookMother';
 import { BookIdMother } from '../../domain/__tests__/mothers/BookIdMother';
+import { DatabaseConnection } from '@/contexts/shared/infrastructure/persistence/DatabaseConnection';
+import { DatabaseConnectionFactory } from '@/contexts/shared/infrastructure/persistence/DatabaseConnectionFactory';
+import { getBlogDatabaseConfig } from '@/contexts/shared/infrastructure/config/database';
+
 
 describe('PostgresBookRepository', () => {
   let repository: PostgresBookRepository;
+  let connection: DatabaseConnection;
+  
   const validTestId = '123e4567-e89b-4456-a456-426614174000';
 
   beforeAll(async () => {
-    const connection = await TestDatabase.getBooksConnection();
+    connection = await DatabaseConnectionFactory.create(getBlogDatabaseConfig());
     repository = new PostgresBookRepository(connection);
   });
 
+  afterAll(async () => {
+    await TestDatabase.closeAll();
+  });
+
   beforeEach(async () => {
-    await TestDatabase.cleanBooks();
+    await TestDatabase.cleanAll();
   });
 
   describe('exists', () => {

@@ -1,33 +1,31 @@
+import './setupTestEnv';
 import { TestDatabase } from '@/contexts/shared/infrastructure/__tests__/TestDatabase';
 import { TestHelper } from '@/contexts/shared/infrastructure/__tests__/TestHelper';
-import { PostgresBlogArticleRepository } from '../persistence/PostgresBlogArticleRepository';
+import { DatabaseConnection } from '@/contexts/shared/infrastructure/persistence/DatabaseConnection';
+import { DatabaseConnectionFactory } from '@/contexts/shared/infrastructure/persistence/DatabaseConnectionFactory';
+import { getBlogDatabaseConfig } from '@/contexts/shared/infrastructure/config/database';
+import { PostgresBlogArticleRepository } from '../persistence/BlogArticleRepository';
 import { BlogArticle } from '../../domain/BlogArticle';
 import { BlogBook } from '../../domain/BlogBook';
 import { v4 as uuid } from 'uuid';
 
 describe('PostgresBlogArticleRepository', () => {
+  let connection: DatabaseConnection;
   let repository: PostgresBlogArticleRepository;
-  let articlesConnection: any;
-  let booksConnection: any;
+  let articlesConnection: DatabaseConnection;
   
   beforeAll(async () => {
-    // Get connections for each database
     articlesConnection = await TestDatabase.getArticlesConnection();
-    booksConnection = await TestDatabase.getBooksConnection();
-
-    // Initialize repository
-    repository = new PostgresBlogArticleRepository(articlesConnection, booksConnection);
+    connection = await DatabaseConnectionFactory.create(getBlogDatabaseConfig());
+    repository = new PostgresBlogArticleRepository(connection);
   });
 
   beforeEach(async () => {
-    // Clean tables before each test
-    await Promise.all([
-      articlesConnection.execute('TRUNCATE TABLE articles CASCADE'),
-      booksConnection.execute('TRUNCATE TABLE books CASCADE')
-    ]);
-  });
+    await TestDatabase.cleanAll();
+  })
 
   afterAll(async () => {
+    await connection.close();
     await TestDatabase.closeAll();
   });
 
@@ -43,7 +41,7 @@ describe('PostgresBlogArticleRepository', () => {
       new Date('2024-01-02')
     );
 
-    await booksConnection.execute(
+    await articlesConnection.execute(
       `INSERT INTO books (id, title, author, isbn, description, purchase_link, created_at, updated_at)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING *`,

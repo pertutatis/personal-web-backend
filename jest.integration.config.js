@@ -30,10 +30,7 @@ const customJestConfig = {
   coverageReporters: ['text', 'lcov'],
   // Run tests sequentially
   maxWorkers: 1,
-  // Retry failed tests
-  retryTimes: 2,
-  // Setup global test timeout
-  setupTimeout: 60000,
+  // ...existing code...
   // Global teardown
   globalTeardown: '<rootDir>/scripts/test-teardown.js'
 };

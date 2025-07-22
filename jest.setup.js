@@ -10,9 +10,9 @@ const defaultEnv = {
   DB_PORT: '5432',
   DB_USER: 'postgres',
   DB_PASSWORD: 'postgres',
-  ARTICLES_DB_NAME: 'test_articles',
-  BOOKS_DB_NAME: 'test_books',
-  AUTH_DB_NAME: 'auth_test'
+  BLOG_DB_NAME: 'test_articles',
+  AUTH_DB_NAME: 'auth_test',
+  NODE_ENV: { value: 'test', writable: true },
 };
 
 // Load environment variables from .env.test if it exists
