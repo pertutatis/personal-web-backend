@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test'
 import { AuthAPI } from '../apis/auth-api'
 import { TestHelper } from '@/contexts/shared/infrastructure/__tests__/TestHelper'
 import { PostgresMigrations } from '@/contexts/shared/infrastructure/PostgresMigrations'
+import { Logger } from '@/contexts/shared/infrastructure/Logger'
 
 test.describe('Auth API', () => {
   test.beforeEach(async () => {
@@ -23,13 +24,13 @@ test.describe('Auth API', () => {
       const password = 'Valid1Password!'
 
       const response = await authApi.register(email, password)
-      console.log('Register response:', response)
+      Logger.info('Register response:', response)
 
       expect(response.status).toBe(201)
       expect(response.body).toHaveProperty('id')
       expect(typeof response.body.id).toBe('string')
     } catch (error) {
-      console.error('Error in register test:', error)
+      Logger.error('Error in register test:', error)
       throw error
     }
   })
@@ -42,17 +43,17 @@ test.describe('Auth API', () => {
 
       // Register first
       const registerResponse = await authApi.register(email, password)
-      console.log('Register response for login test:', registerResponse)
+      Logger.info('Register response for login test:', registerResponse)
 
       // Then login
       const loginResponse = await authApi.login(email, password)
-      console.log('Login response:', loginResponse)
+      Logger.info('Login response:', loginResponse)
 
       expect(loginResponse.status).toBe(200)
       expect(loginResponse.body).toHaveProperty('token')
       expect(typeof loginResponse.body.token).toBe('string')
     } catch (error) {
-      console.error('Error in login test:', error)
+      Logger.error('Error in login test:', error)
       throw error
     }
   })
@@ -65,18 +66,18 @@ test.describe('Auth API', () => {
 
       // First registration
       const firstResponse = await authApi.register(email, password)
-      console.log('First register response:', firstResponse)
+      Logger.info('First register response:', firstResponse)
 
       // Second registration with same email
       const secondResponse = await authApi.register(email, password)
-      console.log('Second register response:', secondResponse)
+      Logger.info('Second register response:', secondResponse)
 
       expect(secondResponse.status).toBe(409)
       expect(secondResponse.body).toEqual({
         error: 'User already exists'
       })
     } catch (error) {
-      console.error('Error in duplicate email test:', error)
+      Logger.error('Error in duplicate email test:', error)
       throw error
     }
   })
@@ -88,14 +89,14 @@ test.describe('Auth API', () => {
       const password = 'WrongPassword1!'
 
       const response = await authApi.login(email, password)
-      console.log('Invalid credentials response:', response)
+      Logger.info('Invalid credentials response:', response)
 
       expect(response.status).toBe(401)
       expect(response.body).toEqual({
         error: 'Invalid credentials'
       })
     } catch (error) {
-      console.error('Error in invalid credentials test:', error)
+      Logger.error('Error in invalid credentials test:', error)
       throw error
     }
   })

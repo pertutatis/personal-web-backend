@@ -11,6 +11,7 @@ import { getArticlesConfig } from '@/contexts/shared/infrastructure/config/Datab
 import { BookIdDuplicated } from '@/contexts/backoffice/book/domain/BookIdDuplicated';
 import { BookIdInvalid } from '@/contexts/backoffice/book/domain/BookIdInvalid';
 import { BookIsbnDuplicated } from '@/contexts/backoffice/book/domain/BookIsbnDuplicated';
+import { Logger } from '@/contexts/shared/infrastructure/Logger';
 
 // Crear conexión como promesa para asegurar una única instancia
 const booksConnectionPromise = PostgresConnection.create(getArticlesConfig());
@@ -126,7 +127,7 @@ export async function POST(request: NextRequest) {
         purchaseLink: data.purchaseLink
       };
     } catch (e) {
-      console.log(e);
+      Logger.info(e);
       
       if (e instanceof ApiValidationError) {
         throw e;

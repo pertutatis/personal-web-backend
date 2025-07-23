@@ -1,51 +1,51 @@
-import { createClient, SupabaseClient, PostgrestResponse } from '@supabase/supabase-js';
-import { QueryResult, QueryResultRow } from 'pg';
-import { DatabaseConnection } from './DatabaseConnection';
-import { Logger } from '../Logger';
+import { createClient, SupabaseClient, PostgrestResponse } from '@supabase/supabase-js'
+import { QueryResult, QueryResultRow } from 'pg'
+import { DatabaseConnection } from './DatabaseConnection'
+import { Logger } from '../Logger'
 
 export class SupabaseConnection implements DatabaseConnection {
-  private client: SupabaseClient;
-  private database: string;
+  private client: SupabaseClient
+  private database: string
 
   private constructor(client: SupabaseClient, database: string) {
-    this.client = client;
-    this.database = database;
+    this.client = client
+    this.database = database
   }
 
   static async create(config: {
-    url: string;
-    key: string;
-    database?: string;
+    url: string
+    key: string
+    database?: string
   }): Promise<SupabaseConnection> {
     try {
-      const client = createClient(config.url, config.key);
+      const client = createClient(config.url, config.key)
       
       // Verificar conexión
       const { data, error } = await client
         .from('articles')
         .select('id')
-        .limit(1);
+        .limit(1)
 
       if (error) {
-        throw new Error(`Failed to connect to Supabase: ${error.message}`);
+        throw new Error(`Failed to connect to Supabase: ${error.message}`)
       }
 
       Logger.info('Supabase connection established', {
         url: config.url,
         database: config.database || 'default'
-      });
+      })
 
       return new SupabaseConnection(
         client,
         config.database || 'supabase'
-      );
+      )
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : String(error);
+      const errorMsg = error instanceof Error ? error.message : String(error)
       Logger.error('Error creating Supabase connection:', {
         error: errorMsg,
         url: config.url
-      });
-      throw new Error(`Failed to connect to Supabase: ${errorMsg}`);
+      })
+      throw new Error(`Failed to connect to Supabase: ${errorMsg}`)
     }
   }
 
@@ -55,30 +55,30 @@ export class SupabaseConnection implements DatabaseConnection {
   ): Promise<QueryResult<T>> {
     try {
       // Parse query to determine operation and table
-      const operation = this.parseOperation(query);
-      const tableName = this.parseTableName(query);
+      const operation = this.parseOperation(query)
+      const tableName = this.parseTableName(query)
 
-      let result: PostgrestResponse<T>;
+      let result: PostgrestResponse<T>
 
       switch (operation) {
         case 'SELECT':
-          result = await this.handleSelect(tableName, query, values);
-          break;
+          result = await this.handleSelect(tableName, query, values)
+          break
         case 'INSERT':
-          result = await this.handleInsert(tableName, query, values);
-          break;
+          result = await this.handleInsert(tableName, query, values)
+          break
         case 'UPDATE':
-          result = await this.handleUpdate(tableName, query, values);
-          break;
+          result = await this.handleUpdate(tableName, query, values)
+          break
         case 'DELETE':
-          result = await this.handleDelete(tableName, query, values);
-          break;
+          result = await this.handleDelete(tableName, query, values)
+          break
         default:
-          throw new Error(`Unsupported operation: ${operation}`);
+          throw new Error(`Unsupported operation: ${operation}`)
       }
 
       if (result.error) {
-        throw result.error;
+        throw result.error
       }
 
       // Adaptar respuesta al formato QueryResult
@@ -88,13 +88,13 @@ export class SupabaseConnection implements DatabaseConnection {
         command: operation,
         oid: 0,
         fields: []
-      };
+      }
     } catch (error) {
       Logger.error('Error executing Supabase query:', {
         error: error instanceof Error ? error.message : String(error),
         query: query.trim().slice(0, 100) + '...'
-      });
-      throw error;
+      })
+      throw error
     }
   }
 
@@ -102,22 +102,22 @@ export class SupabaseConnection implements DatabaseConnection {
     // Supabase client no requiere cierre explícito
     Logger.info('Supabase connection closed', {
       database: this.database
-    });
+    })
   }
 
   getDatabase(): string {
-    return this.database;
+    return this.database
   }
 
   private parseOperation(query: string): string {
-    const match = query.trim().match(/^(\w+)/i);
-    return match ? match[1].toUpperCase() : '';
+    const match = query.trim().match(/^(\w+)/i)
+    return match ? match[1].toUpperCase() : ''
   }
 
   private parseTableName(query: string): string {
     // Expresión regular simplificada para extraer nombre de tabla
-    const match = query.match(/(?:FROM|INTO|UPDATE)\s+([^\s,;]+)/i);
-    return match ? match[1].replace(/["\s]/g, '') : '';
+    const match = query.match(/(?:FROM|INTO|UPDATE)\s+([^\s,]+)/i)
+    return match ? match[1].replace(/["\s]/g, '') : ''
   }
 
   private async handleSelect<T>(
@@ -131,7 +131,7 @@ export class SupabaseConnection implements DatabaseConnection {
       .from(tableName)
       .select('*')
       // TODO: Agregar condiciones, orden, etc. basado en el query
-      ;
+      
   }
 
   private async handleInsert<T>(
@@ -140,11 +140,11 @@ export class SupabaseConnection implements DatabaseConnection {
     values?: any[]
   ): Promise<PostgrestResponse<T>> {
     // TODO: Extraer datos a insertar del query y values
-    const data = {}; // Convertir values a objeto
+    const data = {} // Convertir values a objeto
     return await this.client
       .from(tableName)
       .insert(data)
-      .select();
+      .select()
   }
 
   private async handleUpdate<T>(
@@ -153,12 +153,12 @@ export class SupabaseConnection implements DatabaseConnection {
     values?: any[]
   ): Promise<PostgrestResponse<T>> {
     // TODO: Extraer datos y condiciones del query y values
-    const data = {}; // Convertir values a objeto
+    const data = {} // Convertir values a objeto
     return await this.client
       .from(tableName)
       .update(data)
       // TODO: Agregar condiciones basadas en el query
-      .select();
+      .select()
   }
 
   private async handleDelete<T>(
@@ -171,6 +171,6 @@ export class SupabaseConnection implements DatabaseConnection {
       .from(tableName)
       .delete()
       // TODO: Agregar condiciones basadas en el query
-      .select();
+      .select()
   }
 }

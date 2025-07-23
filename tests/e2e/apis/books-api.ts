@@ -2,6 +2,7 @@ import { APIRequestContext } from '@playwright/test';
 import { BookResponse, PaginatedResponse } from '../fixtures/api-types';
 import { TestBook } from '../fixtures/test-data';
 import { AuthHelper } from '../helpers/auth.helper';
+import { Logger } from '@/contexts/shared/infrastructure/Logger';
 
 export class BooksApi {
   constructor(private request: APIRequestContext) {}
@@ -17,7 +18,7 @@ export class BooksApi {
 
   async createBook(book: TestBook) {
     try {
-      console.log('Sending create book request:', book);
+      Logger.info('Sending create book request:', book);
       const response = await this.request.post('/api/backoffice/books', {
         headers: await this.getAuthHeaders(),
         data: book,
@@ -26,7 +27,7 @@ export class BooksApi {
 
       if (!response.ok()) {
         const errorText = await response.text();
-        console.error('Create book failed:', {
+        Logger.error('Create book failed:', {
           status: response.status(),
           statusText: response.statusText(),
           body: errorText
@@ -35,17 +36,18 @@ export class BooksApi {
 
       return response;
     } catch (error) {
-      console.error('Error in createBook:', error);
+      Logger.error('Error in createBook:', error);
       throw error;
     }
   }
 
   private formatId(id: string | number | object): string {
-    console.log('Formatting ID:', id, 'Type:', typeof id);
+    Logger.info('Formatting ID:', id);
+    Logger.info('Type:', typeof id);
     if (typeof id === 'string') return id;
     if (typeof id === 'number') return id.toString();
     if (typeof id === 'object' && id !== null) {
-      console.log('ID is object:', id);
+      Logger.info('ID is object:', id);
       return String(id);
     }
     throw new Error(`Invalid ID format: ${id}`);

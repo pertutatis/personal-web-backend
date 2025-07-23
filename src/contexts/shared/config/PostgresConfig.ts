@@ -16,13 +16,6 @@ export class PostgresConfig {
     };
   }
 
-  // static getBooksDbConfig() {
-  //   return {
-  //     ...this.getDefaultConfig(),
-  //     database: 'test_books'
-  //   };
-  // }
-
   static getAuthDbConfig() {
     return {
       ...this.getDefaultConfig(),

@@ -6,6 +6,7 @@ import { TestArticle, TestBook, CreateArticleRequest } from './test-data'
 import { ArticleResponse, BookResponse, ErrorResponse, PaginatedResponse } from './api-types'
 import { v4 as uuidv4 } from 'uuid'
 import { config } from '../setup/config'
+import { Logger } from '@/contexts/shared/infrastructure/Logger'
 
 export class ApiHelpers {
   private articlesPool: Pool
@@ -27,14 +28,14 @@ export class ApiHelpers {
 
   private async cleanDatabasesDirectly() {
     try {
-      console.log('Cleaning database directly with SQL...')
+      Logger.info('Cleaning database directly with SQL...')
       await Promise.all([
         this.articlesPool.query('TRUNCATE books CASCADE'),
         this.articlesPool.query('TRUNCATE articles CASCADE')
       ])
-      console.log('Database cleaned successfully')
+      Logger.info('Database cleaned successfully')
     } catch (error) {
-      console.error('Error cleaning database:', error)
+      Logger.error('Error cleaning database:', error)
       throw error
     }
   }
@@ -56,7 +57,7 @@ export class ApiHelpers {
       expect(getResponse.ok()).toBe(true)
       return await getResponse.json()
     } catch (error) {
-      console.error('Error in createTestBook:', error)
+      Logger.error('Error in createTestBook:', error)
       throw error
     }
   }
@@ -88,7 +89,7 @@ export class ApiHelpers {
   }
 
   async cleanupTestData() {
-    console.log('Starting test data cleanup...')
+    Logger.info('Starting test data cleanup...')
     try {
       await this.cleanDatabasesDirectly()
 
@@ -99,57 +100,57 @@ export class ApiHelpers {
       if (articlesResponse.ok()) {
         const response = await articlesResponse.json();
         const articles = response?.data || [];
-        console.log(`Found ${articles.length} articles to delete`)
+        Logger.info(`Found ${articles.length} articles to delete`)
         for (const article of articles) {
           try {
             const id = typeof article.id === 'object' && article.id !== null && 'value' in article.id
               ? (article.id as any).value
               : article.id
             if (!id || typeof id !== 'string') {
-              console.error('Invalid article ID format:', article)
+              Logger.error('Invalid article ID format:', article)
               continue
             }
-            console.log(`Attempting to delete article ${id}`)
+            Logger.info(`Attempting to delete article ${id}`)
             const deleteResponse = await this.articlesApi.deleteArticle(id)
             if (!deleteResponse.ok()) {
-              console.error(`Failed to delete article ${id}:`, await deleteResponse.text())
+              Logger.error(`Failed to delete article ${id}:`, await deleteResponse.text())
             }
           } catch (error) {
-            console.error('Error deleting article:', error)
+            Logger.error('Error deleting article:', error)
           }
         }
       } else {
-        console.error('Failed to list articles:', await articlesResponse.text())
+        Logger.error('Failed to list articles:', await articlesResponse.text())
       }
 
       const booksResponse = await this.booksApi.listBooks({ limit: 100 })
       if (booksResponse.ok()) {
         const response = await booksResponse.json();
         const books = response?.data || [];
-        console.log(`Found ${books.length} books to delete`)
+        Logger.info(`Found ${books.length} books to delete`)
         for (const book of books) {
           try {
             const deleteResponse = await this.booksApi.deleteBook(book.id)
             if (!deleteResponse.ok()) {
-              console.error(`Failed to delete book ${book.id}:`, await deleteResponse.text())
+              Logger.error(`Failed to delete book ${book.id}:`, await deleteResponse.text())
             }
           } catch (error) {
-            console.error(`Error deleting book ${book.id}:`, error)
+            Logger.error(`Error deleting book ${book.id}:`, error)
           }
         }
       } else {
-        console.error('Failed to list books:', await booksResponse.text())
+        Logger.error('Failed to list books:', await booksResponse.text())
       }
-      console.log('Test data cleanup completed')
+      Logger.info('Test data cleanup completed')
     } catch (error) {
-      console.error('Critical error during cleanup:', error)
+      Logger.error('Critical error during cleanup:', error)
       throw error
     }
   }
 
   private async cleanAuthDatabaseDirectly() {
     try {
-      console.log('Cleaning users table in auth_test...')
+      Logger.info('Cleaning users table in auth_test...')
       const { Pool } = await import('pg')
       const authPool = new Pool({
         host: process.env.DB_HOST || 'localhost',
@@ -160,19 +161,19 @@ export class ApiHelpers {
       })
       try {
         await authPool.query('TRUNCATE users CASCADE')
-        console.log('Users table cleaned up')
+        Logger.info('Users table cleaned up')
       } catch (error: any) {
         // Ignorar error si la tabla no existe
         if (error.code === '42P01') {
-          console.warn('Users table does not exist yet, skipping cleanup')
+          Logger.warn('Users table does not exist yet, skipping cleanup')
         } else {
-          console.error('Error cleaning users table in auth_test:', error)
+          Logger.error('Error cleaning users table in auth_test:', error)
           throw error
         }
       }
       await authPool.end()
     } catch (error) {
-      console.error('Critical error during auth DB cleanup:', error)
+      Logger.error('Critical error during auth DB cleanup:', error)
       throw error
     }
   }
@@ -230,9 +231,9 @@ export class ApiHelpers {
   async dispose() {
     try {
       await this.articlesPool.end()
-      console.log('Database pools closed successfully')
+      Logger.info('Database pools closed successfully')
     } catch (error) {
-      console.error('Error closing database pools:', error)
+      Logger.error('Error closing database pools:', error)
     }
   }
 }

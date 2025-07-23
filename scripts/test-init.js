@@ -1,6 +1,7 @@
 const { execSync } = require('child_process');
 const { existsSync } = require('fs');
 const path = require('path');
+const { Logger } = require('./src/contexts/shared/infrastructure/Logger');
 
 // Colors for console output
 const colors = {
@@ -12,7 +13,7 @@ const colors = {
 };
 
 function log(message, color = colors.reset) {
-  console.log(color + message + colors.reset);
+  Logger.info(color + message + colors.reset);
 }
 
 function executeCommand(command, errorMessage) {

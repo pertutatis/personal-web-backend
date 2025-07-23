@@ -2,12 +2,8 @@ import { PostgresAuthRepository } from '../PostgresAuthRepository'
 import { User } from '../../domain/User'
 import { UserId } from '../../domain/UserId'
 import { EmailVO } from '../../domain/EmailVO'
-// import { PostgresConnection } from '../../../../shared/infrastructure/persistence/PostgresConnection'
 import { TestDatabase } from '../../../../shared/infrastructure/__tests__/TestDatabase'
-import { DatabaseConnection } from '@/contexts/shared/infrastructure/persistence/DatabaseConnection';
-import { DatabaseConnectionFactory } from '@/contexts/shared/infrastructure/persistence/DatabaseConnectionFactory';
-import { getAuthDatabaseConfig } from '@/contexts/shared/infrastructure/config/database';
-
+import { DatabaseConnection } from '@/contexts/shared/infrastructure/persistence/DatabaseConnection'
 
 describe('PostgresAuthRepository', () => {
   let repository: PostgresAuthRepository

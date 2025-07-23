@@ -1,11 +1,13 @@
+import { Logger } from '@/contexts/shared/infrastructure/Logger'
 import { APIRequestContext } from '@playwright/test'
+
 
 export class AuthAPI {
   constructor(private request: APIRequestContext) {}
 
   async register(email: string, password: string) {
     try {
-      console.log('[AuthAPI] Sending register request:', { email, password })
+      Logger.info('[AuthAPI] Sending register request:', { email, password })
       
       const response = await this.request.post('/api/backoffice/auth/register', {
         data: {
@@ -18,7 +20,7 @@ export class AuthAPI {
       })
 
       const responseBody = await response.text()
-      console.log('[AuthAPI] Register response:', {
+      Logger.info('[AuthAPI] Register response:', {
         status: response.status(),
         headers: response.headers(),
         body: responseBody
@@ -29,7 +31,7 @@ export class AuthAPI {
         body: responseBody ? JSON.parse(responseBody) : null
       }
     } catch (error) {
-      console.error('[AuthAPI] Error in register request:', error)
+      Logger.error('[AuthAPI] Error in register request:', error)
       throw error
     }
   }
@@ -52,7 +54,7 @@ export class AuthAPI {
 
   async login(email: string, password: string) {
     try {
-      console.log('[AuthAPI] Sending login request:', { email, password })
+      Logger.info('[AuthAPI] Sending login request:', { email, password })
       
       const response = await this.request.post('/api/backoffice/auth/login', {
         data: { email, password },
@@ -63,7 +65,7 @@ export class AuthAPI {
       const parsedBody = responseBody ? JSON.parse(responseBody) : null
       const transformedBody = this.transformErrorResponse(parsedBody)
 
-      console.log('[AuthAPI] Login response:', {
+      Logger.info('[AuthAPI] Login response:', {
         status: response.status(),
         headers: response.headers(),
         body: transformedBody
@@ -74,7 +76,7 @@ export class AuthAPI {
         body: transformedBody
       }
     } catch (error) {
-      console.error('[AuthAPI] Error in login request:', error)
+      Logger.error('[AuthAPI] Error in login request:', error)
       throw error
     }
   }
