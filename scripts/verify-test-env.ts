@@ -1,3 +1,4 @@
+import { Logger } from '@/contexts/shared/infrastructure/Logger'
 import { Pool } from 'pg'
 
 async function verifyDatabase(name: string, tables: string[]) {
@@ -11,7 +12,7 @@ async function verifyDatabase(name: string, tables: string[]) {
 
   try {
     await pool.query('SELECT NOW()')
-    console.log(`✅ Database ${name} created`)
+    Logger.info(`✅ Database ${name} created`)
 
     // Verificar tablas
     for (const table of tables) {
@@ -24,9 +25,9 @@ async function verifyDatabase(name: string, tables: string[]) {
       `, [table])
 
       if (result.rows[0].exists) {
-        console.log(`✅ Table ${table} exists in ${name}`)
+        Logger.info(`✅ Table ${table} exists in ${name}`)
       } else {
-        console.error(`❌ Table ${table} not found in ${name}`)
+        Logger.error(`❌ Table ${table} not found in ${name}`)
         process.exit(1)
       }
     }
@@ -38,10 +39,10 @@ async function verifyDatabase(name: string, tables: string[]) {
       WHERE conrelid = (SELECT oid FROM pg_class WHERE relname LIKE ANY($1))
     `, [tables])
 
-    console.log(`Constraints found in ${name}:`, constraintsResult.rows.map(r => r.conname).join(', '))
+    Logger.info(`Constraints found in ${name}:`, constraintsResult.rows.map(r => r.conname).join(', '))
 
   } catch (error) {
-    console.error(`❌ Error verifying ${name}:`, error)
+    Logger.error(`❌ Error verifying ${name}:`, error)
     process.exit(1)
   } finally {
     await pool.end()
@@ -49,25 +50,25 @@ async function verifyDatabase(name: string, tables: string[]) {
 }
 
 async function verifyTestEnvironment() {
-  console.log('Verifying test databases...\n')
+  Logger.info('Verifying test databases...\n')
 
   // Verificar test_articles
-  console.log('Verifying test_articles database...')
+  Logger.info('Verifying test_articles database...')
   await verifyDatabase('test_articles', ['articles'])
 
   // Verificar test_books
-  console.log('\nVerifying test_books database...')
+  Logger.info('Verifying test_books database...')
   await verifyDatabase('test_books', ['books'])
 
   // Verificar auth_test
-  console.log('\nVerifying auth_test database...')
+  Logger.info('Verifying auth_test database...')
   await verifyDatabase('auth_test', ['users'])
 
-  console.log('\n✅ All database connections verified successfully')
+  Logger.info('\n✅ All database connections verified successfully')
   process.exit(0)
 }
 
 verifyTestEnvironment().catch(error => {
-  console.error('Failed to verify test environment:', error)
+  Logger.error('Failed to verify test environment:', error)
   process.exit(1)
 })

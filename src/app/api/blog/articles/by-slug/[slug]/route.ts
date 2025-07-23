@@ -12,10 +12,6 @@ export async function GET(
   let connection: DatabaseConnection | undefined;
 
   try {
-    Logger.info('Processing GET /api/blog/articles/by-slug request', {
-      slug: params.slug
-    });
-
     connection = await DatabaseConnectionFactory.create(getBlogDatabaseConfig());
     const repository = new PostgresBlogArticleRepository(connection);
     const article = await repository.findBySlug(params.slug);

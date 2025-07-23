@@ -1,6 +1,7 @@
 import { Pool } from 'pg'
 import { readFileSync } from 'fs'
 import { join } from 'path'
+import { Logger } from '@/contexts/shared/infrastructure/Logger'
 
 type StringValue = { toString(): string }
 
@@ -87,26 +88,26 @@ export class PostgresTestSetup {
       await booksDbPool.query(booksSchema)
       await booksDbPool.end()
 
-      console.log('✅ Test databases created and initialized successfully')
+      Logger.info('✅ Test databases created and initialized successfully')
       process.exit(0)
     } catch (error) {
-      console.error('❌ Error setting up test databases:', error)
+      Logger.error('❌ Error setting up test databases:', error)
       process.exit(1)
     }
   }
 
   static async cleanupDatabase(): Promise<void> {
     try {
-      console.log('Starting test data cleanup...')
-      console.log('Cleaning database directly with SQL...')
+      Logger.info('Starting test data cleanup...')
+      Logger.info('Cleaning database directly with SQL...')
       await Promise.all([
         this.cleanupArticles(),
         this.cleanupBooks()
       ])
-      console.log('Database cleaned successfully')
-      console.log('Test data cleanup completed')
+      Logger.info('Database cleaned successfully')
+      Logger.info('Test data cleanup completed')
     } catch (error) {
-      console.error('Error cleaning up test data:', error)
+      Logger.error('Error cleaning up test data:', error)
       throw error
     }
   }
@@ -119,7 +120,7 @@ export class PostgresTestSetup {
     try {
       await articlesDbPool.query('TRUNCATE articles CASCADE')
     } catch (error) {
-      console.error('Error cleaning articles database:', error)
+      Logger.error('Error cleaning articles database:', error)
     } finally {
       await articlesDbPool.end()
     }
@@ -133,7 +134,7 @@ export class PostgresTestSetup {
     try {
       await booksDbPool.query('TRUNCATE books CASCADE')
     } catch (error) {
-      console.error('Error cleaning books database:', error)
+      Logger.error('Error cleaning books database:', error)
     } finally {
       await booksDbPool.end()
     }
@@ -144,7 +145,7 @@ export class PostgresTestSetup {
       await pool.query(query)
     } catch (error) {
       if (errorMessage) {
-        console.warn(`Warning: ${errorMessage}`, error instanceof Error ? error.message : String(error))
+        Logger.warn(`Warning: ${errorMessage}`, error instanceof Error ? error.message : String(error))
       } else {
         throw error
       }
@@ -153,6 +154,6 @@ export class PostgresTestSetup {
 }
 
 PostgresTestSetup.setupTestDatabases().catch(error => {
-  console.error('Unexpected error:', error)
+  Logger.error('Unexpected error:', error)
   process.exit(1)
 })

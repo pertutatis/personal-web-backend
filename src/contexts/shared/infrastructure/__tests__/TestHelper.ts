@@ -32,7 +32,6 @@ export class TestHelper {
       // 3. Crear nuevas conexiones
       await Promise.all([
         TestDatabase.getArticlesConnection(),
-        // TestDatabase.getBooksConnection(),
         TestDatabase.getAuthConnection()
       ])
 

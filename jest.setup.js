@@ -1,4 +1,5 @@
 // Import dependencies
+const { Logger } = require('./src/contexts/shared/infrastructure/Logger');
 const { TestHelper } = require('./src/contexts/shared/infrastructure/__tests__/TestHelper');
 const { PostgresMigrations } = require('./src/contexts/shared/infrastructure/PostgresMigrations');
 const fs = require('fs');
@@ -42,9 +43,9 @@ beforeAll(async () => {
 
     // Wait for databases to be ready
     await TestHelper.waitForDatabases();
-    console.log('✓ Database connections established and schemas created');
+    Logger.info('✓ Database connections established and schemas created');
   } catch (error) {
-    console.error('Failed to setup databases:', error);
+    Logger.error('Failed to setup databases:', error);
     throw error;
   }
 });
@@ -54,7 +55,7 @@ beforeEach(async () => {
   try {
     await TestHelper.cleanAllDatabases();
   } catch (error) {
-    console.error('Failed to clean databases:', error);
+    Logger.error('Failed to clean databases:', error);
     throw error;
   }
 });
@@ -63,16 +64,16 @@ beforeEach(async () => {
 afterAll(async () => {
   try {
     await TestHelper.closeConnections();
-    // console.log('✓ Database connections closed');
+    Logger.info('✓ Database connections closed');
   } catch (error) {
-    console.error('Failed to close database connections:', error);
+    Logger.error('Failed to close database connections:', error);
     throw error;
   }
 });
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (error) => {
-  console.error('Unhandled promise rejection:', error);
+  Logger.error('Unhandled promise rejection:', error);
   process.exit(1);
 });
 

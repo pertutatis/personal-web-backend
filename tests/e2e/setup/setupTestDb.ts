@@ -2,6 +2,7 @@ import { Pool } from 'pg'
 import { readFileSync } from 'fs'
 import { join } from 'path'
 import { config } from './config'
+import { Logger } from '../../../src/contexts/shared/infrastructure/Logger'
 
 export class PostgresTestSetup {
   static async setupTestDatabases(): Promise<void> {
@@ -15,17 +16,17 @@ export class PostgresTestSetup {
       }
 
       // Setup Auth Database
-      console.log('🔄 Terminando conexiones previas a la base de datos auth_test...')
+      Logger.info('🔄 Terminando conexiones previas a la base de datos auth_test...')
       const authPool = new Pool(baseConfig)
       await this.terminateConnections(authPool, config.databases.auth)
-      console.log('🔄 Eliminando base de datos auth_test si existe...')
+      Logger.info('🔄 Eliminando base de datos auth_test si existe...')
       await this.runQuery(authPool, `DROP DATABASE IF EXISTS ${config.databases.auth}`)
-      console.log('🔄 Creando base de datos auth_test...')
+      Logger.info('🔄 Creando base de datos auth_test...')
       await this.runQuery(authPool, `CREATE DATABASE ${config.databases.auth}`)
       await authPool.end()
 
       // Configurar esquema de auth
-      console.log('🔄 Configurando esquema de la base de datos auth_test...')
+      Logger.info('🔄 Configurando esquema de la base de datos auth_test...')
       const authDbPool = new Pool({
         ...baseConfig,
         database: config.databases.auth
@@ -43,15 +44,15 @@ export class PostgresTestSetup {
       `
       await authDbPool.query(authSchema)
       await authDbPool.end()
-      console.log('✅ auth_test creada y configurada correctamente.')
+      Logger.info('✅ auth_test creada y configurada correctamente.')
 
   // Setup Articles Database (incluye tabla books)
-  console.log('🔄 Terminando conexiones previas a la base de datos test_articles...')
+  Logger.info('🔄 Terminando conexiones previas a la base de datos test_articles...')
   const articlesPool = new Pool(baseConfig)
   await this.terminateConnections(articlesPool, config.databases.articles)
-  console.log('🔄 Eliminando base de datos test_articles si existe...')
+  Logger.info('🔄 Eliminando base de datos test_articles si existe...')
   await this.runQuery(articlesPool, `DROP DATABASE IF EXISTS ${config.databases.articles}`)
-  console.log('🔄 Creando base de datos test_articles...')
+  Logger.info('🔄 Creando base de datos test_articles...')
   await this.runQuery(articlesPool, `CREATE DATABASE ${config.databases.articles}`)
   await articlesPool.end()
 
@@ -60,7 +61,7 @@ export class PostgresTestSetup {
         database: config.databases.articles
       })
 
-      console.log('🔄 Configurando esquema de la base de datos test_articles...')
+      Logger.info('🔄 Configurando esquema de la base de datos test_articles...')
       // Crear tabla articles
       const articlesSchema = readFileSync(
         join(process.cwd(), 'databases/articles.sql'),
@@ -79,7 +80,7 @@ export class PostgresTestSetup {
         'Related links columns might already exist'
       )
 
-      console.log('🔄 Configurando tabla books en test_articles...')
+      Logger.info('🔄 Configurando tabla books en test_articles...')
       // Crear tabla books en la misma base de datos
       const booksSchema = `
         CREATE TABLE IF NOT EXISTS books (
@@ -126,11 +127,11 @@ export class PostgresTestSetup {
       `
       await articlesDbPool.query(booksSchema)
       await articlesDbPool.end()
-      console.log('✅ test_articles creada y configurada correctamente.')
+      Logger.info('✅ test_articles creada y configurada correctamente.')
 
-  console.log('\u2705 Test databases created and initialized successfully')
+  Logger.info('\u2705 Test databases created and initialized successfully')
     } catch (error) {
-      console.error('❌ Error setting up test databases:', error)
+      Logger.error('❌ Error setting up test databases:', error)
       throw error
     }
   }
@@ -146,7 +147,7 @@ export class PostgresTestSetup {
       await pool.query(query);
     } catch (error) {
       // Ignore errors here as the database might not exist yet
-      console.log(`Note: Could not terminate connections for ${database} - might not exist yet`);
+      Logger.info(`Note: Could not terminate connections for ${database} - might not exist yet`);
     }
   }
 
@@ -155,7 +156,7 @@ export class PostgresTestSetup {
       await pool.query(query)
     } catch (error) {
       if (errorMessage) {
-        console.warn(`Warning: ${errorMessage}`, error instanceof Error ? error.message : String(error))
+        Logger.warn(`Warning: ${errorMessage}`, error instanceof Error ? error.message : String(error))
       } else {
         throw error
       }

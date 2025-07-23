@@ -10,8 +10,6 @@ export async function GET() {
   let connection: DatabaseConnection | undefined;
   
   try {
-    Logger.info('Processing GET /api/blog/articles request');
-    
     connection = await DatabaseConnectionFactory.create(getBlogDatabaseConfig());
     const repository = new PostgresBlogArticleRepository(connection);
     const articles = await repository.findAll();

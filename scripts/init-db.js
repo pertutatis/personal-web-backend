@@ -1,6 +1,8 @@
 const { Client } = require('pg')
 const fs = require('fs')
 const path = require('path')
+const { Logger } = require('./src/contexts/shared/infrastructure/Logger');
+
 
 async function initializeDatabase() {
   const client = new Client({
@@ -13,15 +15,15 @@ async function initializeDatabase() {
 
   try {
     await client.connect()
-    console.log('Connected to database')
+    Logger.info('Connected to database')
 
     const sqlFile = path.join(__dirname, '..', 'databases', 'init.sql')
     const sql = fs.readFileSync(sqlFile, 'utf8')
 
     await client.query(sql)
-    console.log('Successfully initialized database schema')
+    Logger.info('Successfully initialized database schema')
   } catch (error) {
-    console.error('Error initializing database:', error)
+    Logger.error('Error initializing database:', error)
     throw error
   } finally {
     await client.end()
@@ -29,6 +31,6 @@ async function initializeDatabase() {
 }
 
 initializeDatabase().catch(error => {
-  console.error('Database initialization failed:', error)
+  Logger.error('Database initialization failed:', error)
   process.exit(1)
 })

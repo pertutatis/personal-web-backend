@@ -14,9 +14,6 @@ export const getArticlesConfig = (): DatabaseConfig => ({
   password: process.env.ARTICLES_DB_PASSWORD || 'postgres'
 });
 
-// Todas las operaciones de libros deben usar la misma configuración que artículos
-// Elimina la función getBooksConfig para evitar confusión y duplicidad
-
 export const getTestConfig = (database: string): DatabaseConfig => {
   if (database.includes('articles')) {
     return {
