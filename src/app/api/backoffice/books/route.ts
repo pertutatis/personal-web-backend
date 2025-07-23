@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
         description,
         purchaseLink: data.purchaseLink
       };
-    } catch (e) {
+    } catch (e: any) {
       Logger.info(e);
       
       if (e instanceof ApiValidationError) {
