@@ -1,4 +1,4 @@
-import { PostgresConnection } from '../src/contexts/shared/infrastructure/PostgresConnection'
+import { PostgresConnection } from '../src/contexts/shared/infrastructure/persistence/PostgresConnection'
 import { Logger } from '../src/contexts/shared/infrastructure/Logger'
 
 async function setupAuthDb() {
