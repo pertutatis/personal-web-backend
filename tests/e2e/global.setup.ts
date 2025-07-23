@@ -3,10 +3,9 @@ import { ApiHelpers } from './fixtures/api-helpers'
 import { request } from '@playwright/test'
 import { config } from './setup/config'
 import { PostgresTestSetup } from './setup/setupTestDb'
-import { EventBusFactory } from '@/contexts/shared/infrastructure/eventBus/EventBusFactory'
 import { ArticleSubscribers } from '@/contexts/backoffice/article/infrastructure/DependencyInjection/ArticleSubscribers'
-import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection'
-import { getArticlesConfig, getBooksConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig'
+import { PostgresConnection } from '@/contexts/shared/infrastructure/persistence/PostgresConnection'
+import { getArticlesConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig'
 
 async function waitForServer(url: string, maxAttempts = 30): Promise<boolean> {
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -62,8 +61,7 @@ async function globalSetup(config: FullConfig) {
     // Inicializar conexiones y suscriptores
     console.log('Setting up event subscribers...')
     const articlesConnection = await PostgresConnection.create(getArticlesConfig())
-    const booksConnection = await PostgresConnection.create(getBooksConfig())
-    await ArticleSubscribers.init(articlesConnection, booksConnection)
+    await ArticleSubscribers.init(articlesConnection)
     console.log('Event subscribers initialized')
 
     // Esperar a que el servidor esté listo
@@ -94,7 +92,7 @@ async function globalSetup(config: FullConfig) {
         throw new Error('Database connection failed')
       }
 
-      // Limpiar datos existentes
+      // Limpiar datos existentes de artículos y libros
       console.log('Cleaning up test data...')
       await apiHelpers.cleanupTestData()
       console.log('Test data cleaned up')

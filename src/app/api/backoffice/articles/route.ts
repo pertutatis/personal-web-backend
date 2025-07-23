@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { corsMiddleware } from '@/contexts/blog/shared/infrastructure/security/CorsMiddleware';
 import { PostgresArticleRepository } from '@/contexts/backoffice/article/infrastructure/PostgresArticleRepository';
-import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection';
+import { PostgresConnection } from '@/contexts/shared/infrastructure/persistence/PostgresConnection';
 import { CreateArticle } from '@/contexts/backoffice/article/application/CreateArticle';
 import { ListArticles } from '@/contexts/backoffice/article/application/ListArticles';
 import { executeWithErrorHandling } from '@/contexts/shared/infrastructure/http/executeWithErrorHandling';
 import { HttpNextResponse } from '@/contexts/shared/infrastructure/http/HttpNextResponse';
 import { ApiValidationError } from '@/contexts/shared/infrastructure/http/ApiValidationError';
-import { getArticlesConfig, getBooksConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
+import { getArticlesConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
 import { validateRelatedLinks } from '@/contexts/shared/infrastructure/validation/validateRelatedLinks';
 import type { RelatedLink } from '@/contexts/shared/infrastructure/validation/validateRelatedLinks';
 import { ArticleIdDuplicated } from '@/contexts/backoffice/article/domain/ArticleIdDuplicated';
@@ -15,25 +15,23 @@ import { UuidValidator } from '@/contexts/shared/domain/validation/UuidValidator
 
 // Crear conexiones como promesas para asegurar una única instancia
 const articlesConnectionPromise = PostgresConnection.create(getArticlesConfig());
-const booksConnectionPromise = PostgresConnection.create(getBooksConfig());
 
 async function getConnections() {
-  const [articlesConnection, booksConnection] = await Promise.all([
-    articlesConnectionPromise,
-    booksConnectionPromise
+  const [articlesConnection] = await Promise.all([
+    articlesConnectionPromise
   ]);
-  return { articlesConnection, booksConnection };
+  return { articlesConnection };
 }
 
 export async function GET(request: NextRequest) {
   return executeWithErrorHandling(
     async () => {
-    const { articlesConnection, booksConnection } = await getConnections();
+    const { articlesConnection } = await getConnections();
     const searchParams = request.nextUrl.searchParams;
     const page = parseInt(searchParams.get('page') ?? '1');
     const limit = parseInt(searchParams.get('limit') ?? '10');
 
-    const repository = new PostgresArticleRepository(articlesConnection, booksConnection);
+    const repository = new PostgresArticleRepository(articlesConnection);
     const listArticles = new ListArticles(repository);
 
     const collection = await listArticles.run({page, limit});
@@ -55,7 +53,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   return executeWithErrorHandling(
     async () => {
-    const { articlesConnection, booksConnection } = await getConnections();
+    const { articlesConnection } = await getConnections();
 
     // Validate request content type
     const contentType = request.headers.get('content-type');
@@ -136,7 +134,7 @@ export async function POST(request: NextRequest) {
       }))
     };
 
-    const repository = new PostgresArticleRepository(articlesConnection, booksConnection);
+    const repository = new PostgresArticleRepository(articlesConnection);
     const createArticle = new CreateArticle(repository);
 
     try {
