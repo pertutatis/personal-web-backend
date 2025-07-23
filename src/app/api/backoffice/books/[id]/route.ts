@@ -2,32 +2,30 @@ import { NextRequest } from 'next/server';
 import { corsMiddleware } from '@/contexts/blog/shared/infrastructure/security/CorsMiddleware';
 import { EventBusFactory } from '@/contexts/shared/infrastructure/eventBus/EventBusFactory';
 import { PostgresBookRepository } from '@/contexts/backoffice/book/infrastructure/PostgresBookRepository';
-import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection';
+import { PostgresConnection } from '@/contexts/shared/infrastructure/persistence/PostgresConnection';
 import { GetBook } from '@/contexts/backoffice/book/application/GetBook';
 import { UpdateBook } from '@/contexts/backoffice/book/application/UpdateBook';
 import { DeleteBook as DeleteBookAction } from '@/contexts/backoffice/book/application/DeleteBook';
-import { getBooksConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
+import { getArticlesConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
 import { executeWithErrorHandling } from '@/contexts/shared/infrastructure/http/executeWithErrorHandling';
 import { HttpNextResponse } from '@/contexts/shared/infrastructure/http/HttpNextResponse';
 import { ApiValidationError } from '@/contexts/shared/infrastructure/http/ApiValidationError';
 import { BookIsbn } from '@/contexts/backoffice/book/domain/BookIsbn';
+import { ArticleSubscribers } from '@/contexts/backoffice/article/infrastructure/DependencyInjection/ArticleSubscribers';
 
 // Crear conexiones como promesas para asegurar una única instancia
-const booksConnectionPromise = PostgresConnection.create(getBooksConfig());
-import { ArticleSubscribers } from '@/contexts/backoffice/article/infrastructure/DependencyInjection/ArticleSubscribers';
-import { getArticlesConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
 
 // Inicializar las conexiones y suscriptores
 const articlesConnectionPromise = PostgresConnection.create(getArticlesConfig());
 
-Promise.all([booksConnectionPromise, articlesConnectionPromise])
-  .then(async ([booksConnection, articlesConnection]) => {
-    await ArticleSubscribers.init(articlesConnection, booksConnection);
+Promise.all([articlesConnectionPromise])
+  .then(async ([articlesConnection]) => {
+    await ArticleSubscribers.init(articlesConnection);
   })
   .catch(console.error);
 
 async function getConnection() {
-  return await booksConnectionPromise;
+  return await articlesConnectionPromise;
 }
 
 export async function GET(

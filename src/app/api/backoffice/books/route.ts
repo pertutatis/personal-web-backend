@@ -1,19 +1,19 @@
 import { NextRequest } from 'next/server';
 import { corsMiddleware } from '@/contexts/blog/shared/infrastructure/security/CorsMiddleware';
 import { PostgresBookRepository } from '@/contexts/backoffice/book/infrastructure/PostgresBookRepository';
-import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection';
+import { PostgresConnection } from '@/contexts/shared/infrastructure/persistence/PostgresConnection';
 import { CreateBook } from '@/contexts/backoffice/book/application/CreateBook';
 import { ListBooks } from '@/contexts/backoffice/book/application/ListBooks';
 import { executeWithErrorHandling } from '@/contexts/shared/infrastructure/http/executeWithErrorHandling';
 import { HttpNextResponse } from '@/contexts/shared/infrastructure/http/HttpNextResponse';
 import { ApiValidationError } from '@/contexts/shared/infrastructure/http/ApiValidationError';
-import { getBooksConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
+import { getArticlesConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
 import { BookIdDuplicated } from '@/contexts/backoffice/book/domain/BookIdDuplicated';
 import { BookIdInvalid } from '@/contexts/backoffice/book/domain/BookIdInvalid';
 import { BookIsbnDuplicated } from '@/contexts/backoffice/book/domain/BookIsbnDuplicated';
 
 // Crear conexión como promesa para asegurar una única instancia
-const booksConnectionPromise = PostgresConnection.create(getBooksConfig());
+const booksConnectionPromise = PostgresConnection.create(getArticlesConfig());
 
 async function getConnection() {
   return await booksConnectionPromise;

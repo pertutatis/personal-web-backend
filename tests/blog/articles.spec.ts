@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection';
+import { PostgresConnection } from '@/contexts/shared/infrastructure/persistence/PostgresConnection';
 import { getArticlesConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
 
 test.describe('Blog Articles API', () => {

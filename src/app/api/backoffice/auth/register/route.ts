@@ -7,6 +7,8 @@ import { AuthController } from '@/contexts/backoffice/auth/infrastructure/rest/A
 import { OfficialUuidGenerator } from '@/contexts/shared/infrastructure/OfficialUuidGenerator'
 import { JwtTokenGenerator } from '@/contexts/backoffice/auth/infrastructure/JwtTokenGenerator'
 import { getAuthConnection } from '../config/database'
+import { DatabaseConnectionFactory } from '@/contexts/shared/infrastructure/persistence/DatabaseConnectionFactory';
+import { getAuthDatabaseConfig } from '@/contexts/shared/infrastructure/config/database';
 
 export async function POST(request: NextRequest) {
   return executeWithErrorHandling(
@@ -18,7 +20,7 @@ export async function POST(request: NextRequest) {
         return HttpNextResponse.badRequest('Email and password are required')
       }
 
-      const connection = await getAuthConnection()
+      const connection = await DatabaseConnectionFactory.create(getAuthDatabaseConfig());
       const repository = new PostgresAuthRepository(connection)
       const uuidGenerator = new OfficialUuidGenerator()
       const jwtGenerator = new JwtTokenGenerator(

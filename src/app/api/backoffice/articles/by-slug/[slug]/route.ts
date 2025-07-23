@@ -1,19 +1,17 @@
 import { NextRequest } from 'next/server';
 import { PostgresArticleRepository } from '@/contexts/backoffice/article/infrastructure/PostgresArticleRepository';
-import { PostgresConnection } from '@/contexts/shared/infrastructure/PostgresConnection';
-import { getArticlesConfig, getBooksConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
+import { PostgresConnection } from '@/contexts/shared/infrastructure/persistence/PostgresConnection';
+import { getArticlesConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
 import { executeWithErrorHandling } from '@/contexts/shared/infrastructure/http/executeWithErrorHandling';
 import { HttpNextResponse } from '@/contexts/shared/infrastructure/http/HttpNextResponse';
 
 const articlesConnectionPromise = PostgresConnection.create(getArticlesConfig());
-const booksConnectionPromise = PostgresConnection.create(getBooksConfig());
 
 async function getConnections() {
-  const [articlesConnection, booksConnection] = await Promise.all([
+  const [articlesConnection] = await Promise.all([
     articlesConnectionPromise,
-    booksConnectionPromise
   ]);
-  return { articlesConnection, booksConnection };
+  return { articlesConnection };
 }
 
 export async function GET(
@@ -21,10 +19,9 @@ export async function GET(
   { params }: { params: { slug: string } }
 ) {
   return executeWithErrorHandling(async () => {
-    const { articlesConnection, booksConnection } = await getConnections();
+    const { articlesConnection } = await getConnections();
     const repository = new PostgresArticleRepository(
-      articlesConnection,
-      booksConnection
+      articlesConnection
     );
 
     const article = await repository.searchBySlug(params.slug);

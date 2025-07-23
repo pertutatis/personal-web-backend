@@ -55,7 +55,7 @@ export async function middleware(request: NextRequest) {
     if (!authHeader) {
       return createErrorResponse(
         'UnauthorizedError',
-        'Se requiere autenticación. Por favor, incluye el token JWT en el header Authorization: Bearer <token>',
+        'No token provided',
         401,
         origin
       )
