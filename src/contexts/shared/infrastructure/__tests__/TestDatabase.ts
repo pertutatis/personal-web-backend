@@ -9,14 +9,11 @@ export class TestDatabase {
   static async createTestDatabase(dbName: string): Promise<void> {
     const pgConnection = await PostgresConnection.create(getTestConfig('postgres'));
     try {
-      // Terminar conexiones activas antes de eliminar la base de datos
-      await pgConnection.execute(`
-        SELECT pg_terminate_backend(pid)
-        FROM pg_stat_activity
-        WHERE datname = '${dbName}' AND pid <> pg_backend_pid();
-      `);
-      await pgConnection.execute(`DROP DATABASE IF EXISTS ${dbName}`);
-      await pgConnection.execute(`CREATE DATABASE ${dbName}`);
+      // Solo crear la base de datos si no existe
+      const result = await pgConnection.execute(`SELECT 1 FROM pg_database WHERE datname = '${dbName}'`);
+      if (!result.rows || result.rows.length === 0) {
+        await pgConnection.execute(`CREATE DATABASE ${dbName}`);
+      }
     } finally {
       await pgConnection.close();
     }
@@ -29,24 +26,13 @@ export class TestDatabase {
 
   static async getArticlesConnection(): Promise<PostgresConnection> {
     if (!this.connections.articles) {
-      await this.createTestDatabase('test_articles');
-      await this.setupTestDatabase('test_articles');
+      await this.createTestDatabase('test_blog');
+      await this.setupTestDatabase('test_blog');
       this.connections.articles = await PostgresConnection.create(
-        getTestConfig('test_articles')
+        getTestConfig('test_blog')
       );
     }
     return this.connections.articles;
-  }
-
-  static async getAuthConnection(): Promise<PostgresConnection> {
-    if (!this.connections.auth) {
-      await this.createTestDatabase('auth_test');
-      await this.setupTestDatabase('auth_test');
-      this.connections.auth = await PostgresConnection.create(
-        getTestConfig('auth_test')
-      );
-    }
-    return this.connections.auth;
   }
 
   static async closeAll(): Promise<void> {
@@ -62,15 +48,15 @@ export class TestDatabase {
     await conn.execute('DELETE FROM books');
   }
 
-  static async cleanAuth(): Promise<void> {
-    try {
-      const conn = await this.getAuthConnection();
-      await conn.execute('DELETE FROM users');
-    } catch (error) {
-      Logger.error('Error cleaning auth database:', error);
-      throw error;
-    }
-  }
+  // static async cleanAuth(): Promise<void> {
+  //   try {
+  //     const conn = await this.getAuthConnection();
+  //     await conn.execute('DELETE FROM users');
+  //   } catch (error) {
+  //     Logger.error('Error cleaning auth database:', error);
+  //     throw error;
+  //   }
+  // }
 
   static async beginTransaction(): Promise<void> {
     for (const conn of Object.values(this.connections)) {
@@ -95,7 +81,7 @@ export class TestDatabase {
       // Asegurar que tenemos todas las conexiones
       await Promise.all([
         this.getArticlesConnection(),
-        this.getAuthConnection()
+        // this.getAuthConnection()
       ]);
 
       // Iniciar transacción
@@ -104,7 +90,7 @@ export class TestDatabase {
       // Limpiar tablas dentro de la transacción
       await Promise.all([
         this.cleanArticles(),
-        this.cleanAuth()
+        // this.cleanAuth()
       ]);
 
       // Commit de la transacción

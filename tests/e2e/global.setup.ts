@@ -5,7 +5,7 @@ import { config } from './setup/config'
 import { PostgresTestSetup } from './setup/setupTestDb'
 import { ArticleSubscribers } from '@/contexts/backoffice/article/infrastructure/DependencyInjection/ArticleSubscribers'
 import { PostgresConnection } from '@/contexts/shared/infrastructure/persistence/PostgresConnection'
-import { getArticlesConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig'
+import { getBlogConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig'
 import { Logger } from '@/contexts/shared/infrastructure/Logger'
 
 async function waitForServer(url: string, maxAttempts = 30): Promise<boolean> {
@@ -61,8 +61,8 @@ async function globalSetup(config: FullConfig) {
 
     // Inicializar conexiones y suscriptores
     Logger.info('Setting up event subscribers...')
-    const articlesConnection = await PostgresConnection.create(getArticlesConfig())
-    await ArticleSubscribers.init(articlesConnection)
+    const blogConnection = await PostgresConnection.create(getBlogConfig())
+    await ArticleSubscribers.init(blogConnection)
     Logger.info('Event subscribers initialized')
 
     // Esperar a que el servidor esté listo

@@ -9,7 +9,7 @@ import { JwtTokenGenerator } from '@/contexts/backoffice/auth/infrastructure/Jwt
 import { getAuthConnection } from '../config/database'
 import { Logger } from '@/contexts/shared/infrastructure/Logger'
 import { DatabaseConnectionFactory } from '@/contexts/shared/infrastructure/persistence/DatabaseConnectionFactory';
-import { getAuthDatabaseConfig } from '@/contexts/shared/infrastructure/config/database';
+import { getBlogDatabaseConfig } from '@/contexts/shared/infrastructure/config/database';
 
 export async function POST(request: NextRequest) {
   return executeWithErrorHandling(
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      const connection = await DatabaseConnectionFactory.create(getAuthDatabaseConfig());
+      const connection = await DatabaseConnectionFactory.create(getBlogDatabaseConfig());
       const repository = new PostgresAuthRepository(connection)
       const uuidGenerator = new OfficialUuidGenerator()
       const jwtGenerator = new JwtTokenGenerator(

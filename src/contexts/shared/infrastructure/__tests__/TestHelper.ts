@@ -7,12 +7,11 @@ import { PostgresMigrations } from '../PostgresMigrations';
 
 export class TestHelper {
   private static readonly databases = {
-    articles: 'test_articles',
-    auth: 'auth_test'
+    articles: 'test_blog',
   };
 
   static async waitForDatabases(): Promise<void> {
-    // Logger.info('Waiting for databases to be ready...')
+    Logger.info('Waiting for databases to be ready...')
     
     if (!Environment.isTest()) {
       throw new Error('waitForDatabases can only be run in test environment')
@@ -30,10 +29,7 @@ export class TestHelper {
       }))
 
       // 3. Crear nuevas conexiones
-      await Promise.all([
-        TestDatabase.getArticlesConnection(),
-        TestDatabase.getAuthConnection()
-      ])
+      await TestDatabase.getArticlesConnection()
 
       // Logger.info('✅ Database connections established')
     } catch (error) {
@@ -44,11 +40,11 @@ export class TestHelper {
   }
 
   static async closeConnections(): Promise<void> {
-    // Logger.info('Closing database connections...')
+    Logger.info('Closing database connections...')
 
     try {
       await TestDatabase.closeAll()
-      // Logger.info('✅ Database connections closed')
+      Logger.info('✅ Database connections closed')
     } catch (error) {
       Logger.error('❌ Error closing database connections:', error)
       throw error
@@ -60,7 +56,7 @@ export class TestHelper {
   }
 
   static async cleanEnvironment(): Promise<void> {
-    // Logger.info('Cleaning up test environment...')
+    Logger.info('Cleaning up test environment...')
     
     if (!Environment.isTest()) {
       throw new Error('cleanEnvironment can only be run in test environment')
@@ -68,9 +64,9 @@ export class TestHelper {
 
     try {
       await TestDatabase.cleanAll()
-      // Logger.info('✅ Test environment cleaned up')
+      Logger.info('✅ Test environment cleaned up')
     } catch (error) {
-      // Logger.error('❌ Error cleaning up test environment:', error)
+      Logger.error('❌ Error cleaning up test environment:', error)
       throw error
     }
   }
@@ -89,11 +85,7 @@ export class TestHelper {
         await migrations.setup()
       }
 
-      await Promise.all([
-        TestDatabase.getArticlesConnection(),
-        // TestDatabase.getBooksConnection(),
-        TestDatabase.getAuthConnection()
-      ])
+      await TestDatabase.getArticlesConnection()
 
       Logger.info('✅ Test environment setup completed')
     } catch (error) {

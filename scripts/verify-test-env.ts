@@ -52,17 +52,9 @@ async function verifyDatabase(name: string, tables: string[]) {
 async function verifyTestEnvironment() {
   Logger.info('Verifying test databases...\n')
 
-  // Verificar test_articles
-  Logger.info('Verifying test_articles database...')
-  await verifyDatabase('test_articles', ['articles'])
-
-  // Verificar test_books
-  Logger.info('Verifying test_books database...')
-  await verifyDatabase('test_books', ['books'])
-
-  // Verificar auth_test
-  Logger.info('Verifying auth_test database...')
-  await verifyDatabase('auth_test', ['users'])
+  // Verificar test_blog
+  Logger.info('Verifying test_blog database...')
+  await verifyDatabase('test_blog', ['articles, books', 'users'])
 
   Logger.info('\n✅ All database connections verified successfully')
   process.exit(0)

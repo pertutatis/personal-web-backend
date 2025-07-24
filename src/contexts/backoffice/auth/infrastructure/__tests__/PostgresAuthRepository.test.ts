@@ -11,7 +11,7 @@ describe('PostgresAuthRepository', () => {
   let user: User
 
   beforeAll(async () => {
-    connection = await TestDatabase.getAuthConnection()
+    connection = await TestDatabase.getArticlesConnection()
     repository = new PostgresAuthRepository(connection)
   })
 

@@ -1,11 +1,11 @@
 import { NextRequest } from 'next/server';
 import { PostgresArticleRepository } from '@/contexts/backoffice/article/infrastructure/PostgresArticleRepository';
 import { PostgresConnection } from '@/contexts/shared/infrastructure/persistence/PostgresConnection';
-import { getArticlesConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
+import { getBlogConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
 import { executeWithErrorHandling } from '@/contexts/shared/infrastructure/http/executeWithErrorHandling';
 import { HttpNextResponse } from '@/contexts/shared/infrastructure/http/HttpNextResponse';
 
-const articlesConnectionPromise = PostgresConnection.create(getArticlesConfig());
+const articlesConnectionPromise = PostgresConnection.create(getBlogConfig());
 
 async function getConnections() {
   const [articlesConnection] = await Promise.all([

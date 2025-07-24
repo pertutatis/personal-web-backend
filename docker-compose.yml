@@ -1,42 +1,16 @@
 # Local development environment
 services:
-  articles-db:
+  blog-db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: articles
+      POSTGRES_DB: blog
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
     volumes:
-      - ./databases/articles.sql:/docker-entrypoint-initdb.d/init.sql
-      - articles-data:/var/lib/postgresql/data
-
-  books-db:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_DB: books
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "5433:5432"
-    volumes:
-      - ./databases/books.sql:/docker-entrypoint-initdb.d/init.sql
-      - books-data:/var/lib/postgresql/data
-
-  auth-db:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_DB: auth
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "5434:5432"
-    volumes:
-      - ./databases/auth.sql:/docker-entrypoint-initdb.d/init.sql
-      - auth-data:/var/lib/postgresql/data
+      - ./databases/blog.sql:/docker-entrypoint-initdb.d/init.sql
+      - blog-data:/var/lib/postgresql/data
 
 volumes:
-  articles-data:
-  books-data:
-  auth-data:
+  blog-data:

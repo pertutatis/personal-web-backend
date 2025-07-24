@@ -16,9 +16,6 @@ export DB_PASSWORD=postgres
 export PORT=3000
 export JWT_SECRET=test_secret
 export JWT_EXPIRES_IN=3600
-export AUTH_DB_NAME=auth_test
-export ARTICLES_DB_NAME=test_articles
-export BOOKS_DB_NAME=test_books
 
 # Display current environment
 echo "📋 Environment variables:"
@@ -27,9 +24,7 @@ echo "JWT_SECRET=$JWT_SECRET"
 echo "JWT_EXPIRES_IN=$JWT_EXPIRES_IN"
 echo "DB_HOST=$DB_HOST"
 echo "DB_PORT=$DB_PORT"
-echo "AUTH_DB_NAME=$AUTH_DB_NAME"
-echo "ARTICLES_DB_NAME=$ARTICLES_DB_NAME"
-echo "BOOKS_DB_NAME=$BOOKS_DB_NAME"
+echo "BLOG_DB_NAME=$BLOG_DB_NAME"
 
 echo "🔧 Setting up test databases..."
 NODE_ENV=test ts-node tests/e2e/setup/setupTestDb.ts

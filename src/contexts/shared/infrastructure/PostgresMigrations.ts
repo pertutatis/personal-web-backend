@@ -31,30 +31,27 @@ export class PostgresMigrations {
 
   async clean(): Promise<void> {
     try {
-      // Logger.info('Cleaning database directly with SQL...')
+      Logger.info('Cleaning database directly with SQL...')
 
       // Connect to postgres database first
       let conn = await PostgresConnection.createTestConnection('postgres')
       
       try {
-        // Force close all connections to the target database
-        await conn.execute(`
-          SELECT pg_terminate_backend(pg_stat_activity.pid)
-          FROM pg_stat_activity
-          WHERE pg_stat_activity.datname = $1
-          AND pid <> pg_backend_pid()
-        `, [this.databaseName])
+    // Eliminado para evitar cierre abrupto de conexiones
 
         // Now we can safely drop the database
-        await conn.execute(`DROP DATABASE IF EXISTS ${this.databaseName}`)
+    // Eliminado para evitar cierre abrupto de conexiones
       } finally {
         await conn.close()
       }
 
-      // Create test database
+      // Solo crear la base de datos si no existe
       conn = await PostgresConnection.createTestConnection('postgres')
       try {
-        await conn.execute(`CREATE DATABASE ${this.databaseName}`)
+        const result = await conn.execute(`SELECT 1 FROM pg_database WHERE datname = '${this.databaseName}'`)
+        if (!result.rows || result.rows.length === 0) {
+          await conn.execute(`CREATE DATABASE ${this.databaseName}`)
+        }
       } finally {
         await conn.close()
       }
@@ -68,11 +65,13 @@ export class PostgresMigrations {
 
   async setup(): Promise<void> {
     try {
-      // First create database
+      // Solo crear la base de datos si no existe
       let conn = await PostgresConnection.createTestConnection('postgres')
       try {
-        await conn.execute(`DROP DATABASE IF EXISTS ${this.databaseName}`)
-        await conn.execute(`CREATE DATABASE ${this.databaseName}`)
+        const result = await conn.execute(`SELECT 1 FROM pg_database WHERE datname = '${this.databaseName}'`)
+        if (!result.rows || result.rows.length === 0) {
+          await conn.execute(`CREATE DATABASE ${this.databaseName}`)
+        }
       } finally {
         await conn.close()
       }
@@ -80,9 +79,8 @@ export class PostgresMigrations {
       // Then create tables
       conn = await PostgresConnection.createTestConnection(this.databaseName)
       try {
-        if (this.databaseName === 'auth_test') {
+        if (this.databaseName === 'test_blog') {
           await this.setupAuthTables(conn)
-        } else if (this.databaseName === 'test_articles') {
           await this.setupArticlesTables(conn)
           await this.setupBooksTables(conn)
         }
@@ -177,19 +175,23 @@ export class PostgresMigrations {
           BEFORE UPDATE ON books
           FOR EACH ROW
           EXECUTE FUNCTION update_updated_at_column();
-
-      ALTER TABLE books
-        ADD CONSTRAINT books_title_not_empty CHECK (length(trim(title)) > 0),
-        ADD CONSTRAINT books_author_not_empty CHECK (length(trim(author)) > 0),
-        ADD CONSTRAINT books_isbn_valid CHECK (length(replace(replace(isbn, '-', ''), ' ', '')) IN (10, 13)),
-        ADD CONSTRAINT books_description_not_empty CHECK (length(trim(description)) > 0),
-        ADD CONSTRAINT books_description_length CHECK (length(description) <= 1000),
-        ADD CONSTRAINT books_purchase_link_length CHECK (purchase_link IS NULL OR length(purchase_link) <= 2000),
-        ADD CONSTRAINT books_purchase_link_format CHECK (
-            purchase_link IS NULL OR
-            purchase_link ~* '^https?://[^\\s/$.?#].[^\\s]*$'
-        );
     `)
+    // Añadir restricciones solo si no existen
+    const constraints = [
+      { name: 'books_title_not_empty', sql: `ALTER TABLE books ADD CONSTRAINT books_title_not_empty CHECK (length(trim(title)) > 0);` },
+      { name: 'books_author_not_empty', sql: `ALTER TABLE books ADD CONSTRAINT books_author_not_empty CHECK (length(trim(author)) > 0);` },
+      { name: 'books_isbn_valid', sql: `ALTER TABLE books ADD CONSTRAINT books_isbn_valid CHECK (length(replace(replace(isbn, '-', ''), ' ', '')) IN (10, 13));` },
+      { name: 'books_description_not_empty', sql: `ALTER TABLE books ADD CONSTRAINT books_description_not_empty CHECK (length(trim(description)) > 0);` },
+      { name: 'books_description_length', sql: `ALTER TABLE books ADD CONSTRAINT books_description_length CHECK (length(description) <= 1000);` },
+      { name: 'books_purchase_link_length', sql: `ALTER TABLE books ADD CONSTRAINT books_purchase_link_length CHECK (purchase_link IS NULL OR length(purchase_link) <= 2000);` },
+      { name: 'books_purchase_link_format', sql: `ALTER TABLE books ADD CONSTRAINT books_purchase_link_format CHECK (purchase_link IS NULL OR purchase_link ~* '^https?://[^\\s/$.?#].[^\\s]*$');` },
+    ];
+    for (const { name, sql } of constraints) {
+      const res = await conn.execute(`SELECT 1 FROM pg_constraint WHERE conname = '${name}'`);
+      if (!res.rows || res.rows.length === 0) {
+        await conn.execute(sql);
+      }
+    }
     await conn.execute('DELETE FROM books')
   }
 }
