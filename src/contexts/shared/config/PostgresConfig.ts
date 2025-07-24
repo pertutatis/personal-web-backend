@@ -5,7 +5,7 @@ export class PostgresConfig {
       password: process.env.POSTGRES_PASSWORD || 'postgres',
       host: process.env.POSTGRES_HOST || 'localhost',
       port: Number(process.env.POSTGRES_PORT) || 5432,
-      database: 'postgres'
+      database: process.env.POSTGRES_DATABASE || 'postgres'
     };
   }
 
