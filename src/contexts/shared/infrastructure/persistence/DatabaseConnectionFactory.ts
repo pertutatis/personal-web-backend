@@ -21,29 +21,14 @@ export interface DatabaseConfig {
 export class DatabaseConnectionFactory {
   static async create(config: DatabaseConfig): Promise<DatabaseConnection> {
     const environment = process.env.NODE_ENV || 'development'
-    
     try {
-      if (environment === 'production') {
-        if (!config.supabaseUrl || !config.supabaseKey) {
-          throw new Error('Missing Supabase configuration')
-        }
-
-        Logger.info('Creating Supabase connection for production')
-        return await SupabaseConnection.create({
-          url: config.supabaseUrl,
-          key: config.supabaseKey,
-          database: config.database
-        })
-      }
-
-      // Development o test usan PostgreSQL local
       Logger.info(`Creating PostgreSQL connection for ${environment}`)
       return await PostgresConnection.create({
-        host: config.host || process.env.DB_HOST || 'localhost',
-        port: config.port || Number(process.env.DB_PORT) || 5432,
-        user: config.user || process.env.DB_USER || 'postgres',
-        password: config.password || process.env.DB_PASSWORD || 'postgres',
-        database: config.database || process.env.DB_NAME || 'postgres'
+        host: config.host || process.env.DB_HOST || process.env.POSTGRES_HOST || 'localhost',
+        port: config.port || Number(process.env.DB_PORT) || Number(process.env.POSTGRES_PORT) || 5432,
+        user: config.user || process.env.DB_USER || process.env.POSTGRES_USER || 'postgres',
+        password: config.password || process.env.DB_PASSWORD || process.env.POSTGRES_PASSWORD || 'postgres',
+        database: config.database || process.env.DB_NAME || process.env.POSTGRES_DB || 'postgres'
       })
     } catch (error) {
       Logger.error('Error creating database connection:', {
@@ -51,8 +36,7 @@ export class DatabaseConnectionFactory {
         environment,
         config: {
           ...config,
-          password: '***',
-          supabaseKey: config.supabaseKey ? '***' : undefined
+          password: '***'
         }
       })
       throw error
