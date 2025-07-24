@@ -3,7 +3,7 @@ services:
   blog-db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: blog
+      POSTGRES_DATABASE: blog
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
