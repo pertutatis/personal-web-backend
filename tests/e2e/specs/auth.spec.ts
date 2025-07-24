@@ -7,13 +7,13 @@ import { Logger } from '@/contexts/shared/infrastructure/Logger'
 test.describe('Auth API', () => {
   test.beforeEach(async () => {
     // Solo inicializar la base de datos de auth para las pruebas de autenticación
-    const authMigrations = new PostgresMigrations('auth_test')
+    const authMigrations = new PostgresMigrations('test_blog')
     await authMigrations.clean()
     await authMigrations.setup()
   })
 
   test.afterEach(async () => {
-    const authMigrations = new PostgresMigrations('auth_test')
+    const authMigrations = new PostgresMigrations('test_blog')
     await authMigrations.clean()
   })
 

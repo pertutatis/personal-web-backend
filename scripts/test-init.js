@@ -39,7 +39,7 @@ async function main() {
   }
 
   // Check if SQL files exist
-  const sqlFiles = ['articles.sql', 'books.sql'];
+  const sqlFiles = ['blog.sql'];
   for (const file of sqlFiles) {
     const filePath = path.join(__dirname, '..', 'databases', file);
     if (!existsSync(filePath)) {

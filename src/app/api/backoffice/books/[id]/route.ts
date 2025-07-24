@@ -6,7 +6,7 @@ import { PostgresConnection } from '@/contexts/shared/infrastructure/persistence
 import { GetBook } from '@/contexts/backoffice/book/application/GetBook';
 import { UpdateBook } from '@/contexts/backoffice/book/application/UpdateBook';
 import { DeleteBook as DeleteBookAction } from '@/contexts/backoffice/book/application/DeleteBook';
-import { getArticlesConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
+import { getBlogConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
 import { executeWithErrorHandling } from '@/contexts/shared/infrastructure/http/executeWithErrorHandling';
 import { HttpNextResponse } from '@/contexts/shared/infrastructure/http/HttpNextResponse';
 import { ApiValidationError } from '@/contexts/shared/infrastructure/http/ApiValidationError';
@@ -16,7 +16,7 @@ import { ArticleSubscribers } from '@/contexts/backoffice/article/infrastructure
 // Crear conexiones como promesas para asegurar una única instancia
 
 // Inicializar las conexiones y suscriptores
-const articlesConnectionPromise = PostgresConnection.create(getArticlesConfig());
+const articlesConnectionPromise = PostgresConnection.create(getBlogConfig());
 
 Promise.all([articlesConnectionPromise])
   .then(async ([articlesConnection]) => {

@@ -57,8 +57,7 @@ docker compose up -d
 ```
 
 2. Database schemas will be automatically applied:
-- Articles database schema: `databases/articles.sql`
-- Books database schema: `databases/books.sql`
+- Articles database schema: `databases/blog.sql`
 
 ### 4. Development Server
 

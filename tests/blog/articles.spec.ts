@@ -1,12 +1,12 @@
 import { test, expect } from '@playwright/test';
 import { PostgresConnection } from '@/contexts/shared/infrastructure/persistence/PostgresConnection';
-import { getArticlesConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
+import { getBlogConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
 
 test.describe('Blog Articles API', () => {
   let connection: PostgresConnection;
 
   test.beforeAll(async () => {
-    connection = await PostgresConnection.create(getArticlesConfig());
+    connection = await PostgresConnection.create(getBlogConfig());
     await cleanDatabase();
   });
 

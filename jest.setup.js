@@ -11,8 +11,7 @@ const defaultEnv = {
   DB_PORT: '5432',
   DB_USER: 'postgres',
   DB_PASSWORD: 'postgres',
-  BLOG_DB_NAME: 'test_articles',
-  AUTH_DB_NAME: 'auth_test',
+  BLOG_DB_NAME: 'test_blog',
   NODE_ENV: { value: 'test', writable: true },
 };
 
@@ -33,13 +32,8 @@ jest.setTimeout(30000);
 // Setup global beforeAll
 beforeAll(async () => {
   try {
-    const blogMigrations = new PostgresMigrations('test_articles')
-    const authMigrations = new PostgresMigrations('auth_test')
-
-    await Promise.all([
-      blogMigrations.setup(),
-      authMigrations.setup()
-    ])
+    const blogMigrations = new PostgresMigrations('test_blog')
+    await blogMigrations.setup();
 
     // Wait for databases to be ready
     await TestHelper.waitForDatabases();

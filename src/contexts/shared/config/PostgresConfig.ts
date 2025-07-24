@@ -12,14 +12,7 @@ export class PostgresConfig {
   static getArticlesDbConfig() {
     return {
       ...this.getDefaultConfig(),
-      database: 'test_articles'
-    };
-  }
-
-  static getAuthDbConfig() {
-    return {
-      ...this.getDefaultConfig(),
-      database: 'auth_test'
+      database: 'test_blog'
     };
   }
 }

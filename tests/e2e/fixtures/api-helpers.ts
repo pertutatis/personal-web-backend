@@ -9,7 +9,7 @@ import { config } from '../setup/config'
 import { Logger } from '@/contexts/shared/infrastructure/Logger'
 
 export class ApiHelpers {
-  private articlesPool: Pool
+  private blogPool: Pool
 
   constructor(
     private request: APIRequestContext,
@@ -17,12 +17,12 @@ export class ApiHelpers {
     private articlesApi: ArticlesApi
   ) {
     // Create connection pool para la base unificada
-    this.articlesPool = new Pool({
+    this.blogPool = new Pool({
       host: config.host,
       port: config.port,
       user: config.user,
       password: config.password,
-      database: config.databases.articles
+      database: config.databases.blog
     })
   }
 
@@ -30,8 +30,9 @@ export class ApiHelpers {
     try {
       Logger.info('Cleaning database directly with SQL...')
       await Promise.all([
-        this.articlesPool.query('TRUNCATE books CASCADE'),
-        this.articlesPool.query('TRUNCATE articles CASCADE')
+        this.blogPool.query('TRUNCATE books CASCADE'),
+        this.blogPool.query('TRUNCATE articles CASCADE'),
+        this.blogPool.query('TRUNCATE users CASCADE')
       ])
       Logger.info('Database cleaned successfully')
     } catch (error) {
@@ -93,9 +94,6 @@ export class ApiHelpers {
     try {
       await this.cleanDatabasesDirectly()
 
-      // Limpiar tabla users en auth_test
-      await this.cleanAuthDatabaseDirectly()
-
       const articlesResponse = await this.articlesApi.listArticles({ limit: 100 })
       if (articlesResponse.ok()) {
         const response = await articlesResponse.json();
@@ -144,36 +142,6 @@ export class ApiHelpers {
       Logger.info('Test data cleanup completed')
     } catch (error) {
       Logger.error('Critical error during cleanup:', error)
-      throw error
-    }
-  }
-
-  private async cleanAuthDatabaseDirectly() {
-    try {
-      Logger.info('Cleaning users table in auth_test...')
-      const { Pool } = await import('pg')
-      const authPool = new Pool({
-        host: process.env.DB_HOST || 'localhost',
-        port: parseInt(process.env.AUTH_DB_PORT || '5432'),
-        user: process.env.AUTH_DB_USER || 'postgres',
-        password: process.env.AUTH_DB_PASSWORD || 'postgres',
-        database: process.env.AUTH_DB_NAME || 'auth_test'
-      })
-      try {
-        await authPool.query('TRUNCATE users CASCADE')
-        Logger.info('Users table cleaned up')
-      } catch (error: any) {
-        // Ignorar error si la tabla no existe
-        if (error.code === '42P01') {
-          Logger.warn('Users table does not exist yet, skipping cleanup')
-        } else {
-          Logger.error('Error cleaning users table in auth_test:', error)
-          throw error
-        }
-      }
-      await authPool.end()
-    } catch (error) {
-      Logger.error('Critical error during auth DB cleanup:', error)
       throw error
     }
   }
@@ -230,7 +198,7 @@ export class ApiHelpers {
 
   async dispose() {
     try {
-      await this.articlesPool.end()
+      await this.blogPool.end()
       Logger.info('Database pools closed successfully')
     } catch (error) {
       Logger.error('Error closing database pools:', error)

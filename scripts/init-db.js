@@ -8,16 +8,16 @@ async function initializeDatabase() {
   const client = new Client({
     host: process.env.DB_HOST,
     port: process.env.DB_PORT || 5432,
-    user: process.env.ARTICLES_DB_USER,
-    password: process.env.ARTICLES_DB_PASSWORD,
-    database: process.env.ARTICLES_DB_NAME,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.BLOG_DB_NAME,
   })
 
   try {
     await client.connect()
     Logger.info('Connected to database')
 
-    const sqlFile = path.join(__dirname, '..', 'databases', 'init.sql')
+    const sqlFile = path.join(__dirname, '..', 'databases', 'blog.sql')
     const sql = fs.readFileSync(sqlFile, 'utf8')
 
     await client.query(sql)

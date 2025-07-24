@@ -7,14 +7,14 @@ import { ListBooks } from '@/contexts/backoffice/book/application/ListBooks';
 import { executeWithErrorHandling } from '@/contexts/shared/infrastructure/http/executeWithErrorHandling';
 import { HttpNextResponse } from '@/contexts/shared/infrastructure/http/HttpNextResponse';
 import { ApiValidationError } from '@/contexts/shared/infrastructure/http/ApiValidationError';
-import { getArticlesConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
+import { getBlogConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig';
 import { BookIdDuplicated } from '@/contexts/backoffice/book/domain/BookIdDuplicated';
 import { BookIdInvalid } from '@/contexts/backoffice/book/domain/BookIdInvalid';
 import { BookIsbnDuplicated } from '@/contexts/backoffice/book/domain/BookIsbnDuplicated';
 import { Logger } from '@/contexts/shared/infrastructure/Logger';
 
 // Crear conexión como promesa para asegurar una única instancia
-const booksConnectionPromise = PostgresConnection.create(getArticlesConfig());
+const booksConnectionPromise = PostgresConnection.create(getBlogConfig());
 
 async function getConnection() {
   return await booksConnectionPromise;

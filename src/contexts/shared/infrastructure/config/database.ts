@@ -46,16 +46,11 @@ export function getTestDatabaseConfig(database: string): DatabaseConfig {
   };
 }
 
-export function getAuthDatabaseConfig(): DatabaseConfig {
-  return {
-    ...getDatabaseConfig(),
-    database: process.env.AUTH_DB_NAME || 'auth'
-  };
-}
 
 export function getBlogDatabaseConfig(): DatabaseConfig {
   return {
     ...getDatabaseConfig(),
-    database: process.env.BLOG_DB_NAME || 'blog'
+    database: process.env.BLOG_DB_NAME || 'blog',
+    port: Number(process.env.DB_PORT) || 5434
   };
 }
