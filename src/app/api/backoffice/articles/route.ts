@@ -13,13 +13,9 @@ import type { RelatedLink } from '@/contexts/shared/infrastructure/validation/va
 import { ArticleIdDuplicated } from '@/contexts/backoffice/article/domain/ArticleIdDuplicated';
 import { UuidValidator } from '@/contexts/shared/domain/validation/UuidValidator';
 
-// Crear conexiones como promesas para asegurar una única instancia
-const articlesConnectionPromise = PostgresConnection.create(getBlogConfig());
 
 async function getConnections() {
-  const [articlesConnection] = await Promise.all([
-    articlesConnectionPromise
-  ]);
+  const articlesConnection = await PostgresConnection.create(getBlogConfig());
   return { articlesConnection };
 }
 

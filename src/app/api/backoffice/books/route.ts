@@ -13,11 +13,9 @@ import { BookIdInvalid } from '@/contexts/backoffice/book/domain/BookIdInvalid';
 import { BookIsbnDuplicated } from '@/contexts/backoffice/book/domain/BookIsbnDuplicated';
 import { Logger } from '@/contexts/shared/infrastructure/Logger';
 
-// Crear conexión como promesa para asegurar una única instancia
-const booksConnectionPromise = PostgresConnection.create(getBlogConfig());
 
 async function getConnection() {
-  return await booksConnectionPromise;
+  return await PostgresConnection.create(getBlogConfig());
 }
 
 export async function GET(request: NextRequest) {

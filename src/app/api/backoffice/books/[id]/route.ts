@@ -13,19 +13,11 @@ import { ApiValidationError } from '@/contexts/shared/infrastructure/http/ApiVal
 import { BookIsbn } from '@/contexts/backoffice/book/domain/BookIsbn';
 import { ArticleSubscribers } from '@/contexts/backoffice/article/infrastructure/DependencyInjection/ArticleSubscribers';
 
-// Crear conexiones como promesas para asegurar una única instancia
-
-// Inicializar las conexiones y suscriptores
-const articlesConnectionPromise = PostgresConnection.create(getBlogConfig());
-
-Promise.all([articlesConnectionPromise])
-  .then(async ([articlesConnection]) => {
-    await ArticleSubscribers.init(articlesConnection);
-  })
-  .catch(console.error);
 
 async function getConnection() {
-  return await articlesConnectionPromise;
+  const connection = await PostgresConnection.create(getBlogConfig());
+  await ArticleSubscribers.init(connection);
+  return connection;
 }
 
 export async function GET(

@@ -5,12 +5,9 @@ import { getBlogConfig } from '@/contexts/shared/infrastructure/config/DatabaseC
 import { executeWithErrorHandling } from '@/contexts/shared/infrastructure/http/executeWithErrorHandling';
 import { HttpNextResponse } from '@/contexts/shared/infrastructure/http/HttpNextResponse';
 
-const articlesConnectionPromise = PostgresConnection.create(getBlogConfig());
 
 async function getConnections() {
-  const [articlesConnection] = await Promise.all([
-    articlesConnectionPromise,
-  ]);
+  const articlesConnection = await PostgresConnection.create(getBlogConfig());
   return { articlesConnection };
 }
 
@@ -33,5 +30,3 @@ export async function GET(
   });
 }
 
-// Asegurarse de que las conexiones están listas al iniciar
-getConnections().catch(console.error);
