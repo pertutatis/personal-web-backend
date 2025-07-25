@@ -1,4 +1,4 @@
-import { DatabaseConnectionFactory } from '@/contexts/shared/infrastructure/persistence/DatabaseConnectionFactory';
+import { PostgresConnection } from '@/contexts/shared/infrastructure/persistence/PostgresConnection';
 import { getBlogDatabaseConfig } from '@/contexts/shared/infrastructure/config/database';
 import { NextRequest, NextResponse } from 'next/server';
 import { Logger } from '@/contexts/shared/infrastructure/Logger';
@@ -12,7 +12,7 @@ export async function GET(
   let connection: DatabaseConnection | undefined;
 
   try {
-    connection = await DatabaseConnectionFactory.create(getBlogDatabaseConfig());
+    connection = await PostgresConnection.create(getBlogDatabaseConfig());
     const repository = new PostgresBlogArticleRepository(connection);
     const article = await repository.findBySlug(params.slug);
 

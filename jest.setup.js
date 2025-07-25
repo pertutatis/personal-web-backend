@@ -11,7 +11,7 @@ const defaultEnv = {
   DB_PORT: '5432',
   DB_USER: 'postgres',
   DB_PASSWORD: 'postgres',
-  BLOG_DB_NAME: 'test_blog',
+  DB_NAME: 'test_blog',
   NODE_ENV: { value: 'test', writable: true },
 };
 

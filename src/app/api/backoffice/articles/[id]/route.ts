@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { corsMiddleware } from '@/contexts/blog/shared/infrastructure/security/CorsMiddleware';
 import { PostgresArticleRepository } from '@/contexts/backoffice/article/infrastructure/PostgresArticleRepository';
-import { DatabaseConnectionFactory } from '@/contexts/shared/infrastructure/persistence/DatabaseConnectionFactory';
+import { PostgresConnection } from '@/contexts/shared/infrastructure/persistence/PostgresConnection';
 import { getBlogDatabaseConfig } from '@/contexts/shared/infrastructure/config/database';
 import { GetArticle } from '@/contexts/backoffice/article/application/GetArticle';
 import { UpdateArticle } from '@/contexts/backoffice/article/application/UpdateArticle';
@@ -29,7 +29,7 @@ export async function GET(
     let connection: DatabaseConnection | undefined;
     
     try {
-      connection = await DatabaseConnectionFactory.create(getBlogDatabaseConfig());
+      connection = await PostgresConnection.create(getBlogDatabaseConfig());
       const repository = new PostgresArticleRepository(connection);
       const getArticle = new GetArticle(repository);
 
@@ -56,7 +56,7 @@ export async function PUT(
     let connection: DatabaseConnection | undefined;
 
     try {
-      connection = await DatabaseConnectionFactory.create(getBlogDatabaseConfig());
+      connection = await PostgresConnection.create(getBlogDatabaseConfig());
       const repository = new PostgresArticleRepository(connection);
       const updateArticle = new UpdateArticle(repository);
 
@@ -173,7 +173,7 @@ export async function DELETE(
     let connection: DatabaseConnection | undefined;
     
     try {
-      connection = await DatabaseConnectionFactory.create(getBlogDatabaseConfig());
+      connection = await PostgresConnection.create(getBlogDatabaseConfig());
       const repository = new PostgresArticleRepository(connection);
       const deleteArticle = new DeleteArticle(repository);
 

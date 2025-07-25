@@ -8,7 +8,7 @@ import { OfficialUuidGenerator } from '@/contexts/shared/infrastructure/Official
 import { JwtTokenGenerator } from '@/contexts/backoffice/auth/infrastructure/JwtTokenGenerator'
 import { getAuthConnection } from '../config/database'
 import { Logger } from '@/contexts/shared/infrastructure/Logger'
-import { DatabaseConnectionFactory } from '@/contexts/shared/infrastructure/persistence/DatabaseConnectionFactory';
+import { PostgresConnection } from '@/contexts/shared/infrastructure/persistence/PostgresConnection';
 import { getBlogDatabaseConfig } from '@/contexts/shared/infrastructure/config/database';
 
 export async function POST(request: NextRequest) {
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      const connection = await DatabaseConnectionFactory.create(getBlogDatabaseConfig());
+      const connection = await PostgresConnection.create(getBlogDatabaseConfig());
       const repository = new PostgresAuthRepository(connection)
       const uuidGenerator = new OfficialUuidGenerator()
       const jwtGenerator = new JwtTokenGenerator(

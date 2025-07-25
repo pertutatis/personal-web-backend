@@ -10,7 +10,7 @@ async function initializeDatabase() {
     port: process.env.DB_PORT || 5432,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
-    database: process.env.BLOG_DB_NAME,
+    database: process.env.DB_NAME,
   })
 
   try {

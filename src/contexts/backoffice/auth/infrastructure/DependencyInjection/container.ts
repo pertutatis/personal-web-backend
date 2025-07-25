@@ -6,7 +6,6 @@ import { JwtTokenGenerator } from '../JwtTokenGenerator'
 import { UuidGenerator } from '@/contexts/shared/domain/UuidGenerator'
 import { AuthRepository } from '../../domain/AuthRepository'
 import { PostgresConnection } from '@/contexts/shared/infrastructure/persistence/PostgresConnection'
-import { DatabaseConnectionFactory } from '@/contexts/shared/infrastructure/persistence/DatabaseConnectionFactory';
 import { getBlogDatabaseConfig } from '@/contexts/shared/infrastructure/config/database';
 
 export const AuthRepositoryToken = new Token<AuthRepository>('authRepository')
@@ -15,7 +14,7 @@ export const JwtGeneratorToken = new Token<JwtTokenGenerator>('jwtGenerator')
 export const AuthControllerToken = new Token<AuthController>('authController')
 
 export async function initializeContainer(): Promise<Container> {
-  const connection = await DatabaseConnectionFactory.create(getBlogDatabaseConfig());
+  const connection = await PostgresConnection.create(getBlogDatabaseConfig());
 
   const authRepository = new PostgresAuthRepository(connection)
   Container.set({ id: AuthRepositoryToken, value: authRepository })

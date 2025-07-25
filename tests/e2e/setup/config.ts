@@ -6,7 +6,7 @@ dotenv.config({ path: join(process.cwd(), '.env.test') })
 
 export const config = {
   databases: {
-    blog: process.env.BLOG_DB_NAME || 'test_blog'
+    blog: process.env.DB_NAME || 'test_blog'
   },
   jwt: {
     secret: process.env.JWT_SECRET || 'test_secret',

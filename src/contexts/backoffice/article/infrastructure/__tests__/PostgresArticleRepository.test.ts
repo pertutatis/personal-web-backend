@@ -1,5 +1,5 @@
 import { DatabaseConnection } from '@/contexts/shared/infrastructure/persistence/DatabaseConnection';
-import { DatabaseConnectionFactory } from '@/contexts/shared/infrastructure/persistence/DatabaseConnectionFactory';
+import { PostgresConnection } from '@/contexts/shared/infrastructure/persistence/PostgresConnection';
 import { getBlogDatabaseConfig } from '@/contexts/shared/infrastructure/config/database';
 import { PostgresArticleRepository } from '../PostgresArticleRepository';
 import { Article } from '../../domain/Article';

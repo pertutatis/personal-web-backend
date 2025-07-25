@@ -24,7 +24,7 @@ echo "JWT_SECRET=$JWT_SECRET"
 echo "JWT_EXPIRES_IN=$JWT_EXPIRES_IN"
 echo "DB_HOST=$DB_HOST"
 echo "DB_PORT=$DB_PORT"
-echo "BLOG_DB_NAME=$BLOG_DB_NAME"
+echo "DB_NAME=$DB_NAME"
 
 echo "🔧 Setting up test databases..."
 NODE_ENV=test ts-node tests/e2e/setup/setupTestDb.ts

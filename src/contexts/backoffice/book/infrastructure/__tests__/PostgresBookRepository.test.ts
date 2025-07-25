@@ -11,7 +11,7 @@ import { TestDatabase } from '@/contexts/shared/infrastructure/__tests__/TestDat
 import { BookMother } from '../../domain/__tests__/mothers/BookMother';
 import { BookIdMother } from '../../domain/__tests__/mothers/BookIdMother';
 import { DatabaseConnection } from '@/contexts/shared/infrastructure/persistence/DatabaseConnection';
-import { DatabaseConnectionFactory } from '@/contexts/shared/infrastructure/persistence/DatabaseConnectionFactory';
+import { PostgresConnection } from '@/contexts/shared/infrastructure/persistence/PostgresConnection';
 import { getBlogDatabaseConfig } from '@/contexts/shared/infrastructure/config/database';
 
 

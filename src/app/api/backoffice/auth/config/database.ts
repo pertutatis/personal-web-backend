@@ -2,7 +2,7 @@ import { PostgresConnection } from '@/contexts/shared/infrastructure/persistence
 import { Logger } from '@/contexts/shared/infrastructure/Logger'
 
 export async function getAuthConnection(): Promise<PostgresConnection> {
-  const dbName = process.env.BLOG_DB_NAME || 'blog'
+  const dbName = process.env.DB_NAME || 'blog'
   
   Logger.info('Connecting to auth database:', {
     host: process.env.DB_HOST,
@@ -23,7 +23,7 @@ export async function getAuthConnection(): Promise<PostgresConnection> {
   try {
     const connection = await PostgresConnection.create(config)
     Logger.info('Auth database connection established successfully')
-    return connection
+    return connection as PostgresConnection
   } catch (error) {
     Logger.error('Error connecting to auth database:', error)
     throw error

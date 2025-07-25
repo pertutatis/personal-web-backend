@@ -17,7 +17,7 @@ export class PostgresConnection implements DatabaseConnection {
     user: string
     password: string
     database: string
-  }): Promise<PostgresConnection> {
+  }): Promise<DatabaseConnection> {
     try {
       const pool = new Pool(config)
       const client = await pool.connect()
@@ -54,7 +54,7 @@ export class PostgresConnection implements DatabaseConnection {
     }
   }
 
-  static async createTestConnection(database: string): Promise<PostgresConnection> {
+  static async createTestConnection(database: string): Promise<DatabaseConnection> {
     return this.create({
       host: process.env.TEST_DB_HOST || 'localhost',
       port: Number(process.env.TEST_DB_PORT) || 5432,

@@ -7,22 +7,14 @@ export function getDatabaseConfig(): DatabaseConfig {
   Logger.info('Loading database configuration', { environment });
 
   const config: DatabaseConfig = {
-    database: process.env.DB_NAME,
+    database: process.env.DB_NAME || 'postgres',
+    host: process.env.DB_HOST || 'localhost',
+    port: Number(process.env.DB_PORT) || 5432,
+    user: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASSWORD || 'postgres',
   };
 
-  if (environment === 'production') {
-    config.supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    config.supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_KEY;
-
-    if (!config.supabaseUrl || !config.supabaseKey) {
-      throw new Error('Missing required Supabase configuration');
-    }
-  } else {
-    config.host = process.env.DB_HOST || 'localhost';
-    config.port = Number(process.env.DB_PORT) || 5432;
-    config.user = process.env.DB_USER || 'postgres';
-    config.password = process.env.DB_PASSWORD || 'postgres';
-  }
+    
 
   Logger.info('Database configuration loaded', {
     environment,
@@ -30,7 +22,6 @@ export function getDatabaseConfig(): DatabaseConfig {
     host: config.host,
     port: config.port,
     user: config.user,
-    supabaseUrl: config.supabaseUrl ? '***' : undefined
   });
 
   return config;
@@ -50,7 +41,7 @@ export function getTestDatabaseConfig(database: string): DatabaseConfig {
 export function getBlogDatabaseConfig(): DatabaseConfig {
   return {
     ...getDatabaseConfig(),
-    database: process.env.BLOG_DB_NAME || 'blog',
+    database: process.env.DB_NAME || 'blog',
     port: Number(process.env.DB_PORT) || 5434
   };
 }
