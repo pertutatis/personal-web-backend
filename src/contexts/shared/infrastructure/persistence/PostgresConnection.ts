@@ -18,6 +18,7 @@ export class PostgresConnection implements DatabaseConnection {
     password: string
     database: string
     ssl?: any
+    max?: number
   }): Promise<DatabaseConnection> {
     try {
       // Si estamos en producción, forzamos SSL para Supabase y otros proveedores que lo requieran
@@ -25,6 +26,7 @@ export class PostgresConnection implements DatabaseConnection {
       const poolConfig = { ...config }
       if (isProduction) {
         poolConfig['ssl'] = { rejectUnauthorized: false }
+        poolConfig['max'] = 2 // Limitar conexiones en producción
       }
       const pool = new Pool(poolConfig)
       const client = await pool.connect()
