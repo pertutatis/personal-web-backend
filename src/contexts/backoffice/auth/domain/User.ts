@@ -6,19 +6,27 @@ export class User {
   constructor(
     readonly id: UserId,
     readonly email: EmailVO,
-    readonly password: PasswordHash
+    readonly password: PasswordHash,
   ) {}
 
-  static async create(params: { id: UserId; email: EmailVO; plainPassword: string }): Promise<User> {
+  static async create(params: {
+    id: UserId
+    email: EmailVO
+    plainPassword: string
+  }): Promise<User> {
     const passwordHash = await PasswordHash.create(params.plainPassword)
     return new User(params.id, params.email, passwordHash)
   }
 
-  static async fromPrimitives(data: { id: string; email: string; password_hash: string }): Promise<User> {
+  static async fromPrimitives(data: {
+    id: string
+    email: string
+    password_hash: string
+  }): Promise<User> {
     return new User(
       new UserId(data.id),
       new EmailVO(data.email),
-      new PasswordHash(data.password_hash)
+      new PasswordHash(data.password_hash),
     )
   }
 
@@ -30,7 +38,7 @@ export class User {
     return {
       id: this.id.value,
       email: this.email.value,
-      password_hash: this.password.toString()
+      password_hash: this.password.toString(),
     }
   }
 }

@@ -1,4 +1,7 @@
-export type TimeString = `${number}${'s' | 'm' | 'h' | 'd' | 'w' | 'y'}` | number | string
+export type TimeString =
+  | `${number}${'s' | 'm' | 'h' | 'd' | 'w' | 'y'}`
+  | number
+  | string
 
 export interface AuthConfigType {
   secret: string
@@ -8,12 +11,12 @@ export interface AuthConfigType {
 export class AuthConfig {
   private static config: AuthConfigType = {
     secret: process.env.JWT_SECRET || 'default-secret',
-    expiresIn: (process.env.JWT_EXPIRES_IN || '1h') as TimeString
+    expiresIn: (process.env.JWT_EXPIRES_IN || '1h') as TimeString,
   }
 
   private static testConfig: AuthConfigType = {
     secret: process.env.JWT_SECRET || 'test_secret',
-    expiresIn: '1h' as TimeString
+    expiresIn: '1h' as TimeString,
   }
 
   static getConfiguration(): AuthConfigType {

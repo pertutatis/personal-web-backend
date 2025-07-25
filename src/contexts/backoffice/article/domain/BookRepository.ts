@@ -1,3 +1,3 @@
 export interface BookRepository {
-  exists(id: string): Promise<boolean>;
+  exists(id: string): Promise<boolean>
 }

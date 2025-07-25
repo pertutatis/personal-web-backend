@@ -3,16 +3,16 @@ import { Environment } from '../Environment'
 import { Pool } from 'pg'
 import { TestDatabase } from './TestDatabase'
 
-import { PostgresMigrations } from '../PostgresMigrations';
+import { PostgresMigrations } from '../PostgresMigrations'
 
 export class TestHelper {
   private static readonly databases = {
     articles: 'test_blog',
-  };
+  }
 
   static async waitForDatabases(): Promise<void> {
     Logger.info('Waiting for databases to be ready...')
-    
+
     if (!Environment.isTest()) {
       throw new Error('waitForDatabases can only be run in test environment')
     }
@@ -22,11 +22,13 @@ export class TestHelper {
       await TestDatabase.closeAll()
 
       // 2. Limpiar y configurar las bases de datos
-      await Promise.all(Object.values(this.databases).map(async (dbName) => {
-        const migrations = new PostgresMigrations(dbName)
-        await migrations.clean()
-        await migrations.setup()
-      }))
+      await Promise.all(
+        Object.values(this.databases).map(async (dbName) => {
+          const migrations = new PostgresMigrations(dbName)
+          await migrations.clean()
+          await migrations.setup()
+        }),
+      )
 
       // 3. Crear nuevas conexiones
       await TestDatabase.getArticlesConnection()
@@ -57,7 +59,7 @@ export class TestHelper {
 
   static async cleanEnvironment(): Promise<void> {
     Logger.info('Cleaning up test environment...')
-    
+
     if (!Environment.isTest()) {
       throw new Error('cleanEnvironment can only be run in test environment')
     }
@@ -73,7 +75,7 @@ export class TestHelper {
 
   static async setupEnvironment(): Promise<void> {
     Logger.info('Setting up test environment...')
-    
+
     if (!Environment.isTest()) {
       throw new Error('setupEnvironment can only be run in test environment')
     }

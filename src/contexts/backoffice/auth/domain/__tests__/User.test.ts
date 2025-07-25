@@ -12,7 +12,7 @@ describe('User', () => {
     const user = await User.create({
       id: validId,
       email: validEmail,
-      plainPassword: validPlainPassword
+      plainPassword: validPlainPassword,
     })
 
     expect(user.id.value).toBe('550e8400-e29b-41d4-a716-446655440000')
@@ -24,7 +24,7 @@ describe('User', () => {
     const user = await User.create({
       id: validId,
       email: validEmail,
-      plainPassword: validPlainPassword
+      plainPassword: validPlainPassword,
     })
 
     expect(await user.validatePassword(validPlainPassword)).toBe(true)
@@ -35,13 +35,13 @@ describe('User', () => {
     const user1 = await User.create({
       id: new UserId('550e8400-e29b-41d4-a716-446655440000'),
       email: validEmail,
-      plainPassword: validPlainPassword
+      plainPassword: validPlainPassword,
     })
 
     const user2 = await User.create({
       id: new UserId('650e8400-e29b-41d4-a716-446655440001'),
       email: new EmailVO('other@example.com'),
-      plainPassword: validPlainPassword
+      plainPassword: validPlainPassword,
     })
 
     expect(user1.id.equals(user2.id)).toBe(false)
@@ -51,7 +51,7 @@ describe('User', () => {
     const user = await User.create({
       id: validId,
       email: validEmail,
-      plainPassword: validPlainPassword
+      plainPassword: validPlainPassword,
     })
 
     expect(user.password.toString()).not.toBe(validPlainPassword)

@@ -21,31 +21,31 @@ describe('PostgresAuthRepository', () => {
 
   beforeEach(async () => {
     await connection.execute('DELETE FROM users')
-    
+
     user = await User.create({
       id: new UserId('550e8400-e29b-41d4-a716-446655440000'),
       email: new EmailVO('test@example.com'),
-      plainPassword: 'Valid1Password!'
+      plainPassword: 'Valid1Password!',
     })
   })
 
   it('should save a user', async () => {
     await repository.save(user)
-    
+
     const result = await connection.execute(
       'SELECT * FROM users WHERE id = $1',
-      [user.id.value]
+      [user.id.value],
     )
-    
+
     expect(result.rows).toHaveLength(1)
     expect(result.rows[0].email).toBe(user.email.value)
   })
 
   it('should find a user by id', async () => {
     await repository.save(user)
-    
+
     const found = await repository.findById(user.id)
-    
+
     expect(found).not.toBeNull()
     expect(found?.id.value).toBe(user.id.value)
     expect(found?.email.value).toBe(user.email.value)
@@ -53,9 +53,9 @@ describe('PostgresAuthRepository', () => {
 
   it('should find a user by email', async () => {
     await repository.save(user)
-    
+
     const found = await repository.findByEmail(user.email)
-    
+
     expect(found).not.toBeNull()
     expect(found?.id.value).toBe(user.id.value)
     expect(found?.email.value).toBe(user.email.value)

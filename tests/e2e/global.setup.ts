@@ -11,7 +11,9 @@ import { Logger } from '@/contexts/shared/infrastructure/Logger'
 async function waitForServer(url: string, maxAttempts = 30): Promise<boolean> {
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     try {
-      Logger.info(`Checking server at ${url} (attempt ${attempt + 1}/${maxAttempts})...`)
+      Logger.info(
+        `Checking server at ${url} (attempt ${attempt + 1}/${maxAttempts})...`,
+      )
       const response = await fetch(url)
       if (response.ok || response.status === 404) {
         Logger.info('Server is responding with status:', response.status)
@@ -25,12 +27,14 @@ async function waitForServer(url: string, maxAttempts = 30): Promise<boolean> {
         Logger.info('Server not ready yet, waiting... Unknown error')
       }
     }
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await new Promise((resolve) => setTimeout(resolve, 1000))
   }
   return false
 }
 
-async function verifyDatabaseConnection(apiHelpers: ApiHelpers): Promise<boolean> {
+async function verifyDatabaseConnection(
+  apiHelpers: ApiHelpers,
+): Promise<boolean> {
   try {
     Logger.info('Verifying database connection...')
     await apiHelpers.cleanupTestData()
@@ -47,7 +51,8 @@ async function verifyDatabaseConnection(apiHelpers: ApiHelpers): Promise<boolean
 }
 
 async function globalSetup(config: FullConfig) {
-  const baseURL = process.env.PLAYWRIGHT_TEST_BASE_URL || 'http://localhost:3000'
+  const baseURL =
+    process.env.PLAYWRIGHT_TEST_BASE_URL || 'http://localhost:3000'
   const healthEndpoint = `${baseURL}/api/health`
 
   Logger.info('Starting global setup...')
@@ -77,7 +82,7 @@ async function globalSetup(config: FullConfig) {
     const apiRequest = await request.newContext({
       baseURL,
       extraHTTPHeaders: {
-        'Accept': 'application/json',
+        Accept: 'application/json',
         'Content-Type': 'application/json',
       },
     })
@@ -97,7 +102,6 @@ async function globalSetup(config: FullConfig) {
       Logger.info('Cleaning up test data...')
       await apiHelpers.cleanupTestData()
       Logger.info('Test data cleaned up')
-
     } finally {
       if (apiHelpers) {
         await apiHelpers.dispose()
@@ -107,7 +111,10 @@ async function globalSetup(config: FullConfig) {
 
     Logger.info('Global setup completed successfully')
   } catch (error) {
-    Logger.error('Error during global setup:', error instanceof Error ? error.message : 'Unknown error')
+    Logger.error(
+      'Error during global setup:',
+      error instanceof Error ? error.message : 'Unknown error',
+    )
     throw error
   }
 }

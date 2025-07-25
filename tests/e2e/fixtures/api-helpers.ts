@@ -3,7 +3,12 @@ import { Pool } from 'pg'
 import { ArticlesApi } from '../apis/articles-api'
 import { BooksApi } from '../apis/books-api'
 import { TestArticle, TestBook, CreateArticleRequest } from './test-data'
-import { ArticleResponse, BookResponse, ErrorResponse, PaginatedResponse } from './api-types'
+import {
+  ArticleResponse,
+  BookResponse,
+  ErrorResponse,
+  PaginatedResponse,
+} from './api-types'
 import { v4 as uuidv4 } from 'uuid'
 import { config } from '../setup/config'
 import { Logger } from '@/contexts/shared/infrastructure/Logger'
@@ -14,7 +19,7 @@ export class ApiHelpers {
   constructor(
     private request: APIRequestContext,
     private booksApi: BooksApi,
-    private articlesApi: ArticlesApi
+    private articlesApi: ArticlesApi,
   ) {
     // Create connection pool para la base unificada
     this.blogPool = new Pool({
@@ -22,7 +27,7 @@ export class ApiHelpers {
       port: config.port,
       user: config.user,
       password: config.password,
-      database: config.databases.blog
+      database: config.databases.blog,
     })
   }
 
@@ -32,7 +37,7 @@ export class ApiHelpers {
       await Promise.all([
         this.blogPool.query('TRUNCATE books CASCADE'),
         this.blogPool.query('TRUNCATE articles CASCADE'),
-        this.blogPool.query('TRUNCATE users CASCADE')
+        this.blogPool.query('TRUNCATE users CASCADE'),
       ])
       Logger.info('Database cleaned successfully')
     } catch (error) {
@@ -63,7 +68,9 @@ export class ApiHelpers {
     }
   }
 
-  async createTestArticle(article: Partial<Omit<TestArticle, 'id'>>): Promise<ArticleResponse> {
+  async createTestArticle(
+    article: Partial<Omit<TestArticle, 'id'>>,
+  ): Promise<ArticleResponse> {
     const articleId = uuidv4()
     const slug = article.title
       ? article.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')
@@ -76,7 +83,7 @@ export class ApiHelpers {
       content: article.content || 'Test content',
       bookIds: article.bookIds || [],
       relatedLinks: article.relatedLinks || [],
-      slug
+      slug,
     }
 
     const response = await this.articlesApi.createArticle(articleWithId)
@@ -94,16 +101,21 @@ export class ApiHelpers {
     try {
       await this.cleanDatabasesDirectly()
 
-      const articlesResponse = await this.articlesApi.listArticles({ limit: 100 })
+      const articlesResponse = await this.articlesApi.listArticles({
+        limit: 100,
+      })
       if (articlesResponse.ok()) {
-        const response = await articlesResponse.json();
-        const articles = response?.data || [];
+        const response = await articlesResponse.json()
+        const articles = response?.data || []
         Logger.info(`Found ${articles.length} articles to delete`)
         for (const article of articles) {
           try {
-            const id = typeof article.id === 'object' && article.id !== null && 'value' in article.id
-              ? (article.id as any).value
-              : article.id
+            const id =
+              typeof article.id === 'object' &&
+              article.id !== null &&
+              'value' in article.id
+                ? (article.id as any).value
+                : article.id
             if (!id || typeof id !== 'string') {
               Logger.error('Invalid article ID format:', article)
               continue
@@ -111,7 +123,10 @@ export class ApiHelpers {
             Logger.info(`Attempting to delete article ${id}`)
             const deleteResponse = await this.articlesApi.deleteArticle(id)
             if (!deleteResponse.ok()) {
-              Logger.error(`Failed to delete article ${id}:`, await deleteResponse.text())
+              Logger.error(
+                `Failed to delete article ${id}:`,
+                await deleteResponse.text(),
+              )
             }
           } catch (error) {
             Logger.error('Error deleting article:', error)
@@ -123,14 +138,17 @@ export class ApiHelpers {
 
       const booksResponse = await this.booksApi.listBooks({ limit: 100 })
       if (booksResponse.ok()) {
-        const response = await booksResponse.json();
-        const books = response?.data || [];
+        const response = await booksResponse.json()
+        const books = response?.data || []
         Logger.info(`Found ${books.length} books to delete`)
         for (const book of books) {
           try {
             const deleteResponse = await this.booksApi.deleteBook(book.id)
             if (!deleteResponse.ok()) {
-              Logger.error(`Failed to delete book ${book.id}:`, await deleteResponse.text())
+              Logger.error(
+                `Failed to delete book ${book.id}:`,
+                await deleteResponse.text(),
+              )
             }
           } catch (error) {
             Logger.error(`Error deleting book ${book.id}:`, error)
@@ -146,14 +164,17 @@ export class ApiHelpers {
     }
   }
 
-  async createTestBookWithArticle(): Promise<{ book: BookResponse; article: ArticleResponse }> {
+  async createTestBookWithArticle(): Promise<{
+    book: BookResponse
+    article: ArticleResponse
+  }> {
     const book = await this.createTestBook({
       id: uuidv4(),
       title: 'Test Book for Article',
       author: 'Test Author',
       isbn: '9780321125217',
       description: 'A test book for article reference',
-      purchaseLink: 'https://example.com/test-book'
+      purchaseLink: 'https://example.com/test-book',
     })
 
     const article = await this.createTestArticle({
@@ -164,17 +185,20 @@ export class ApiHelpers {
       relatedLinks: [
         {
           text: 'Related Test Link',
-          url: 'https://example.com/test-related'
-        }
-      ]
+          url: 'https://example.com/test-related',
+        },
+      ],
     })
 
     return { book, article }
   }
 
-  async verifySuccessResponse<T>(response: any, expectedStatus = 200): Promise<T> {
+  async verifySuccessResponse<T>(
+    response: any,
+    expectedStatus = 200,
+  ): Promise<T> {
     expect(response.status()).toBe(expectedStatus)
-    
+
     // For 204 and 201 responses, verify empty body
     if (expectedStatus === 204 || expectedStatus === 201) {
       const body = await response.text()
@@ -188,7 +212,10 @@ export class ApiHelpers {
     return body as T
   }
 
-  async verifyErrorResponse(response: any, expectedStatus = 400): Promise<ErrorResponse> {
+  async verifyErrorResponse(
+    response: any,
+    expectedStatus = 400,
+  ): Promise<ErrorResponse> {
     expect(response.status()).toBe(expectedStatus)
     const error = await response.json()
     expect(error).toHaveProperty('type')

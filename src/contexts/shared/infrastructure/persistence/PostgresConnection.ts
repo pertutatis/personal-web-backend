@@ -38,14 +38,17 @@ export class PostgresConnection implements DatabaseConnection {
         port: config.port,
         database: config.database,
         user: config.user,
-        ssl: isProduction ? 'enabled' : 'disabled'
+        ssl: isProduction ? 'enabled' : 'disabled',
       })
 
       return new PostgresConnection(pool, config.database)
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error)
 
-      if (errorMsg.includes('database') && errorMsg.includes('does not exist')) {
+      if (
+        errorMsg.includes('database') &&
+        errorMsg.includes('does not exist')
+      ) {
         const error = new Error('DatabaseConnectionError')
         error.name = 'DatabaseConnectionError'
         error.message = `La base de datos "${config.database}" no existe o no es accesible. Por favor, verifica la configuración y los permisos.`
@@ -57,26 +60,28 @@ export class PostgresConnection implements DatabaseConnection {
         host: config.host,
         port: config.port,
         database: config.database,
-        user: config.user
+        user: config.user,
       })
 
       throw new Error(`Failed to connect to database: ${errorMsg}`)
     }
   }
 
-  static async createTestConnection(database: string): Promise<DatabaseConnection> {
+  static async createTestConnection(
+    database: string,
+  ): Promise<DatabaseConnection> {
     return this.create({
       host: process.env.TEST_DB_HOST || 'localhost',
       port: Number(process.env.TEST_DB_PORT) || 5432,
       user: process.env.TEST_DB_USER || 'postgres',
       password: process.env.TEST_DB_PASSWORD || 'postgres',
-      database
+      database,
     })
   }
 
   async execute<T extends QueryResultRow = any>(
     query: string,
-    values?: any[]
+    values?: any[],
   ): Promise<QueryResult<T>> {
     try {
       return await this.client.query<T>(query, values)
@@ -84,7 +89,7 @@ export class PostgresConnection implements DatabaseConnection {
       Logger.error('Error executing query:', {
         error: error instanceof Error ? error.message : String(error),
         database: this.database,
-        query: query.trim().slice(0, 100) + '...'
+        query: query.trim().slice(0, 100) + '...',
       })
       throw error
     }
@@ -95,13 +100,13 @@ export class PostgresConnection implements DatabaseConnection {
       if (this.client) {
         await this.client.end()
         Logger.info('PostgreSQL connection closed', {
-          database: this.database
+          database: this.database,
         })
       }
     } catch (error) {
       Logger.error('Error closing database connection:', {
         error: error instanceof Error ? error.message : String(error),
-        database: this.database
+        database: this.database,
       })
       throw error
     }

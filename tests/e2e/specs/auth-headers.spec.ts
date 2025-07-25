@@ -14,24 +14,26 @@ test.describe('Auth Headers', () => {
     expect(decoded).toHaveProperty('email')
   })
 
-  test('should make authenticated request successfully', async ({ request }) => {
+  test('should make authenticated request successfully', async ({
+    request,
+  }) => {
     const token = await AuthHelper.generateToken()
-    
-    Logger.info('Making request with token:', { 
+
+    Logger.info('Making request with token:', {
       tokenLength: token.length,
-      tokenStart: token.substring(0, 10) + '...' 
+      tokenStart: token.substring(0, 10) + '...',
     })
 
     const response = await request.get('/api/backoffice/articles', {
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      }
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
     })
 
     expect(response.status()).toBe(200)
-    
+
     const body = await response.json()
     expect(Array.isArray(body.items)).toBe(true)
   })
@@ -39,13 +41,13 @@ test.describe('Auth Headers', () => {
   test('should reject invalid tokens', async ({ request }) => {
     const response = await request.get('/api/backoffice/articles', {
       headers: {
-        'Authorization': 'Bearer invalid-token'
-      }
+        Authorization: 'Bearer invalid-token',
+      },
     })
 
     Logger.info('Invalid token rejected:', {
       status: response.status(),
-      body: await response.json()
+      body: await response.json(),
     })
 
     expect(response.status()).toBe(401)
@@ -56,10 +58,10 @@ test.describe('Auth Headers', () => {
 
   test('should reject missing auth header', async ({ request }) => {
     const response = await request.get('/api/backoffice/books')
-    
+
     Logger.info('Missing auth header rejected:', {
       status: response.status(),
-      body: await response.json()
+      body: await response.json(),
     })
 
     expect(response.status()).toBe(401)

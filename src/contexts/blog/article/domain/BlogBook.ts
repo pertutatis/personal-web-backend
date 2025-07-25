@@ -11,7 +11,7 @@ export class BlogBook {
     readonly description: string,
     readonly purchaseLink: string | null,
     readonly createdAt: Date,
-    readonly updatedAt: Date
+    readonly updatedAt: Date,
   ) {}
 
   /**
@@ -26,14 +26,14 @@ export class BlogBook {
       this.description,
       this.purchaseLink,
       this.createdAt,
-      this.updatedAt
-    );
+      this.updatedAt,
+    )
   }
 
   /**
    * Equality comparison based on ID
    */
   equals(other: BlogBook): boolean {
-    return this.id === other.id;
+    return this.id === other.id
   }
 }

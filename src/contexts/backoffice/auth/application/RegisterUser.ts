@@ -9,14 +9,20 @@ import { Logger } from '@/contexts/shared/infrastructure/Logger'
 export class RegisterUser {
   constructor(
     private repository: AuthRepository,
-    private uuidGenerator: UuidGenerator
+    private uuidGenerator: UuidGenerator,
   ) {}
 
-  async run({ email, password }: { email: string; password: string }): Promise<string> {
+  async run({
+    email,
+    password,
+  }: {
+    email: string
+    password: string
+  }): Promise<string> {
     Logger.info('Registering user with email:', email)
-    
+
     const emailVO = new EmailVO(email)
-    
+
     const existingUser = await this.repository.findByEmail(emailVO)
     if (existingUser) {
       Logger.info('User already exists:', { email })
@@ -28,12 +34,12 @@ export class RegisterUser {
     const user = await User.create({
       id: userId,
       email: emailVO,
-      plainPassword: password
+      plainPassword: password,
     })
-    
+
     await this.repository.save(user)
     Logger.info('User registered successfully:', { email, userId: generatedId })
-    
+
     return generatedId
   }
 }

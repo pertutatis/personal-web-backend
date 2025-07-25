@@ -1,6 +1,6 @@
-import { BlogArticle } from '../domain/BlogArticle';
-import { BlogArticleRepository } from '../domain/BlogArticleRepository';
-import { BlogArticleNotFound } from '../domain/BlogArticleNotFound';
+import { BlogArticle } from '../domain/BlogArticle'
+import { BlogArticleRepository } from '../domain/BlogArticleRepository'
+import { BlogArticleNotFound } from '../domain/BlogArticleNotFound'
 
 /**
  * Use case: Get a single blog article by its slug.
@@ -14,12 +14,12 @@ export class GetArticleBySlug {
    * @throws BlogArticleNotFound if the article doesn't exist
    */
   async execute(slug: string): Promise<BlogArticle> {
-    const article = await this.repository.findBySlug(slug);
+    const article = await this.repository.findBySlug(slug)
 
     if (!article) {
-      throw new BlogArticleNotFound(slug);
+      throw new BlogArticleNotFound(slug)
     }
 
-    return article;
+    return article
   }
 }

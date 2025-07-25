@@ -18,7 +18,7 @@ export class PostgresAuthRepository implements AuthRepository {
          VALUES ($1, $2, $3)
          ON CONFLICT (id) DO UPDATE
          SET email = $2, password_hash = $3`,
-        [data.id, data.email, data.password_hash]
+        [data.id, data.email, data.password_hash],
       )
 
       Logger.info('User saved successfully')
@@ -40,7 +40,7 @@ export class PostgresAuthRepository implements AuthRepository {
         `SELECT id, email, password_hash
          FROM users
          WHERE email = $1`,
-        [email.value]
+        [email.value],
       )
 
       if (result.rows.length === 0) {
@@ -54,7 +54,7 @@ export class PostgresAuthRepository implements AuthRepository {
       return User.fromPrimitives({
         id: userData.id,
         email: userData.email,
-        password_hash: userData.password_hash
+        password_hash: userData.password_hash,
       })
     } catch (error) {
       Logger.error('Error finding user by email:', error)
@@ -74,7 +74,7 @@ export class PostgresAuthRepository implements AuthRepository {
         `SELECT id, email, password_hash
          FROM users
          WHERE id = $1`,
-        [id.value]
+        [id.value],
       )
 
       if (result.rows.length === 0) {
@@ -88,7 +88,7 @@ export class PostgresAuthRepository implements AuthRepository {
       return User.fromPrimitives({
         id: userData.id,
         email: userData.email,
-        password_hash: userData.password_hash
+        password_hash: userData.password_hash,
       })
     } catch (error) {
       Logger.error('Error finding user by id:', error)

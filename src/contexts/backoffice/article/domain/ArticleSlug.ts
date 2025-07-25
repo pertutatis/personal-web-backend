@@ -1,28 +1,28 @@
-import { StringValueObject } from '@/contexts/shared/domain/StringValueObject';
-import { ArticleSlugEmpty } from './ArticleSlugEmpty';
-import { ArticleSlugInvalid } from './ArticleSlugInvalid';
-import { ArticleSlugLengthExceeded } from './ArticleSlugLengthExceeded';
+import { StringValueObject } from '@/contexts/shared/domain/StringValueObject'
+import { ArticleSlugEmpty } from './ArticleSlugEmpty'
+import { ArticleSlugInvalid } from './ArticleSlugInvalid'
+import { ArticleSlugLengthExceeded } from './ArticleSlugLengthExceeded'
 
 export class ArticleSlug extends StringValueObject {
-  static readonly MAX_LENGTH = 100;
-  static readonly SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+  static readonly MAX_LENGTH = 100
+  static readonly SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 
   constructor(value: string) {
-    const trimmedValue = value.trim();
-    ArticleSlug.validateEmpty(trimmedValue);
-    ArticleSlug.validateLength(trimmedValue);
-    ArticleSlug.validateFormat(trimmedValue);
-    super(trimmedValue);
+    const trimmedValue = value.trim()
+    ArticleSlug.validateEmpty(trimmedValue)
+    ArticleSlug.validateLength(trimmedValue)
+    ArticleSlug.validateFormat(trimmedValue)
+    super(trimmedValue)
   }
 
   static fromTitle(title: string): ArticleSlug {
-    const slug = ArticleSlug.generateSlug(title);
-    return new ArticleSlug(slug);
+    const slug = ArticleSlug.generateSlug(title)
+    return new ArticleSlug(slug)
   }
 
   private static generateSlug(text: string): string {
     if (!text || text.trim().length === 0) {
-      throw new ArticleSlugEmpty();
+      throw new ArticleSlugEmpty()
     }
 
     // Convertir a slug en un solo paso
@@ -33,34 +33,34 @@ export class ArticleSlug extends StringValueObject {
       .trim() // Eliminar espacios al inicio y final
       .replace(/\s+/g, '-') // Convertir espacios en guiones
       .replace(/-+/g, '-') // Eliminar guiones consecutivos
-      .replace(/^-+|-+$/g, ''); // Eliminar guiones al inicio y final
+      .replace(/^-+|-+$/g, '') // Eliminar guiones al inicio y final
 
     if (slugified.length === 0) {
-      throw new ArticleSlugInvalid();
+      throw new ArticleSlugInvalid()
     }
 
     if (slugified.length > ArticleSlug.MAX_LENGTH) {
-      throw new ArticleSlugLengthExceeded();
+      throw new ArticleSlugLengthExceeded()
     }
 
-    return slugified;
+    return slugified
   }
 
   private static validateEmpty(value: string): void {
     if (!value || value.length === 0) {
-      throw new ArticleSlugEmpty();
+      throw new ArticleSlugEmpty()
     }
   }
 
   private static validateLength(value: string): void {
     if (value.length > ArticleSlug.MAX_LENGTH) {
-      throw new ArticleSlugLengthExceeded();
+      throw new ArticleSlugLengthExceeded()
     }
   }
 
   private static validateFormat(value: string): void {
     if (!ArticleSlug.SLUG_PATTERN.test(value)) {
-      throw new ArticleSlugInvalid();
+      throw new ArticleSlugInvalid()
     }
   }
 }

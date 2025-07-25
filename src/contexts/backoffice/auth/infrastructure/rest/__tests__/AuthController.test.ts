@@ -19,16 +19,16 @@ describe('AuthController', () => {
     repository = {
       save: jest.fn(),
       findById: jest.fn(),
-      findByEmail: jest.fn()
+      findByEmail: jest.fn(),
     }
 
     uuidGenerator = {
-      generate: jest.fn()
+      generate: jest.fn(),
     }
 
     jwtGenerator = {
       generate: jest.fn(),
-      verify: jest.fn()
+      verify: jest.fn(),
     }
 
     controller = new AuthController(repository, uuidGenerator, jwtGenerator)
@@ -39,12 +39,12 @@ describe('AuthController', () => {
       const userId = '550e8400-e29b-41d4-a716-446655440000'
       const requestBody = {
         email: 'test@example.com',
-        password: 'Valid1Password!'
+        password: 'Valid1Password!',
       }
 
       const request = new NextRequest('http://localhost', {
         method: 'POST',
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
       })
 
       repository.findByEmail.mockResolvedValue(null)
@@ -61,19 +61,21 @@ describe('AuthController', () => {
     it('should return 409 when user already exists', async () => {
       const requestBody = {
         email: 'existing@example.com',
-        password: 'Valid1Password!'
+        password: 'Valid1Password!',
       }
 
       const request = new NextRequest('http://localhost', {
         method: 'POST',
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
       })
 
-      repository.findByEmail.mockResolvedValue(new User({
-        id: new UserId('650e8400-e29b-41d4-a716-446655440001'),
-        email: new EmailVO(requestBody.email),
-        password: requestBody.password as any
-      }))
+      repository.findByEmail.mockResolvedValue(
+        new User({
+          id: new UserId('650e8400-e29b-41d4-a716-446655440001'),
+          email: new EmailVO(requestBody.email),
+          password: requestBody.password as any,
+        }),
+      )
 
       const response = await controller.register(request)
       const body = await response.json()
@@ -87,19 +89,19 @@ describe('AuthController', () => {
     it('should login successfully with valid credentials', async () => {
       const requestBody = {
         email: 'test@example.com',
-        password: 'Valid1Password!'
+        password: 'Valid1Password!',
       }
 
       const request = new NextRequest('http://localhost', {
         method: 'POST',
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
       })
 
       const token = 'valid.jwt.token'
       const user = User.create({
         id: new UserId('550e8400-e29b-41d4-a716-446655440000'),
         email: new EmailVO(requestBody.email),
-        plainPassword: requestBody.password
+        plainPassword: requestBody.password,
       })
 
       repository.findByEmail.mockResolvedValue(user)
@@ -115,12 +117,12 @@ describe('AuthController', () => {
     it('should return 401 with invalid credentials', async () => {
       const requestBody = {
         email: 'test@example.com',
-        password: 'WrongPassword1!'
+        password: 'WrongPassword1!',
       }
 
       const request = new NextRequest('http://localhost', {
         method: 'POST',
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
       })
 
       repository.findByEmail.mockResolvedValue(null)

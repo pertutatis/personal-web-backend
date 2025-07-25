@@ -1,9 +1,9 @@
-import { DomainError } from '@/contexts/shared/domain/DomainError';
+import { DomainError } from '@/contexts/shared/domain/DomainError'
 
 export class ArticleTitleEmpty extends DomainError {
   constructor() {
-    super('Article title cannot be empty');
+    super('Article title cannot be empty')
   }
 
-  readonly type = 'ValidationError';
+  readonly type = 'ValidationError'
 }

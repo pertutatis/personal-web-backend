@@ -24,7 +24,7 @@ export class Logger {
       return {
         message: data.message,
         stack: data.stack,
-        name: data.name
+        name: data.name,
       }
     }
     return data as Record<string, unknown>

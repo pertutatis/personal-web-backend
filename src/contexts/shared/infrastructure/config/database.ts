@@ -1,10 +1,10 @@
-import { DatabaseConfig } from '../persistence/DatabaseConnectionFactory';
-import { Logger } from '../Logger';
+import { DatabaseConfig } from '../persistence/DatabaseConnectionFactory'
+import { Logger } from '../Logger'
 
 export function getDatabaseConfig(): DatabaseConfig {
-  const environment = process.env.NODE_ENV || 'development';
-  
-  Logger.info('Loading database configuration', { environment });
+  const environment = process.env.NODE_ENV || 'development'
+
+  Logger.info('Loading database configuration', { environment })
 
   const config: DatabaseConfig = {
     database: process.env.DB_NAME || 'postgres',
@@ -12,9 +12,7 @@ export function getDatabaseConfig(): DatabaseConfig {
     port: Number(process.env.DB_PORT) || 5432,
     user: process.env.DB_USER || 'postgres',
     password: process.env.DB_PASSWORD || 'postgres',
-  };
-
-    
+  }
 
   Logger.info('Database configuration loaded', {
     environment,
@@ -22,9 +20,9 @@ export function getDatabaseConfig(): DatabaseConfig {
     host: config.host,
     port: config.port,
     user: config.user,
-  });
+  })
 
-  return config;
+  return config
 }
 
 export function getTestDatabaseConfig(database: string): DatabaseConfig {
@@ -33,15 +31,14 @@ export function getTestDatabaseConfig(database: string): DatabaseConfig {
     port: Number(process.env.TEST_DB_PORT) || 5432,
     user: process.env.TEST_DB_USER || 'postgres',
     password: process.env.TEST_DB_PASSWORD || 'postgres',
-    database
-  };
+    database,
+  }
 }
-
 
 export function getBlogDatabaseConfig(): DatabaseConfig {
   return {
     ...getDatabaseConfig(),
     database: process.env.DB_NAME || 'blog',
-    port: Number(process.env.DB_PORT) || 5434
-  };
+    port: Number(process.env.DB_PORT) || 5434,
+  }
 }

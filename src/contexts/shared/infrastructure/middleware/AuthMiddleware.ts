@@ -13,33 +13,33 @@ export class AuthMiddleware {
         Logger.warn('No auth header provided in request')
         return NextResponse.json(
           { type: 'UnauthorizedError', message: 'No token provided' },
-          { status: 401 }
+          { status: 401 },
         )
       }
 
       const token = authHeader.replace('Bearer ', '')
-      Logger.info('Processing authentication', { 
+      Logger.info('Processing authentication', {
         path: request.nextUrl.pathname,
         method: request.method,
-        tokenLength: token.length 
+        tokenLength: token.length,
       })
 
       const decoded = await this.jwtGenerator.verify(token)
       if (!decoded) {
-        Logger.warn('Token verification failed', { 
+        Logger.warn('Token verification failed', {
           path: request.nextUrl.pathname,
-          method: request.method 
+          method: request.method,
         })
         return NextResponse.json(
           { type: 'UnauthorizedError', message: 'Token verification failed' },
-          { status: 401 }
+          { status: 401 },
         )
       }
 
-      Logger.info('Authentication successful', { 
+      Logger.info('Authentication successful', {
         userId: decoded.id,
         path: request.nextUrl.pathname,
-        method: request.method 
+        method: request.method,
       })
 
       const requestHeaders = new Headers(request.headers)
@@ -56,12 +56,12 @@ export class AuthMiddleware {
         path: request.nextUrl.pathname,
         method: request.method,
         error: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : undefined
+        stack: error instanceof Error ? error.stack : undefined,
       })
 
       return NextResponse.json(
         { type: 'UnauthorizedError', message: 'Token verification failed' },
-        { status: 401 }
+        { status: 401 },
       )
     }
   }

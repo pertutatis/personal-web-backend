@@ -1,38 +1,36 @@
-import { BlogArticle } from '../../domain/BlogArticle';
-import { BlogArticleRepository } from '../../domain/BlogArticleRepository';
-import { BlogBook } from '../../domain/BlogBook';
-import { DatabaseConnection } from '@/contexts/shared/infrastructure/persistence/DatabaseConnection';
-import { QueryResult } from 'pg';
+import { BlogArticle } from '../../domain/BlogArticle'
+import { BlogArticleRepository } from '../../domain/BlogArticleRepository'
+import { BlogBook } from '../../domain/BlogBook'
+import { DatabaseConnection } from '@/contexts/shared/infrastructure/persistence/DatabaseConnection'
+import { QueryResult } from 'pg'
 
 interface ArticleRow {
-  id: string;
-  title: string;
-  excerpt: string;
-  content: string;
-  book_ids: string[];
-  book_ids_debug?: string;
-  related_links: string;
-  slug: string;
-  created_at: Date;
-  updated_at: Date;
+  id: string
+  title: string
+  excerpt: string
+  content: string
+  book_ids: string[]
+  book_ids_debug?: string
+  related_links: string
+  slug: string
+  created_at: Date
+  updated_at: Date
 }
 
 interface BookRow {
-  id: string;
-  id_text?: string;
-  title: string;
-  author: string;
-  isbn: string | null;
-  description: string | null;
-  purchase_link: string | null;
-  created_at: Date;
-  updated_at: Date;
+  id: string
+  id_text?: string
+  title: string
+  author: string
+  isbn: string | null
+  description: string | null
+  purchase_link: string | null
+  created_at: Date
+  updated_at: Date
 }
 
 export class PostgresBlogArticleRepository implements BlogArticleRepository {
-  constructor(
-    private readonly connection: DatabaseConnection
-  ) {}
+  constructor(private readonly connection: DatabaseConnection) {}
 
   async findAll(): Promise<BlogArticle[]> {
     // First get all articles
@@ -49,21 +47,22 @@ export class PostgresBlogArticleRepository implements BlogArticleRepository {
         a.updated_at
       FROM articles a
       ORDER BY a.created_at DESC;
-    `;
+    `
 
-    const articlesResult = await this.connection.execute<ArticleRow>(articlesQuery);
-    const articles = articlesResult.rows;
+    const articlesResult =
+      await this.connection.execute<ArticleRow>(articlesQuery)
+    const articles = articlesResult.rows
 
     if (articles.length === 0) {
-      return [];
+      return []
     }
 
     // Then get all referenced books
     const allBookIds = articles.reduce((ids: string[], article) => {
-      return [...ids, ...(article.book_ids || [])];
-    }, []);
+      return [...ids, ...(article.book_ids || [])]
+    }, [])
 
-    let books: BookRow[] = [];
+    let books: BookRow[] = []
     if (allBookIds.length > 0) {
       const booksQuery = `
         WITH clean_ids AS (
@@ -73,16 +72,20 @@ export class PostgresBlogArticleRepository implements BlogArticleRepository {
         FROM books b
         JOIN clean_ids c ON b.id::text = c.id
         ORDER BY b.title;
-      `;
-      const booksResult = await this.connection.execute<BookRow>(booksQuery, [allBookIds]);
-      books = booksResult.rows;
+      `
+      const booksResult = await this.connection.execute<BookRow>(booksQuery, [
+        allBookIds,
+      ])
+      books = booksResult.rows
     }
 
     // Map articles with their books
-    return articles.map(article => {
-      const articleBooks = books.filter(book => article.book_ids.includes(book.id));
-      return this.mapToArticle(article, articleBooks);
-    });
+    return articles.map((article) => {
+      const articleBooks = books.filter((book) =>
+        article.book_ids.includes(book.id),
+      )
+      return this.mapToArticle(article, articleBooks)
+    })
   }
 
   async findBySlug(slug: string): Promise<BlogArticle | null> {
@@ -99,18 +102,21 @@ export class PostgresBlogArticleRepository implements BlogArticleRepository {
         a.updated_at
       FROM articles a
       WHERE a.slug = $1;
-    `;
+    `
 
-    const articleResult = await this.connection.execute<ArticleRow>(articleQuery, [slug]);
+    const articleResult = await this.connection.execute<ArticleRow>(
+      articleQuery,
+      [slug],
+    )
 
     if (articleResult.rows.length === 0) {
-      return null;
+      return null
     }
 
-    const article = articleResult.rows[0];
-    const bookIds = article.book_ids || [];
+    const article = articleResult.rows[0]
+    const bookIds = article.book_ids || []
 
-    let books: BookRow[] = [];
+    let books: BookRow[] = []
     if (bookIds.length > 0) {
       const booksQuery = `
         SELECT
@@ -122,25 +128,30 @@ export class PostgresBlogArticleRepository implements BlogArticleRepository {
           FROM unnest($1::text[]) AS x
         )
         ORDER BY b.title;
-      `;
-      const booksResult = await this.connection.execute<BookRow>(booksQuery, [bookIds]);
-      books = booksResult.rows;
+      `
+      const booksResult = await this.connection.execute<BookRow>(booksQuery, [
+        bookIds,
+      ])
+      books = booksResult.rows
     }
 
-    return this.mapToArticle(article, books);
+    return this.mapToArticle(article, books)
   }
 
   private mapToArticle(article: ArticleRow, books: BookRow[]): BlogArticle {
-    const mappedBooks = books.map(book => new BlogBook(
-      book.id_text || book.id,
-      book.title,
-      book.author,
-      book.isbn ?? '',
-      book.description ?? '',
-      book.purchase_link ?? '',
-      new Date(book.created_at),
-      new Date(book.updated_at)
-    ));
+    const mappedBooks = books.map(
+      (book) =>
+        new BlogBook(
+          book.id_text || book.id,
+          book.title,
+          book.author,
+          book.isbn ?? '',
+          book.description ?? '',
+          book.purchase_link ?? '',
+          new Date(book.created_at),
+          new Date(book.updated_at),
+        ),
+    )
 
     return new BlogArticle(
       article.id,
@@ -148,12 +159,12 @@ export class PostgresBlogArticleRepository implements BlogArticleRepository {
       article.excerpt,
       article.content,
       mappedBooks,
-      typeof article.related_links === 'string' 
-        ? JSON.parse(article.related_links) 
+      typeof article.related_links === 'string'
+        ? JSON.parse(article.related_links)
         : article.related_links,
       article.slug,
       new Date(article.created_at),
-      new Date(article.updated_at)
-    );
+      new Date(article.updated_at),
+    )
   }
 }

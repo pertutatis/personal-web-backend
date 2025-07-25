@@ -16,10 +16,10 @@ describe('RegisterUser', () => {
     repository = {
       save: jest.fn(),
       findById: jest.fn(),
-      findByEmail: jest.fn()
+      findByEmail: jest.fn(),
     }
     uuidGenerator = {
-      generate: jest.fn()
+      generate: jest.fn(),
     }
     registerUser = new RegisterUser(repository, uuidGenerator)
   })
@@ -39,12 +39,8 @@ describe('RegisterUser', () => {
 
     // Then
     expect(result).toBe(userId)
-    expect(repository.findByEmail).toHaveBeenCalledWith(
-      expect.any(EmailVO)
-    )
-    expect(repository.save).toHaveBeenCalledWith(
-      expect.any(User)
-    )
+    expect(repository.findByEmail).toHaveBeenCalledWith(expect.any(EmailVO))
+    expect(repository.save).toHaveBeenCalledWith(expect.any(User))
   })
 
   it('should throw UserAlreadyExists when email is already registered', async () => {
@@ -52,16 +48,18 @@ describe('RegisterUser', () => {
     const email = 'test@example.com'
     const password = 'Valid1Password!'
 
-    repository.findByEmail.mockResolvedValue(new User({
-      id: new UserId('650e8400-e29b-41d4-a716-446655440001'),
-      email: new EmailVO(email),
-      password: new PasswordVO(password)
-    }))
+    repository.findByEmail.mockResolvedValue(
+      new User({
+        id: new UserId('650e8400-e29b-41d4-a716-446655440001'),
+        email: new EmailVO(email),
+        password: new PasswordVO(password),
+      }),
+    )
 
     // When/Then
-    await expect(
-      registerUser.run({ email, password })
-    ).rejects.toThrow(UserAlreadyExists)
+    await expect(registerUser.run({ email, password })).rejects.toThrow(
+      UserAlreadyExists,
+    )
 
     expect(repository.save).not.toHaveBeenCalled()
   })

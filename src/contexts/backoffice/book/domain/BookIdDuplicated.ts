@@ -1,9 +1,9 @@
-import { DomainError } from '@/contexts/shared/domain/DomainError';
+import { DomainError } from '@/contexts/shared/domain/DomainError'
 
 export class BookIdDuplicated extends DomainError {
-  readonly type = 'ValidationError';
+  readonly type = 'ValidationError'
 
   constructor(id: string) {
-    super(`Book ID ${id} already exists`);
+    super(`Book ID ${id} already exists`)
   }
 }

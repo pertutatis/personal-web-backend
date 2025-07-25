@@ -1,9 +1,13 @@
-import { JWTGenerator, TokenPayload, JwtExpiration } from '../domain/JWTGenerator'
+import {
+  JWTGenerator,
+  TokenPayload,
+  JwtExpiration,
+} from '../domain/JWTGenerator'
 
 export abstract class BaseJwtTokenGenerator implements JWTGenerator {
   constructor(
     protected readonly secret: string,
-    protected readonly expiresIn: JwtExpiration
+    protected readonly expiresIn: JwtExpiration,
   ) {}
 
   abstract generate(payload: TokenPayload): Promise<string>

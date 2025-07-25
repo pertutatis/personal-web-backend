@@ -4,26 +4,32 @@ import { ArticleHelper, TestArticle } from '../helpers/article.helper'
 
 test.describe('Articles API', () => {
   // Usamos el helper para generar artículos aleatorios para cada test
-  let validArticle: TestArticle;
-  
+  let validArticle: TestArticle
+
   test.beforeEach(async ({ request }) => {
     // Limpiar la base de datos antes de cada prueba
-    await ArticleHelper.cleanupArticles(request);
-    
+    await ArticleHelper.cleanupArticles(request)
+
     // Generar un nuevo artículo con ID único para cada test
-    validArticle = ArticleHelper.generateRandomTestArticle();
+    validArticle = ArticleHelper.generateRandomTestArticle()
   })
 
-  test('should return 400 for article with non-existent book ids', async ({ request }) => {
+  test('should return 400 for article with non-existent book ids', async ({
+    request,
+  }) => {
     const articleWithNonExistentBook = {
       ...validArticle,
-      bookIds: ['123e4567-e89b-12d3-a456-999999999999']
+      bookIds: ['123e4567-e89b-12d3-a456-999999999999'],
     }
 
-    const response = await AuthHelper.makeAuthenticatedRequest(request, '/api/backoffice/articles', {
-      method: 'POST',
-      data: articleWithNonExistentBook
-    })
+    const response = await AuthHelper.makeAuthenticatedRequest(
+      request,
+      '/api/backoffice/articles',
+      {
+        method: 'POST',
+        data: articleWithNonExistentBook,
+      },
+    )
 
     expect(response.status()).toBe(400)
     const error = await response.json()
@@ -44,12 +50,12 @@ test.describe('Articles API', () => {
     // Get first page
     const response = await AuthHelper.makeAuthenticatedRequest(
       request,
-      '/api/backoffice/articles?page=1&limit=10'
+      '/api/backoffice/articles?page=1&limit=10',
     )
 
     expect(response.status()).toBe(200)
     const result = await response.json()
-    
+
     expect(result.items.length).toBeGreaterThan(0)
     expect(result.page).toBe(1)
     expect(result.limit).toBe(10)
@@ -67,13 +73,17 @@ test.describe('Articles API', () => {
   test('should return 400 for invalid article data', async ({ request }) => {
     const invalidArticle = {
       ...validArticle,
-      title: '' // Title cannot be empty
+      title: '', // Title cannot be empty
     }
 
-    const response = await AuthHelper.makeAuthenticatedRequest(request, '/api/backoffice/articles', {
-      method: 'POST',
-      data: invalidArticle
-    })
+    const response = await AuthHelper.makeAuthenticatedRequest(
+      request,
+      '/api/backoffice/articles',
+      {
+        method: 'POST',
+        data: invalidArticle,
+      },
+    )
 
     expect(response.status()).toBe(400)
     const error = await response.json()
@@ -87,7 +97,7 @@ test.describe('Articles API', () => {
     // Get the article
     const response = await AuthHelper.makeAuthenticatedRequest(
       request,
-      `/api/backoffice/articles/${validArticle.id}`
+      `/api/backoffice/articles/${validArticle.id}`,
     )
 
     expect(response.status()).toBe(200)
@@ -98,13 +108,13 @@ test.describe('Articles API', () => {
 
   test('should return 404 for non-existent article', async ({ request }) => {
     // Usando un UUID v4 real que no debería existir en la base de datos
-    const nonExistentId = '123e4567-e89b-4000-a000-111111111111'; // UUIDv4 formato válido
-    
+    const nonExistentId = '123e4567-e89b-4000-a000-111111111111' // UUIDv4 formato válido
+
     const response = await AuthHelper.makeAuthenticatedRequest(
       request,
-      `/api/backoffice/articles/${nonExistentId}`
+      `/api/backoffice/articles/${nonExistentId}`,
     )
-    
+
     expect(response.status()).toBe(404)
     const error = await response.json()
     expect(error.type).toBe('NotFoundError')
@@ -117,7 +127,7 @@ test.describe('Articles API', () => {
     // Update the article
     const updatedData = {
       ...validArticle,
-      title: 'Updated Title'
+      title: 'Updated Title',
     }
 
     const response = await AuthHelper.makeAuthenticatedRequest(
@@ -125,8 +135,8 @@ test.describe('Articles API', () => {
       `/api/backoffice/articles/${validArticle.id}`,
       {
         method: 'PUT',
-        data: updatedData
-      }
+        data: updatedData,
+      },
     )
 
     expect(response.status()).toBe(204)
@@ -134,7 +144,7 @@ test.describe('Articles API', () => {
     // Verify the update
     const getResponse = await AuthHelper.makeAuthenticatedRequest(
       request,
-      `/api/backoffice/articles/${validArticle.id}`
+      `/api/backoffice/articles/${validArticle.id}`,
     )
     const article = await getResponse.json()
     expect(article.title).toBe('Updated Title')

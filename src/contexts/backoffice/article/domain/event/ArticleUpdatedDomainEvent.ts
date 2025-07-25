@@ -1,42 +1,42 @@
-import { DomainEvent } from '@/contexts/shared/domain/event/DomainEvent';
+import { DomainEvent } from '@/contexts/shared/domain/event/DomainEvent'
 
 export type ArticleUpdatedDomainEventProps = {
-  aggregateId: string;
-  title: string;
-  content: string;
-  excerpt: string;
-  bookIds: string[];
-  relatedLinks: Array<{ text: string; url: string }>;
-  slug: string;
-  updatedAt: Date;
-  occurredOn: Date;
-};
+  aggregateId: string
+  title: string
+  content: string
+  excerpt: string
+  bookIds: string[]
+  relatedLinks: Array<{ text: string; url: string }>
+  slug: string
+  updatedAt: Date
+  occurredOn: Date
+}
 
 export class ArticleUpdatedDomainEvent extends DomainEvent {
-  static readonly EVENT_NAME = 'article.updated';
+  static readonly EVENT_NAME = 'article.updated'
 
-  readonly title: string;
-  readonly content: string;
-  readonly excerpt: string;
-  readonly bookIds: string[];
-  readonly relatedLinks: Array<{ text: string; url: string }>;
-  readonly slug: string;
-  readonly updatedAt: Date;
+  readonly title: string
+  readonly content: string
+  readonly excerpt: string
+  readonly bookIds: string[]
+  readonly relatedLinks: Array<{ text: string; url: string }>
+  readonly slug: string
+  readonly updatedAt: Date
 
   constructor(props: ArticleUpdatedDomainEventProps) {
     super(
       ArticleUpdatedDomainEvent.EVENT_NAME,
       props.aggregateId,
-      props.occurredOn
-    );
+      props.occurredOn,
+    )
 
-    this.title = props.title;
-    this.content = props.content;
-    this.excerpt = props.excerpt;
-    this.bookIds = props.bookIds;
-    this.relatedLinks = props.relatedLinks;
-    this.slug = props.slug;
-    this.updatedAt = props.updatedAt;
+    this.title = props.title
+    this.content = props.content
+    this.excerpt = props.excerpt
+    this.bookIds = props.bookIds
+    this.relatedLinks = props.relatedLinks
+    this.slug = props.slug
+    this.updatedAt = props.updatedAt
   }
 
   toPrimitives() {
@@ -47,7 +47,7 @@ export class ArticleUpdatedDomainEvent extends DomainEvent {
       bookIds: this.bookIds,
       relatedLinks: this.relatedLinks,
       slug: this.slug,
-      updatedAt: this.updatedAt
-    };
+      updatedAt: this.updatedAt,
+    }
   }
 }

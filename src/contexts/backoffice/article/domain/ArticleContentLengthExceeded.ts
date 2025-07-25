@@ -1,9 +1,9 @@
-import { DomainError } from '@/contexts/shared/domain/DomainError';
+import { DomainError } from '@/contexts/shared/domain/DomainError'
 
 export class ArticleContentLengthExceeded extends DomainError {
-  readonly type = 'ValidationError';
+  readonly type = 'ValidationError'
 
   constructor() {
-    super('Article content cannot exceed 20000 characters');
+    super('Article content cannot exceed 20000 characters')
   }
 }

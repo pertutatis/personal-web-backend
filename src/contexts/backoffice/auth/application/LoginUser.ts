@@ -9,15 +9,21 @@ import { TokenPayload } from '../domain/JWTGenerator'
 export class LoginUser {
   constructor(
     private repository: AuthRepository,
-    private jwtGenerator: JWTGenerator
+    private jwtGenerator: JWTGenerator,
   ) {}
 
-  async run({ email, password }: { email: string; password: string }): Promise<{ token: string }> {
+  async run({
+    email,
+    password,
+  }: {
+    email: string
+    password: string
+  }): Promise<{ token: string }> {
     Logger.info('Login attempt for user:', { email })
-    
+
     const emailVO = new EmailVO(email)
     const user = await this.repository.findByEmail(emailVO)
-    
+
     if (!user) {
       Logger.info('User not found:', { email })
       throw new InvalidCredentials()
@@ -31,14 +37,14 @@ export class LoginUser {
     }
 
     Logger.info('User logged in successfully:', { email })
-    
+
     const payload: TokenPayload = {
       id: user.id.value,
-      email: user.email.value
+      email: user.email.value,
     }
-    
+
     const token = await this.jwtGenerator.generate(payload)
-    
+
     return { token }
   }
 }

@@ -1,4 +1,4 @@
-import { createSwaggerSpec } from 'next-swagger-doc';
+import { createSwaggerSpec } from 'next-swagger-doc'
 
 const errorSchema = {
   type: 'object',
@@ -6,16 +6,16 @@ const errorSchema = {
     type: {
       type: 'string',
       description: 'Tipo de error',
-      example: 'ValidationError'
+      example: 'ValidationError',
     },
     message: {
       type: 'string',
       description: 'Mensaje descriptivo del error',
-      example: 'El ID debe ser un UUID v4 válido'
-    }
+      example: 'El ID debe ser un UUID v4 válido',
+    },
   },
-  required: ['type', 'message']
-};
+  required: ['type', 'message'],
+}
 
 const articleIdParameter = {
   name: 'id',
@@ -25,9 +25,10 @@ const articleIdParameter = {
   schema: {
     type: 'string',
     format: 'uuid',
-    pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'
-  }
-};
+    pattern:
+      '^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$',
+  },
+}
 
 const paginationParameters = [
   {
@@ -38,8 +39,8 @@ const paginationParameters = [
     schema: {
       type: 'integer',
       default: 1,
-      minimum: 1
-    }
+      minimum: 1,
+    },
   },
   {
     name: 'limit',
@@ -50,38 +51,39 @@ const paginationParameters = [
       type: 'integer',
       default: 10,
       minimum: 1,
-      maximum: 100
-    }
-  }
-];
+      maximum: 100,
+    },
+  },
+]
 
 const openApiDocument = {
   openapi: '3.0.3',
   info: {
     title: 'Personal Web Backend API',
     version: '1.0.0',
-    description: 'API RESTful para la gestión de artículos y libros del backoffice',
+    description:
+      'API RESTful para la gestión de artículos y libros del backoffice',
   },
   servers: [
     {
       url: '/api',
-      description: 'API Base URL'
-    }
+      description: 'API Base URL',
+    },
   ],
   tags: [
     {
       name: 'Articles',
-      description: 'Operaciones con artículos'
+      description: 'Operaciones con artículos',
     },
     {
       name: 'Books',
-      description: 'Operaciones con libros'
-    }
+      description: 'Operaciones con libros',
+    },
   ],
   components: {
     schemas: {
-      Error: errorSchema
-    }
+      Error: errorSchema,
+    },
   },
   paths: {
     '/backoffice/articles': {
@@ -96,12 +98,12 @@ const openApiDocument = {
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/ArticleCollection'
-                }
-              }
-            }
-          }
-        }
+                  $ref: '#/components/schemas/ArticleCollection',
+                },
+              },
+            },
+          },
+        },
       },
       post: {
         tags: ['Articles'],
@@ -112,27 +114,27 @@ const openApiDocument = {
           content: {
             'application/json': {
               schema: {
-                $ref: '#/components/schemas/CreateArticleRequest'
-              }
-            }
-          }
+                $ref: '#/components/schemas/CreateArticleRequest',
+              },
+            },
+          },
         },
         responses: {
           '201': {
-            description: 'Artículo creado correctamente'
+            description: 'Artículo creado correctamente',
           },
           '400': {
             description: 'Error de validación',
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/Error'
-                }
-              }
-            }
-          }
-        }
-      }
+                  $ref: '#/components/schemas/Error',
+                },
+              },
+            },
+          },
+        },
+      },
     },
     '/backoffice/articles/{id}': {
       get: {
@@ -146,22 +148,22 @@ const openApiDocument = {
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/Article'
-                }
-              }
-            }
+                  $ref: '#/components/schemas/Article',
+                },
+              },
+            },
           },
           '404': {
             description: 'Artículo no encontrado',
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/Error'
-                }
-              }
-            }
-          }
-        }
+                  $ref: '#/components/schemas/Error',
+                },
+              },
+            },
+          },
+        },
       },
       put: {
         tags: ['Articles'],
@@ -173,26 +175,26 @@ const openApiDocument = {
           content: {
             'application/json': {
               schema: {
-                $ref: '#/components/schemas/UpdateArticleRequest'
-              }
-            }
-          }
+                $ref: '#/components/schemas/UpdateArticleRequest',
+              },
+            },
+          },
         },
         responses: {
           '204': {
-            description: 'Artículo actualizado correctamente'
+            description: 'Artículo actualizado correctamente',
           },
           '404': {
             description: 'Artículo no encontrado',
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/Error'
-                }
-              }
-            }
-          }
-        }
+                  $ref: '#/components/schemas/Error',
+                },
+              },
+            },
+          },
+        },
       },
       delete: {
         tags: ['Articles'],
@@ -201,27 +203,27 @@ const openApiDocument = {
         parameters: [articleIdParameter],
         responses: {
           '204': {
-            description: 'Artículo eliminado correctamente'
+            description: 'Artículo eliminado correctamente',
           },
           '404': {
             description: 'Artículo no encontrado',
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/Error'
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-};
+                  $ref: '#/components/schemas/Error',
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+}
 
 export const getApiDocs = () => {
   return createSwaggerSpec({
     apiFolder: 'src/app/api',
-    definition: openApiDocument
-  });
-};
+    definition: openApiDocument,
+  })
+}

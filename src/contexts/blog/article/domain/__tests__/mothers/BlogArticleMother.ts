@@ -1,6 +1,6 @@
-import { BlogArticle } from '../../BlogArticle';
-import { BlogBookMother } from './BlogBookMother';
-import { v4 as uuid } from 'uuid';
+import { BlogArticle } from '../../BlogArticle'
+import { BlogBookMother } from './BlogBookMother'
+import { v4 as uuid } from 'uuid'
 
 export class BlogArticleMother {
   static create(
@@ -11,11 +11,11 @@ export class BlogArticleMother {
     books = BlogBookMother.createMultiple(2),
     relatedLinks: Array<{ text: string; url: string }> = [
       { text: 'Clean Code Book', url: 'https://example.com/clean-code' },
-      { text: 'SOLID Principles', url: 'https://example.com/solid' }
+      { text: 'SOLID Principles', url: 'https://example.com/solid' },
     ],
     slug: string = 'clean-code-writing-maintainable-code',
     createdAt: Date = new Date('2024-01-01'),
-    updatedAt: Date = new Date('2024-01-02')
+    updatedAt: Date = new Date('2024-01-02'),
   ): BlogArticle {
     return new BlogArticle(
       id,
@@ -26,8 +26,8 @@ export class BlogArticleMother {
       relatedLinks,
       slug,
       createdAt,
-      updatedAt
-    );
+      updatedAt,
+    )
   }
 
   static withoutBooks(): BlogArticle {
@@ -38,8 +38,8 @@ export class BlogArticleMother {
       'Full article content about clean code',
       [],
       [{ text: 'Clean Code Book', url: 'https://example.com/book' }],
-      'writing-clean-code'
-    );
+      'writing-clean-code',
+    )
   }
 
   static withoutRelatedLinks(): BlogArticle {
@@ -50,8 +50,8 @@ export class BlogArticleMother {
       'Full article content about clean code',
       BlogBookMother.createMultiple(2),
       [],
-      'writing-clean-code'
-    );
+      'writing-clean-code',
+    )
   }
 
   static createMultiple(count: number): BlogArticle[] {
@@ -65,11 +65,11 @@ export class BlogArticleMother {
         [
           {
             text: `Related Link ${index + 1}`,
-            url: `https://example.com/link-${index + 1}`
-          }
+            url: `https://example.com/link-${index + 1}`,
+          },
         ],
-        `article-${index + 1}`
-      )
-    );
+        `article-${index + 1}`,
+      ),
+    )
   }
 }

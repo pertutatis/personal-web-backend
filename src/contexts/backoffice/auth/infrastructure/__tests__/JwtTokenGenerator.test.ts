@@ -12,7 +12,7 @@ describe('JwtTokenGenerator', () => {
 
   const validPayload: TokenPayload = {
     id: '550e8400-e29b-41d4-a716-446655440000',
-    email: 'test@example.com'
+    email: 'test@example.com',
   }
 
   describe('generate', () => {
@@ -35,9 +35,7 @@ describe('JwtTokenGenerator', () => {
     it('should throw InvalidToken for a malformed token', async () => {
       const invalidToken = 'invalid.token.format'
 
-      await expect(generator.verify(invalidToken))
-        .rejects
-        .toThrow(InvalidToken)
+      await expect(generator.verify(invalidToken)).rejects.toThrow(InvalidToken)
     })
 
     it('should throw InvalidToken for an expired token', async () => {
@@ -45,32 +43,28 @@ describe('JwtTokenGenerator', () => {
       const token = await shortLivedGenerator.generate(validPayload)
 
       // Esperar a que el token expire
-      await new Promise(resolve => setTimeout(resolve, 1100))
+      await new Promise((resolve) => setTimeout(resolve, 1100))
 
-      await expect(shortLivedGenerator.verify(token))
-        .rejects
-        .toThrow(InvalidToken)
+      await expect(shortLivedGenerator.verify(token)).rejects.toThrow(
+        InvalidToken,
+      )
     })
 
     it('should throw InvalidToken for a token signed with a different key', async () => {
       const otherGenerator = new JwtTokenGenerator('different-secret', '1h')
       const token = await otherGenerator.generate(validPayload)
 
-      await expect(generator.verify(token))
-        .rejects
-        .toThrow(InvalidToken)
+      await expect(generator.verify(token)).rejects.toThrow(InvalidToken)
     })
 
     it('should throw InvalidToken when payload is missing required fields', async () => {
       const invalidPayload = {
-        someOtherField: 'value'
+        someOtherField: 'value',
       }
 
       const token = await generator.generate(invalidPayload as any)
 
-      await expect(generator.verify(token))
-        .rejects
-        .toThrow(InvalidToken)
+      await expect(generator.verify(token)).rejects.toThrow(InvalidToken)
     })
   })
 })

@@ -19,10 +19,12 @@ export class ArticleHelper {
   /**
    * Genera un artículo de prueba con ID aleatorio
    */
-  static generateRandomTestArticle(overrides: Partial<TestArticle> = {}): TestArticle {
-    const randomSuffix = Math.random().toString(36).substring(7);
-    const title = `Test Article ${randomSuffix}`;
-    
+  static generateRandomTestArticle(
+    overrides: Partial<TestArticle> = {},
+  ): TestArticle {
+    const randomSuffix = Math.random().toString(36).substring(7)
+    const title = `Test Article ${randomSuffix}`
+
     return {
       id: uuidv4(),
       title: title,
@@ -33,29 +35,40 @@ export class ArticleHelper {
       relatedLinks: [
         {
           text: 'Related Link',
-          url: 'https://example.com/related'
-        }
+          url: 'https://example.com/related',
+        },
       ],
-      ...overrides
-    };
+      ...overrides,
+    }
   }
-  
+
   /**
    * Crea un artículo para pruebas
    */
-  static async createArticle(request: any, article: TestArticle): Promise<Response> {
-    return await AuthHelper.makeAuthenticatedRequest(request, '/api/backoffice/articles', {
-      method: 'POST',
-      data: article
-    });
+  static async createArticle(
+    request: any,
+    article: TestArticle,
+  ): Promise<Response> {
+    return await AuthHelper.makeAuthenticatedRequest(
+      request,
+      '/api/backoffice/articles',
+      {
+        method: 'POST',
+        data: article,
+      },
+    )
   }
-  
+
   /**
    * Limpia la base de datos de artículos para pruebas
    */
   static async cleanupArticles(request: any): Promise<void> {
-    await AuthHelper.makeAuthenticatedRequest(request, '/api/backoffice/articles/test-cleanup', {
-      method: 'POST',
-    });
+    await AuthHelper.makeAuthenticatedRequest(
+      request,
+      '/api/backoffice/articles/test-cleanup',
+      {
+        method: 'POST',
+      },
+    )
   }
 }

@@ -1,4 +1,4 @@
-import { QueryResult, QueryResultRow } from 'pg';
+import { QueryResult, QueryResultRow } from 'pg'
 
 /**
  * Interfaz común para conexiones de base de datos.
@@ -13,16 +13,16 @@ export interface DatabaseConnection {
    */
   execute<T extends QueryResultRow = any>(
     query: string,
-    values?: any[]
-  ): Promise<QueryResult<T>>;
+    values?: any[],
+  ): Promise<QueryResult<T>>
 
   /**
    * Cierra la conexión con la base de datos
    */
-  close(): Promise<void>;
+  close(): Promise<void>
 
   /**
    * Obtiene el nombre de la base de datos
    */
-  getDatabase(): string;
+  getDatabase(): string
 }

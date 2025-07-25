@@ -13,15 +13,18 @@ export class AuthHelper {
     Logger.info('Getting test configuration with:', {
       secretLength: config.secret.length,
       expiresIn: config.expiresIn,
-      secretPreview: `${config.secret.substring(0, 3)}...${config.secret.substring(config.secret.length - 3)}`
+      secretPreview: `${config.secret.substring(0, 3)}...${config.secret.substring(config.secret.length - 3)}`,
     })
 
     Logger.info('Using test configuration:', {
       secret: config.secret,
-      expiresIn: config.expiresIn
+      expiresIn: config.expiresIn,
     })
 
-    this.jwtGenerator = new EdgeJwtTokenGenerator(config.secret, config.expiresIn)
+    this.jwtGenerator = new EdgeJwtTokenGenerator(
+      config.secret,
+      config.expiresIn,
+    )
     Logger.info('Auth Helper initialized successfully')
   }
 
@@ -43,13 +46,13 @@ export class AuthHelper {
   async generateTokenInstance(): Promise<string> {
     const payload: TokenPayload = {
       id: 'test-user-id',
-      email: 'test@example.com'
+      email: 'test@example.com',
     }
 
     const token = await this.jwtGenerator.generate(payload)
-    Logger.info('Token generated:', { 
+    Logger.info('Token generated:', {
       tokenLength: token.length,
-      tokenStart: token.substring(0, 10) + '...' 
+      tokenStart: token.substring(0, 10) + '...',
     })
 
     return token
@@ -62,19 +65,23 @@ export class AuthHelper {
     }
     return payload
   }
-  static async makeAuthenticatedRequest(request: any, url: string, options: any = {}) {
+  static async makeAuthenticatedRequest(
+    request: any,
+    url: string,
+    options: any = {},
+  ) {
     const token = await AuthHelper.generateToken()
-    
+
     const headers = {
-      'Authorization': `Bearer ${token}`,
-      'Accept': 'application/json',
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/json',
       'Content-Type': 'application/json',
-      ...options.headers
+      ...options.headers,
     }
 
     return request[options.method?.toLowerCase() || 'get'](url, {
       ...options,
-      headers
+      headers,
     })
   }
 }

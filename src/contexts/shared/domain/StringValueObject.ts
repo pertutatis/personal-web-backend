@@ -4,35 +4,35 @@ export abstract class StringValueObject {
       value: _value,
       enumerable: true,
       writable: false,
-      configurable: false
-    });
+      configurable: false,
+    })
   }
 
   get value(): string {
-    return this._value;
+    return this._value
   }
 
   equals(other: unknown): boolean {
     if (!other) {
-      return false;
+      return false
     }
 
     if (!(other instanceof StringValueObject)) {
-      return false;
+      return false
     }
 
     if (other.constructor.name !== this.constructor.name) {
-      return false;
+      return false
     }
 
-    return other.value === this.value;
+    return other.value === this.value
   }
 
   toString(): string {
-    return this.value;
+    return this.value
   }
 
   toJSON(): string {
-    return this.value;
+    return this.value
   }
 }

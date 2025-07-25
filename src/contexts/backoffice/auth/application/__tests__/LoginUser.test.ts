@@ -15,12 +15,12 @@ describe('LoginUser', () => {
     repository = {
       save: jest.fn(),
       findById: jest.fn(),
-      findByEmail: jest.fn()
+      findByEmail: jest.fn(),
     }
 
     jwtGenerator = {
       generate: jest.fn(),
-      verify: jest.fn()
+      verify: jest.fn(),
     }
 
     loginUser = new LoginUser(repository, jwtGenerator)
@@ -36,7 +36,7 @@ describe('LoginUser', () => {
     const user = User.create({
       id: new UserId(userId),
       email: new EmailVO(email),
-      plainPassword: password
+      plainPassword: password,
     })
 
     repository.findByEmail.mockResolvedValue(user)
@@ -47,12 +47,10 @@ describe('LoginUser', () => {
 
     // Then
     expect(result).toEqual({ token })
-    expect(repository.findByEmail).toHaveBeenCalledWith(
-      expect.any(EmailVO)
-    )
+    expect(repository.findByEmail).toHaveBeenCalledWith(expect.any(EmailVO))
     expect(jwtGenerator.generate).toHaveBeenCalledWith({
       id: userId,
-      email
+      email,
     })
   })
 
@@ -64,9 +62,9 @@ describe('LoginUser', () => {
     repository.findByEmail.mockResolvedValue(null)
 
     // When/Then
-    await expect(
-      loginUser.run({ email, password })
-    ).rejects.toThrow(InvalidCredentials)
+    await expect(loginUser.run({ email, password })).rejects.toThrow(
+      InvalidCredentials,
+    )
 
     expect(jwtGenerator.generate).not.toHaveBeenCalled()
   })
@@ -81,14 +79,14 @@ describe('LoginUser', () => {
     const user = User.create({
       id: new UserId(userId),
       email: new EmailVO(email),
-      plainPassword: correctPassword
+      plainPassword: correctPassword,
     })
 
     repository.findByEmail.mockResolvedValue(user)
 
     // When/Then
     await expect(
-      loginUser.run({ email, password: wrongPassword })
+      loginUser.run({ email, password: wrongPassword }),
     ).rejects.toThrow(InvalidCredentials)
 
     expect(jwtGenerator.generate).not.toHaveBeenCalled()

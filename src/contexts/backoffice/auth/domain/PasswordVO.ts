@@ -22,11 +22,15 @@ export class PasswordVO extends ValueObject<string> {
     }
 
     if (!/[A-Z]/.test(value)) {
-      throw new PasswordInvalid('Password must contain at least one uppercase letter')
+      throw new PasswordInvalid(
+        'Password must contain at least one uppercase letter',
+      )
     }
 
     if (!/[a-z]/.test(value)) {
-      throw new PasswordInvalid('Password must contain at least one lowercase letter')
+      throw new PasswordInvalid(
+        'Password must contain at least one lowercase letter',
+      )
     }
 
     if (!/[0-9]/.test(value)) {
@@ -34,7 +38,9 @@ export class PasswordVO extends ValueObject<string> {
     }
 
     if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?]/.test(value)) {
-      throw new PasswordInvalid('Password must contain at least one special character')
+      throw new PasswordInvalid(
+        'Password must contain at least one special character',
+      )
     }
 
     if (/\s/.test(value)) {

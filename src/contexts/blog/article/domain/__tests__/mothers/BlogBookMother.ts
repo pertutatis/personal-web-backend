@@ -1,5 +1,5 @@
-import { BlogBook } from '../../BlogBook';
-import { v4 as uuid } from 'uuid';
+import { BlogBook } from '../../BlogBook'
+import { v4 as uuid } from 'uuid'
 
 export class BlogBookMother {
   static create(
@@ -10,7 +10,7 @@ export class BlogBookMother {
     description: string = 'A book about writing clean code',
     purchaseLink: string | null = 'https://example.com/clean-code',
     createdAt: Date = new Date('2024-01-01'),
-    updatedAt: Date = new Date('2024-01-02')
+    updatedAt: Date = new Date('2024-01-02'),
   ): BlogBook {
     return new BlogBook(
       id,
@@ -20,8 +20,8 @@ export class BlogBookMother {
       description,
       purchaseLink,
       createdAt,
-      updatedAt
-    );
+      updatedAt,
+    )
   }
 
   static withNullPurchaseLink(): BlogBook {
@@ -31,20 +31,20 @@ export class BlogBookMother {
       'Robert C. Martin',
       '9780132350884',
       'A book about writing clean code',
-      null
-    );
+      null,
+    )
   }
 
   static createMultiple(count: number): BlogBook[] {
-    return Array.from({ length: count }, (_, index) => 
+    return Array.from({ length: count }, (_, index) =>
       this.create(
         uuid(),
         `Book ${index + 1}`,
         `Author ${index + 1}`,
         `978013235088${index}`,
         `Description for book ${index + 1}`,
-        `https://example.com/book-${index + 1}`
-      )
-    );
+        `https://example.com/book-${index + 1}`,
+      ),
+    )
   }
 }

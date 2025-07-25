@@ -1,34 +1,34 @@
-import { v4 as uuidv4, validate, version } from 'uuid';
-import { BookIdInvalid } from './BookIdInvalid';
+import { v4 as uuidv4, validate, version } from 'uuid'
+import { BookIdInvalid } from './BookIdInvalid'
 
 export class BookId {
-  public readonly value: string;
+  public readonly value: string
 
   constructor(id: string) {
-    this.ensureValidUuidV4(id);
-    this.value = id;
+    this.ensureValidUuidV4(id)
+    this.value = id
   }
 
   static random(): BookId {
-    return new BookId(uuidv4());
+    return new BookId(uuidv4())
   }
 
   private ensureValidUuidV4(id: string): void {
     if (!validate(id)) {
-      throw new BookIdInvalid();
+      throw new BookIdInvalid()
     }
 
     // Additional check to ensure it's specifically a v4 UUID
     if (version(id) !== 4) {
-      throw new BookIdInvalid();
+      throw new BookIdInvalid()
     }
   }
 
   toString(): string {
-    return this.value;
+    return this.value
   }
 
   equals(other: BookId): boolean {
-    return this.value === other.value;
+    return this.value === other.value
   }
 }

@@ -1,51 +1,55 @@
-import { PostgresConnection } from '../persistence/PostgresConnection';
-import { PostgresMigrations } from '../PostgresMigrations';
-import { getTestConfig } from '../config/DatabaseConfig';
-import { Logger } from '../Logger';
+import { PostgresConnection } from '../persistence/PostgresConnection'
+import { PostgresMigrations } from '../PostgresMigrations'
+import { getTestConfig } from '../config/DatabaseConfig'
+import { Logger } from '../Logger'
 
 export class TestDatabase {
-  private static connections: Record<string, PostgresConnection> = {};
+  private static connections: Record<string, PostgresConnection> = {}
 
   static async createTestDatabase(dbName: string): Promise<void> {
-    const pgConnection = await PostgresConnection.create(getTestConfig('postgres'));
+    const pgConnection = await PostgresConnection.create(
+      getTestConfig('postgres'),
+    )
     try {
       // Solo crear la base de datos si no existe
-      const result = await pgConnection.execute(`SELECT 1 FROM pg_database WHERE datname = '${dbName}'`);
+      const result = await pgConnection.execute(
+        `SELECT 1 FROM pg_database WHERE datname = '${dbName}'`,
+      )
       if (!result.rows || result.rows.length === 0) {
-        await pgConnection.execute(`CREATE DATABASE ${dbName}`);
+        await pgConnection.execute(`CREATE DATABASE ${dbName}`)
       }
     } finally {
-      await pgConnection.close();
+      await pgConnection.close()
     }
   }
 
   static async setupTestDatabase(dbName: string): Promise<void> {
-    const migrations = new PostgresMigrations(dbName);
-    await migrations.setup();
+    const migrations = new PostgresMigrations(dbName)
+    await migrations.setup()
   }
 
   static async getArticlesConnection(): Promise<PostgresConnection> {
     if (!this.connections.articles) {
-      await this.createTestDatabase('test_blog');
-      await this.setupTestDatabase('test_blog');
+      await this.createTestDatabase('test_blog')
+      await this.setupTestDatabase('test_blog')
       this.connections.articles = await PostgresConnection.create(
-        getTestConfig('test_blog')
-      );
+        getTestConfig('test_blog'),
+      )
     }
-    return this.connections.articles;
+    return this.connections.articles
   }
 
   static async closeAll(): Promise<void> {
     for (const conn of Object.values(this.connections)) {
-      await conn.close();
+      await conn.close()
     }
-    this.connections = {};
+    this.connections = {}
   }
 
   static async cleanArticles(): Promise<void> {
-    const conn = await this.getArticlesConnection();
-    await conn.execute('DELETE FROM articles');
-    await conn.execute('DELETE FROM books');
+    const conn = await this.getArticlesConnection()
+    await conn.execute('DELETE FROM articles')
+    await conn.execute('DELETE FROM books')
   }
 
   // static async cleanAuth(): Promise<void> {
@@ -60,19 +64,19 @@ export class TestDatabase {
 
   static async beginTransaction(): Promise<void> {
     for (const conn of Object.values(this.connections)) {
-      await conn.execute('BEGIN');
+      await conn.execute('BEGIN')
     }
   }
 
   static async commitTransaction(): Promise<void> {
     for (const conn of Object.values(this.connections)) {
-      await conn.execute('COMMIT');
+      await conn.execute('COMMIT')
     }
   }
 
   static async rollbackTransaction(): Promise<void> {
     for (const conn of Object.values(this.connections)) {
-      await conn.execute('ROLLBACK');
+      await conn.execute('ROLLBACK')
     }
   }
 
@@ -82,24 +86,24 @@ export class TestDatabase {
       await Promise.all([
         this.getArticlesConnection(),
         // this.getAuthConnection()
-      ]);
+      ])
 
       // Iniciar transacción
-      await this.beginTransaction();
+      await this.beginTransaction()
 
       // Limpiar tablas dentro de la transacción
       await Promise.all([
         this.cleanArticles(),
         // this.cleanAuth()
-      ]);
+      ])
 
       // Commit de la transacción
-      await this.commitTransaction();
+      await this.commitTransaction()
     } catch (error) {
       // Rollback en caso de error
-      await this.rollbackTransaction().catch(() => {});
-      Logger.error('Error cleaning databases:', error);
-      throw error;
+      await this.rollbackTransaction().catch(() => {})
+      Logger.error('Error cleaning databases:', error)
+      throw error
     }
   }
 }

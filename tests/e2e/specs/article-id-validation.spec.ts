@@ -4,14 +4,14 @@ import { ArticleHelper } from '../helpers/article.helper'
 
 test.describe('Article ID Validation', () => {
   // Usamos el helper para generar artículos aleatorios para cada test
-  let validArticle: ReturnType<typeof ArticleHelper.generateRandomTestArticle>;
-  
+  let validArticle: ReturnType<typeof ArticleHelper.generateRandomTestArticle>
+
   test.beforeEach(async ({ request }) => {
     // Limpiar la base de datos antes de cada prueba
-    await ArticleHelper.cleanupArticles(request);
-    
+    await ArticleHelper.cleanupArticles(request)
+
     // Generar un nuevo artículo con ID único para cada test
-    validArticle = ArticleHelper.generateRandomTestArticle();
+    validArticle = ArticleHelper.generateRandomTestArticle()
   })
 
   test('should create article with valid UUID v4', async ({ request }) => {
@@ -23,10 +23,14 @@ test.describe('Article ID Validation', () => {
 
   test('should reject invalid UUID format', async ({ request }) => {
     const invalidArticle = { ...validArticle, id: 'not-a-uuid' }
-    const response = await AuthHelper.makeAuthenticatedRequest(request, '/api/backoffice/articles', {
-      method: 'POST',
-      data: invalidArticle
-    })
+    const response = await AuthHelper.makeAuthenticatedRequest(
+      request,
+      '/api/backoffice/articles',
+      {
+        method: 'POST',
+        data: invalidArticle,
+      },
+    )
 
     expect(response.status()).toBe(400)
     const error = await response.json()
@@ -36,12 +40,16 @@ test.describe('Article ID Validation', () => {
   test('should reject UUID v5', async ({ request }) => {
     const invalidArticle = {
       ...validArticle,
-      id: '987fcdeb-51a2-5678-9012-3456789abcde' // v5 UUID format
+      id: '987fcdeb-51a2-5678-9012-3456789abcde', // v5 UUID format
     }
-    const response = await AuthHelper.makeAuthenticatedRequest(request, '/api/backoffice/articles', {
-      method: 'POST',
-      data: invalidArticle
-    })
+    const response = await AuthHelper.makeAuthenticatedRequest(
+      request,
+      '/api/backoffice/articles',
+      {
+        method: 'POST',
+        data: invalidArticle,
+      },
+    )
 
     expect(response.status()).toBe(400)
     const error = await response.json()
@@ -52,10 +60,14 @@ test.describe('Article ID Validation', () => {
     const invalidArticle = { ...validArticle }
     delete (invalidArticle as any).id
 
-    const response = await AuthHelper.makeAuthenticatedRequest(request, '/api/backoffice/articles', {
-      method: 'POST',
-      data: invalidArticle
-    })
+    const response = await AuthHelper.makeAuthenticatedRequest(
+      request,
+      '/api/backoffice/articles',
+      {
+        method: 'POST',
+        data: invalidArticle,
+      },
+    )
 
     expect(response.status()).toBe(400)
     const error = await response.json()
@@ -74,7 +86,9 @@ test.describe('Article ID Validation', () => {
     expect(error.type).toBe('ValidationError')
   })
 
-  test('should not return article body on successful creation', async ({ request }) => {
+  test('should not return article body on successful creation', async ({
+    request,
+  }) => {
     const response = await ArticleHelper.createArticle(request, validArticle)
 
     expect(response.status()).toBe(201)
@@ -93,9 +107,9 @@ test.describe('Article ID Validation', () => {
         method: 'PUT',
         data: {
           ...validArticle,
-          title: 'Updated Title'
-        }
-      }
+          title: 'Updated Title',
+        },
+      },
     )
 
     expect(response.status()).toBe(204)
@@ -109,9 +123,9 @@ test.describe('Article ID Validation', () => {
         method: 'PUT',
         data: {
           ...validArticle,
-          title: 'Updated Title'
-        }
-      }
+          title: 'Updated Title',
+        },
+      },
     )
 
     expect(response.status()).toBe(400)

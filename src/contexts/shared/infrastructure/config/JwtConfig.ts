@@ -20,19 +20,23 @@ export class JwtConfig {
   }
 
   static getTestConfiguration() {
-    const secret = process.env.NODE_ENV === 'test' ? TEST_SECRET : this.getSecret()
-    const expiresIn = process.env.NODE_ENV === 'test' ? TEST_EXPIRES_IN : this.getExpirationTime()
+    const secret =
+      process.env.NODE_ENV === 'test' ? TEST_SECRET : this.getSecret()
+    const expiresIn =
+      process.env.NODE_ENV === 'test'
+        ? TEST_EXPIRES_IN
+        : this.getExpirationTime()
 
-    Logger.info('JWT configuration:', { 
+    Logger.info('JWT configuration:', {
       env: process.env.NODE_ENV,
       isTest: process.env.NODE_ENV === 'test',
       secretLength: secret.length,
-      expiresIn 
+      expiresIn,
     })
 
     return {
       secret,
-      expiresIn
+      expiresIn,
     }
   }
 }

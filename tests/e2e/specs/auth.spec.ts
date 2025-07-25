@@ -58,7 +58,9 @@ test.describe('Auth API', () => {
     }
   })
 
-  test('should return 409 when registering with existing email', async ({ request }) => {
+  test('should return 409 when registering with existing email', async ({
+    request,
+  }) => {
     try {
       const authApi = new AuthAPI(request)
       const email = 'duplicate@example.com'
@@ -74,7 +76,7 @@ test.describe('Auth API', () => {
 
       expect(secondResponse.status).toBe(409)
       expect(secondResponse.body).toEqual({
-        error: 'User already exists'
+        error: 'User already exists',
       })
     } catch (error) {
       Logger.error('Error in duplicate email test:', error)
@@ -93,7 +95,7 @@ test.describe('Auth API', () => {
 
       expect(response.status).toBe(401)
       expect(response.body).toEqual({
-        error: 'Invalid credentials'
+        error: 'Invalid credentials',
       })
     } catch (error) {
       Logger.error('Error in invalid credentials test:', error)

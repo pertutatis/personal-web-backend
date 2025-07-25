@@ -6,7 +6,7 @@ test.describe('Auth Debug', () => {
   test('should get auth debug info', async ({ request }) => {
     const debugResponse = await request.get('/api/debug/auth')
     expect(debugResponse.status()).toBe(200)
-    
+
     const debugInfo = await debugResponse.json()
     Logger.info('Debug info received:', debugInfo)
 
@@ -20,8 +20,8 @@ test.describe('Auth Debug', () => {
 
     const response = await request.post('/api/backoffice/books', {
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
       },
       data: {
         id: '123e4567-e89b-42d3-a456-426614174000',
@@ -29,14 +29,14 @@ test.describe('Auth Debug', () => {
         author: 'Test Author',
         description: 'Test Description',
         isbn: '9780747532699',
-        purchaseLink: 'https://example.com/book'
-      }
+        purchaseLink: 'https://example.com/book',
+      },
     })
 
     Logger.info('Response from protected route:', {
       status: response.status(),
       headers: response.headers(),
-      body: await response.text()
+      body: await response.text(),
     })
 
     expect(response.status()).toBe(201)
@@ -49,8 +49,8 @@ test.describe('Auth Debug', () => {
 
     const response = await request.post('/api/backoffice/books', {
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
       },
       data: {
         id: '123e4567-e89b-42d3-a456-426614174001',
@@ -58,14 +58,14 @@ test.describe('Auth Debug', () => {
         author: 'Test Author 2',
         description: 'Test Description 2',
         isbn: '9780132350884',
-        purchaseLink: 'https://example.com/book2'
-      }
+        purchaseLink: 'https://example.com/book2',
+      },
     })
 
     Logger.info('Response from protected route (AuthHelper token):', {
       status: response.status(),
       headers: response.headers(),
-      body: await response.text()
+      body: await response.text(),
     })
 
     expect(response.status()).toBe(201)

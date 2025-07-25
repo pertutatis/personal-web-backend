@@ -1,10 +1,10 @@
-import { DomainError } from './DomainError';
+import { DomainError } from './DomainError'
 
 export class NotFoundError extends DomainError {
-  readonly type = 'NotFoundError';
+  readonly type = 'NotFoundError'
 
   constructor(message: string) {
-    super(message);
-    this.name = 'NotFoundError';
+    super(message)
+    this.name = 'NotFoundError'
   }
 }

@@ -5,7 +5,7 @@ import { Logger } from '../Logger'
 export interface DatabaseConfig {
   // Configuración común
   database: string
-  
+
   // Configuración PostgreSQL
   host: string
   port: number
@@ -21,15 +21,15 @@ export class DatabaseConnectionFactory {
         host: config.host || process.env.DB_HOST || 'localhost',
         port: config.port || Number(process.env.DB_PORT) || 5432,
         user: config.user || process.env.DB_USER || 'postgres',
-        database: config.database || process.env.DB_NAME || 'postgres'
+        database: config.database || process.env.DB_NAME || 'postgres',
       }
       Logger.info('Intentando conectar a PostgreSQL con:', {
         ...connectionData,
-        password: config.password || process.env.DB_PASSWORD || 'postgres'
+        password: config.password || process.env.DB_PASSWORD || 'postgres',
       })
       return await PostgresConnection.create({
         ...connectionData,
-        password: config.password || process.env.DB_PASSWORD || 'postgres'
+        password: config.password || process.env.DB_PASSWORD || 'postgres',
       })
     } catch (error) {
       Logger.error('Error creating database connection:', {
@@ -37,14 +37,16 @@ export class DatabaseConnectionFactory {
         environment,
         config: {
           ...config,
-          password: '***'
-        }
+          password: '***',
+        },
       })
       throw error
     }
   }
 
-  static async createTestConnection(database: string): Promise<DatabaseConnection> {
+  static async createTestConnection(
+    database: string,
+  ): Promise<DatabaseConnection> {
     return PostgresConnection.createTestConnection(database)
   }
 }

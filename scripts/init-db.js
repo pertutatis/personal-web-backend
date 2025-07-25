@@ -1,8 +1,7 @@
 const { Client } = require('pg')
 const fs = require('fs')
 const path = require('path')
-const { Logger } = require('./src/contexts/shared/infrastructure/Logger');
-
+const { Logger } = require('./src/contexts/shared/infrastructure/Logger')
 
 async function initializeDatabase() {
   const client = new Client({
@@ -30,7 +29,7 @@ async function initializeDatabase() {
   }
 }
 
-initializeDatabase().catch(error => {
+initializeDatabase().catch((error) => {
   Logger.error('Database initialization failed:', error)
   process.exit(1)
 })
