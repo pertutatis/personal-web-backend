@@ -9,7 +9,7 @@ export class PostgresMigrations {
 
   async getPool(): Promise<Pool> {
     if (!this.connection) {
-      this.connection = await PostgresConnection.createTestConnection(this.databaseName)
+      this.connection = await PostgresConnection.createTestConnection(this.databaseName) as PostgresConnection
     }
     return this.connection.getPool()
   }
@@ -17,7 +17,7 @@ export class PostgresMigrations {
   async execute(sql: string): Promise<void> {
     let conn: PostgresConnection | null = null
     try {
-      conn = await PostgresConnection.createTestConnection(this.databaseName)
+      conn = await PostgresConnection.createTestConnection(this.databaseName) as PostgresConnection
       await conn.execute(sql)
     } catch (error) {
       Logger.error('Error executing migration:', error)
@@ -77,12 +77,12 @@ export class PostgresMigrations {
       }
 
       // Then create tables
-      conn = await PostgresConnection.createTestConnection(this.databaseName)
+      conn = await PostgresConnection.createTestConnection(this.databaseName) as PostgresConnection
       try {
         if (this.databaseName === 'test_blog') {
-          await this.setupAuthTables(conn)
-          await this.setupArticlesTables(conn)
-          await this.setupBooksTables(conn)
+          await this.setupAuthTables(conn as PostgresConnection)
+          await this.setupArticlesTables(conn as PostgresConnection)
+          await this.setupBooksTables(conn as PostgresConnection)
         }
       } finally {
         await conn.close()
