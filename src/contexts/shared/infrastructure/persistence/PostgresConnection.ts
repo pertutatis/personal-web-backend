@@ -17,9 +17,16 @@ export class PostgresConnection implements DatabaseConnection {
     user: string
     password: string
     database: string
+    ssl?: any
   }): Promise<DatabaseConnection> {
     try {
-      const pool = new Pool(config)
+      // Si estamos en producción, forzamos SSL para Supabase y otros proveedores que lo requieran
+      const isProduction = process.env.NODE_ENV === 'production'
+      const poolConfig = { ...config }
+      if (isProduction) {
+        poolConfig['ssl'] = { rejectUnauthorized: false }
+      }
+      const pool = new Pool(poolConfig)
       const client = await pool.connect()
       await client.query('SELECT 1')
       client.release()
@@ -28,13 +35,14 @@ export class PostgresConnection implements DatabaseConnection {
         host: config.host,
         port: config.port,
         database: config.database,
-        user: config.user
+        user: config.user,
+        ssl: isProduction ? 'enabled' : 'disabled'
       })
 
       return new PostgresConnection(pool, config.database)
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error)
-      
+
       if (errorMsg.includes('database') && errorMsg.includes('does not exist')) {
         const error = new Error('DatabaseConnectionError')
         error.name = 'DatabaseConnectionError'
