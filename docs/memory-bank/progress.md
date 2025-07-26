@@ -174,9 +174,23 @@
    - ~~Mejorar ejemplos de código~~ ✅
    - ~~Documentar patrones de diseño utilizados~~ ✅
 
+## Current Status (2024-12-19)
+
+### Active Development
+- **Task 15: Draft Mode for Articles** 🔄
+  - ✅ ADR-017: Draft mode architectural decisions defined
+  - ✅ OBR-006: Business rules and test scenarios documented
+  - 🔄 TDD implementation of ArticleStatus value object
+  - ⏳ Domain model updates for status transitions
+  - ⏳ Database migration for status column
+  - ⏳ Repository updates for status filtering
+  - ⏳ API endpoints for draft/publish workflows
+  - ⏳ Comprehensive test coverage (unit, integration, e2e)
+
 ## Next Actions 📝
 
 ### Inmediatas (Próximas 2 semanas)
+1. Complete draft mode implementation
 2. Implementar rate limiting
 3. Mejorar logging y trazabilidad de errores
 4. Optimizar queries y añadir caché
