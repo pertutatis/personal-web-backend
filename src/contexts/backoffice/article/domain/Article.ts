@@ -6,6 +6,8 @@ import { ArticleExcerpt } from './ArticleExcerpt'
 import { ArticleBookIds } from './ArticleBookIds'
 import { ArticleSlug } from './ArticleSlug'
 import { ArticleRelatedLinks } from './ArticleRelatedLinks'
+import { ArticleStatus } from './ArticleStatus'
+import { ArticleStatusInvalid } from './ArticleStatusInvalid'
 import { ArticleCreatedDomainEvent } from './event/ArticleCreatedDomainEvent'
 import { ArticleUpdatedDomainEvent } from './event/ArticleUpdatedDomainEvent'
 
@@ -17,6 +19,7 @@ type PrimitiveArticle = {
   bookIds: string[]
   relatedLinks: Array<{ text: string; url: string }>
   slug: string
+  status: string
   createdAt: string
   updatedAt: string
 }
@@ -31,6 +34,7 @@ type CreateArticleParams = {
   createdAt: Date
   updatedAt: Date
   slug?: ArticleSlug
+  status?: ArticleStatus
 }
 
 type UpdateArticleParams = Partial<{
@@ -49,6 +53,7 @@ export class Article extends AggregateRoot {
   bookIds: ArticleBookIds
   relatedLinks: ArticleRelatedLinks
   slug: ArticleSlug
+  status: ArticleStatus
   readonly createdAt: Date
   updatedAt: Date
 
@@ -61,6 +66,7 @@ export class Article extends AggregateRoot {
     this.bookIds = params.bookIds
     this.relatedLinks = params.relatedLinks ?? ArticleRelatedLinks.create([])
     this.slug = params.slug ?? ArticleSlug.fromTitle(params.title.value)
+    this.status = params.status ?? ArticleStatus.createDraft()
     this.createdAt = params.createdAt
     this.updatedAt = params.updatedAt
   }
@@ -76,6 +82,7 @@ export class Article extends AggregateRoot {
         bookIds: params.bookIds.getValue(),
         relatedLinks: params.relatedLinks?.toPrimitives() ?? [],
         slug: article.slug.value,
+        status: article.status.value,
         createdAt: params.createdAt,
         updatedAt: params.updatedAt,
         occurredOn: new Date(),
@@ -123,6 +130,7 @@ export class Article extends AggregateRoot {
         bookIds: this.bookIds.getValue(),
         relatedLinks: this.relatedLinks.toPrimitives(),
         slug: this.slug.value,
+        status: this.status.value,
         updatedAt: now,
         occurredOn: now,
       }),
@@ -140,8 +148,56 @@ export class Article extends AggregateRoot {
       bookIds: this.bookIds.getValue(),
       relatedLinks: this.relatedLinks.toPrimitives(),
       slug: this.slug.value,
+      status: this.status.value,
       createdAt: this.createdAt.toISOString(),
       updatedAt: this.updatedAt.toISOString(),
     }
+  }
+
+  // Status-related methods
+  publish(): Article {
+    if (this.status.isPublished()) {
+      return this
+    }
+
+    const publishedStatus = this.status.publish()
+    const now = new Date()
+
+    this.status = publishedStatus
+    this.updatedAt = now
+
+    this.record(
+      new ArticleUpdatedDomainEvent({
+        aggregateId: this.id.value,
+        title: this.title.value,
+        excerpt: this.excerpt.value,
+        content: this.content.value,
+        bookIds: this.bookIds.getValue(),
+        relatedLinks: this.relatedLinks.toPrimitives(),
+        slug: this.slug.value,
+        status: this.status.value,
+        updatedAt: now,
+        occurredOn: now,
+      }),
+    )
+
+    return this
+  }
+
+  unpublish(): Article {
+    this.status.toDraft() // This will throw if transition is not allowed
+    return this
+  }
+
+  isDraft(): boolean {
+    return this.status.isDraft()
+  }
+
+  isPublished(): boolean {
+    return this.status.isPublished()
+  }
+
+  canBePublished(): boolean {
+    return this.status.isDraft()
   }
 }

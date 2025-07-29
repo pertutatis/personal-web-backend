@@ -54,7 +54,7 @@ describe('PostgresBlogArticleRepository', () => {
     return book
   }
 
-  const createTestArticle = async (book?: BlogBook): Promise<BlogArticle> => {
+  const createTestArticle = async (book?: BlogBook, status: string = 'PUBLISHED'): Promise<BlogArticle> => {
     const article = new BlogArticle(
       uuid(),
       'Test Article',
@@ -68,8 +68,8 @@ describe('PostgresBlogArticleRepository', () => {
     )
 
     await connection.execute(
-      `INSERT INTO articles (id, title, excerpt, content, book_ids, related_links, slug, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      `INSERT INTO articles (id, title, excerpt, content, book_ids, related_links, slug, status, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
        RETURNING *`,
       [
         article.id,
@@ -79,6 +79,7 @@ describe('PostgresBlogArticleRepository', () => {
         book ? [book.id] : [],
         JSON.stringify(article.relatedLinks),
         article.slug,
+        status,
         article.createdAt,
         article.updatedAt,
       ],
@@ -134,6 +135,36 @@ describe('PostgresBlogArticleRepository', () => {
       expect(articles[0].id).toBe(article2.id)
       expect(articles[1].id).toBe(article1.id)
     })
+
+    it('should only return published articles, not drafts', async () => {
+      const publishedArticle = await createTestArticle(undefined, 'PUBLISHED')
+      const draftArticle = await createTestArticle(undefined, 'DRAFT')
+
+      const articles = await repository.findAll()
+
+      expect(articles).toHaveLength(1)
+      expect(articles[0].id).toBe(publishedArticle.id)
+      expect(articles.find(a => a.id === draftArticle.id)).toBeUndefined()
+    })
+
+    it('should return empty array when only draft articles exist', async () => {
+      await createTestArticle(undefined, 'DRAFT')
+      await createTestArticle(undefined, 'DRAFT')
+
+      const articles = await repository.findAll()
+
+      expect(articles).toHaveLength(0)
+    })
+
+    it('should return multiple published articles', async () => {
+      await createTestArticle(undefined, 'PUBLISHED')
+      await createTestArticle(undefined, 'PUBLISHED')
+      await createTestArticle(undefined, 'DRAFT') // This should be filtered out
+
+      const articles = await repository.findAll()
+
+      expect(articles).toHaveLength(2)
+    })
   })
 
   describe('findBySlug', () => {
@@ -175,6 +206,45 @@ describe('PostgresBlogArticleRepository', () => {
       expect(article!.relatedLinks).toEqual(createdArticle.relatedLinks)
       expect(article!.books).toHaveLength(1)
       expect(article!.books[0].id).toBe(book.id)
+    })
+
+    it('should not find draft articles by slug', async () => {
+      const draftArticle = await createTestArticle(undefined, 'DRAFT')
+      
+      const article = await repository.findBySlug(draftArticle.slug)
+      
+      expect(article).toBeNull()
+    })
+
+    it('should find published articles by slug but not drafts with same title', async () => {
+      const book = await createTestBook()
+      const publishedArticle = await createTestArticle(book, 'PUBLISHED')
+      
+      // Create a draft article with similar slug
+      const draftSlug = publishedArticle.slug + '-draft'
+      await connection.execute(
+        `INSERT INTO articles (id, title, excerpt, content, book_ids, related_links, slug, status, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+        [
+          uuid(),
+          'Draft Article',
+          'Draft Excerpt',
+          'Draft Content',
+          [],
+          JSON.stringify([]),
+          draftSlug,
+          'DRAFT',
+          new Date(),
+          new Date(),
+        ],
+      )
+
+      const foundPublished = await repository.findBySlug(publishedArticle.slug)
+      const foundDraft = await repository.findBySlug(draftSlug)
+      
+      expect(foundPublished).not.toBeNull()
+      expect(foundPublished!.id).toBe(publishedArticle.id)
+      expect(foundDraft).toBeNull()
     })
   })
 })

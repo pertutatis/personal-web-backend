@@ -80,6 +80,7 @@ export async function POST(request: NextRequest) {
     const relatedLinks = Array.isArray(data.relatedLinks)
       ? (data.relatedLinks as RelatedLink[])
       : []
+    const status = typeof data.status === 'string' ? data.status.trim() : null
 
     // Validate UUID
     if (!id) {
@@ -114,6 +115,11 @@ export async function POST(request: NextRequest) {
       errors.push('content exceeds maximum length of 20000 characters')
     }
 
+    // Validate status (optional - defaults to DRAFT)
+    if (status && status !== 'DRAFT' && status !== 'PUBLISHED') {
+      errors.push('status must be either "DRAFT" or "PUBLISHED"')
+    }
+
     if (errors.length > 0) {
       throw new ApiValidationError(errors.join(', '))
     }
@@ -132,6 +138,7 @@ export async function POST(request: NextRequest) {
         text: link.text.trim(),
         url: link.url.trim(),
       })),
+      ...(status && { status }),
     }
 
     const repository = new PostgresArticleRepository(articlesConnection)

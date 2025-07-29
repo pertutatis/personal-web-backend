@@ -7,6 +7,7 @@ import { ArticleContent } from '../domain/ArticleContent'
 import { ArticleBookIds } from '../domain/ArticleBookIds'
 import { ArticleRelatedLinks } from '../domain/ArticleRelatedLinks'
 import { ArticleSlug } from '../domain/ArticleSlug'
+import { ArticleStatus } from '../domain/ArticleStatus'
 import { Collection } from '@/contexts/shared/domain/Collection'
 import { DatabaseConnection } from '@/contexts/shared/infrastructure/persistence/DatabaseConnection'
 import { BookId } from '@/contexts/backoffice/book/domain/BookId'
@@ -22,6 +23,7 @@ interface ArticleRow {
   book_ids: string[]
   related_links: Array<{ text: string; url: string }>
   slug: string
+  status: string
   created_at: Date
   updated_at: Date
 }
@@ -81,9 +83,9 @@ export class PostgresArticleRepository implements ArticleRepository {
 
       await this.connection.execute(
         `INSERT INTO articles (
-          id, title, excerpt, content, book_ids, related_links, slug, created_at, updated_at
+          id, title, excerpt, content, book_ids, related_links, slug, status, created_at, updated_at
         ) VALUES (
-          $1, $2, $3, $4, $5::text[], $6::jsonb, $7, $8, $9
+          $1, $2, $3, $4, $5::text[], $6::jsonb, $7, $8, $9, $10
         )`,
         [
           primitives.id,
@@ -93,6 +95,7 @@ export class PostgresArticleRepository implements ArticleRepository {
           bookIdsArray,
           JSON.stringify(primitives.relatedLinks || []),
           primitives.slug,
+          primitives.status,
           new Date(primitives.createdAt),
           new Date(primitives.updatedAt),
         ],
@@ -209,13 +212,14 @@ export class PostgresArticleRepository implements ArticleRepository {
              book_ids = $4::text[],
              related_links = $5::jsonb,
              slug = $6,
+             status = $7,
              updated_at = (
                SELECT GREATEST(
                  timezone('UTC', NOW()),
-                 (SELECT updated_at + interval '1 second' FROM articles WHERE id = $7)
+                 (SELECT updated_at + interval '1 second' FROM articles WHERE id = $8)
                )
              )
-         WHERE id = $7`,
+         WHERE id = $8`,
         [
           primitives.title,
           primitives.excerpt,
@@ -223,6 +227,7 @@ export class PostgresArticleRepository implements ArticleRepository {
           primitives.bookIds,
           JSON.stringify(primitives.relatedLinks || []),
           primitives.slug,
+          primitives.status,
           primitives.id,
         ],
       )
@@ -284,6 +289,7 @@ export class PostgresArticleRepository implements ArticleRepository {
         bookIds: ArticleBookIds.create(row.book_ids || []),
         relatedLinks: ArticleRelatedLinks.create(relatedLinks),
         slug: new ArticleSlug(row.slug),
+        status: new ArticleStatus(row.status),
         createdAt: new Date(row.created_at),
         updatedAt: new Date(row.updated_at),
       })

@@ -8,6 +8,7 @@ export type ArticleCreatedDomainEventProps = {
   bookIds: string[]
   relatedLinks: Array<{ text: string; url: string }>
   slug: string
+  status: string
   createdAt: Date
   updatedAt: Date
   occurredOn: Date
@@ -22,6 +23,7 @@ export class ArticleCreatedDomainEvent extends DomainEvent {
   readonly bookIds: string[]
   readonly relatedLinks: Array<{ text: string; url: string }>
   readonly slug: string
+  readonly status: string
   readonly createdAt: Date
   readonly updatedAt: Date
 
@@ -38,6 +40,7 @@ export class ArticleCreatedDomainEvent extends DomainEvent {
     this.bookIds = props.bookIds
     this.relatedLinks = props.relatedLinks
     this.slug = props.slug
+    this.status = props.status
     this.createdAt = props.createdAt
     this.updatedAt = props.updatedAt
   }
@@ -50,6 +53,7 @@ export class ArticleCreatedDomainEvent extends DomainEvent {
       bookIds: this.bookIds,
       relatedLinks: this.relatedLinks,
       slug: this.slug,
+      status: this.status,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
     }

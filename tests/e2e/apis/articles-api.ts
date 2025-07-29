@@ -74,6 +74,13 @@ export class ArticlesApi {
     })
   }
 
+  async publishArticle(id: string | object) {
+    const articleId = this.getIdValue(id)
+    return this.request.post(`/api/backoffice/articles/${articleId}/publish`, {
+      headers: await this.getAuthHeaders(),
+    })
+  }
+
   async listArticles({ page, limit }: { page?: number; limit?: number } = {}) {
     const searchParams = new URLSearchParams()
     if (page !== undefined) searchParams.append('page', page.toString())

@@ -123,18 +123,22 @@ export class PostgresMigrations {
         book_ids TEXT[] DEFAULT '{}',
         related_links JSONB DEFAULT '[]',
         slug VARCHAR(255) NOT NULL UNIQUE,
+        status VARCHAR(20) NOT NULL DEFAULT 'DRAFT',
         created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT articles_title_not_empty CHECK (length(trim(title)) > 0),
         CONSTRAINT articles_excerpt_not_empty CHECK (length(trim(excerpt)) > 0),
         CONSTRAINT articles_content_not_empty CHECK (length(trim(content)) > 0),
         CONSTRAINT articles_slug_not_empty CHECK (length(trim(slug)) > 0),
-        CONSTRAINT articles_slug_format CHECK (slug ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$')
+        CONSTRAINT articles_slug_format CHECK (slug ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$'),
+        CONSTRAINT articles_status_check CHECK (status IN ('DRAFT', 'PUBLISHED'))
       );
 
       CREATE INDEX IF NOT EXISTS articles_slug_idx ON articles (slug);
       CREATE INDEX IF NOT EXISTS articles_created_at_idx ON articles (created_at DESC);
       CREATE INDEX IF NOT EXISTS articles_book_ids_idx ON articles USING gin(book_ids);
+      CREATE INDEX IF NOT EXISTS articles_status_idx ON articles (status);
+      CREATE INDEX IF NOT EXISTS articles_status_created_at_idx ON articles (status, created_at DESC);
 
       CREATE OR REPLACE FUNCTION update_updated_at_column()
       RETURNS TRIGGER AS $$
