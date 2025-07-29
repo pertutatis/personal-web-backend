@@ -7,6 +7,9 @@ import { ArticleTitle } from '../ArticleTitle'
 import { ArticleExcerpt } from '../ArticleExcerpt'
 import { ArticleContent } from '../ArticleContent'
 import { ArticleBookIds } from '../ArticleBookIds'
+import { ArticleStatus } from '../ArticleStatus'
+import { ArticleStatusMother } from './mothers/ArticleStatusMother'
+import { ArticleStatusInvalid } from '../ArticleStatusInvalid'
 
 describe('Article', () => {
   const id = new ArticleId('cc8d8194-e099-4e3a-a431-6b4412dc5f6a')
@@ -118,5 +121,136 @@ describe('Article', () => {
 
     expect(updatedArticle.title.equals(newTitle)).toBe(true)
     expect(updatedArticle.id.equals(article.id)).toBe(true)
+  })
+
+  describe('Article Status', () => {
+    it('should create article with default DRAFT status', () => {
+      const emptyBookIds = ArticleBookIds.createEmpty()
+      const article = Article.create({
+        id,
+        slug,
+        title,
+        excerpt,
+        content,
+        bookIds: emptyBookIds,
+        relatedLinks: ArticleRelatedLinksMother.createEmpty(),
+        createdAt,
+        updatedAt,
+      })
+
+      expect(article.status.isDraft()).toBe(true)
+      expect(article.status.value).toBe('DRAFT')
+    })
+
+    it('should create article with explicit DRAFT status', () => {
+      const emptyBookIds = ArticleBookIds.createEmpty()
+      const draftStatus = ArticleStatusMother.draft()
+      const article = Article.create({
+        id,
+        slug,
+        title,
+        excerpt,
+        content,
+        bookIds: emptyBookIds,
+        relatedLinks: ArticleRelatedLinksMother.createEmpty(),
+        status: draftStatus,
+        createdAt,
+        updatedAt,
+      })
+
+      expect(article.status.isDraft()).toBe(true)
+      expect(article.status.value).toBe('DRAFT')
+    })
+
+    it('should create article with PUBLISHED status', () => {
+      const emptyBookIds = ArticleBookIds.createEmpty()
+      const publishedStatus = ArticleStatusMother.published()
+      const article = Article.create({
+        id,
+        slug,
+        title,
+        excerpt,
+        content,
+        bookIds: emptyBookIds,
+        relatedLinks: ArticleRelatedLinksMother.createEmpty(),
+        status: publishedStatus,
+        createdAt,
+        updatedAt,
+      })
+
+      expect(article.status.isPublished()).toBe(true)
+      expect(article.status.value).toBe('PUBLISHED')
+    })
+
+    it('should publish draft article', () => {
+      const article = ArticleMother.createDraft()
+      
+      const publishedArticle = article.publish()
+      
+      expect(publishedArticle.status.isPublished()).toBe(true)
+      expect(publishedArticle.status.value).toBe('PUBLISHED')
+      expect(publishedArticle.id.equals(article.id)).toBe(true)
+    })
+
+    it('should not change status when publishing already published article', () => {
+      const article = ArticleMother.createPublished()
+      
+      const publishedArticle = article.publish()
+      
+      expect(publishedArticle.status.isPublished()).toBe(true)
+      expect(publishedArticle.status.value).toBe('PUBLISHED')
+      expect(publishedArticle.id.equals(article.id)).toBe(true)
+    })
+
+    it('should not allow unpublishing published article', () => {
+      const article = ArticleMother.createPublished()
+      
+      expect(() => article.unpublish()).toThrow(ArticleStatusInvalid)
+    })
+
+    it('should allow saving draft article multiple times', () => {
+      const article = ArticleMother.createDraft()
+      const newTitle = new ArticleTitle('Updated Draft Title')
+      
+      const updatedArticle = article.update({ title: newTitle })
+      
+      expect(updatedArticle.status.isDraft()).toBe(true)
+      expect(updatedArticle.title.value).toBe('Updated Draft Title')
+    })
+
+    it('should include status in primitives', () => {
+      const draftArticle = ArticleMother.createDraft()
+      const publishedArticle = ArticleMother.createPublished()
+      
+      const draftPrimitives = draftArticle.toPrimitives()
+      const publishedPrimitives = publishedArticle.toPrimitives()
+      
+      expect(draftPrimitives.status).toBe('DRAFT')
+      expect(publishedPrimitives.status).toBe('PUBLISHED')
+    })
+
+    it('should check if article is publishable', () => {
+      const draftArticle = ArticleMother.createDraft()
+      const publishedArticle = ArticleMother.createPublished()
+      
+      expect(draftArticle.canBePublished()).toBe(true)
+      expect(publishedArticle.canBePublished()).toBe(false)
+    })
+
+    it('should check if article is draft', () => {
+      const draftArticle = ArticleMother.createDraft()
+      const publishedArticle = ArticleMother.createPublished()
+      
+      expect(draftArticle.isDraft()).toBe(true)
+      expect(publishedArticle.isDraft()).toBe(false)
+    })
+
+    it('should check if article is published', () => {
+      const draftArticle = ArticleMother.createDraft()
+      const publishedArticle = ArticleMother.createPublished()
+      
+      expect(draftArticle.isPublished()).toBe(false)
+      expect(publishedArticle.isPublished()).toBe(true)
+    })
   })
 })

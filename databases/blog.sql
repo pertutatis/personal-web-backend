@@ -7,8 +7,10 @@ CREATE TABLE IF NOT EXISTS articles (
     book_ids TEXT[] DEFAULT '{}',
     related_links JSONB DEFAULT '[]',
     slug VARCHAR(255) NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'DRAFT',
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT articles_status_check CHECK (status IN ('DRAFT', 'PUBLISHED'))
 );
 
 -- Create index on title
@@ -22,6 +24,12 @@ CREATE INDEX IF NOT EXISTS articles_slug_idx ON articles (slug);
 
 -- Create index on created_at for pagination
 CREATE INDEX IF NOT EXISTS articles_created_at_idx ON articles (created_at DESC);
+
+-- Create index on status for filtering
+CREATE INDEX IF NOT EXISTS articles_status_idx ON articles (status);
+
+-- Create composite index for status + created_at for pagination queries
+CREATE INDEX IF NOT EXISTS articles_status_created_at_idx ON articles (status, created_at DESC);
 
 -- Function to update the updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -47,6 +55,9 @@ COMMENT ON COLUMN articles.related_links IS 'Array of related links with text an
 
 -- Add comment to document slug column's purpose
 COMMENT ON COLUMN articles.slug IS 'URL-friendly version of the title';
+
+-- Add comment to document status column's purpose
+COMMENT ON COLUMN articles.status IS 'Article status: DRAFT (work in progress) or PUBLISHED (visible to public)';
 
 -- Create books table
 CREATE TABLE IF NOT EXISTS books (

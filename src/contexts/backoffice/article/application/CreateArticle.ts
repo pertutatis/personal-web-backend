@@ -6,6 +6,7 @@ import { ArticleContent } from '../domain/ArticleContent'
 import { ArticleExcerpt } from '../domain/ArticleExcerpt'
 import { ArticleBookIds } from '../domain/ArticleBookIds'
 import { ArticleRelatedLinks } from '../domain/ArticleRelatedLinks'
+import { ArticleStatus } from '../domain/ArticleStatus'
 import { ArticleRepository } from '../domain/ArticleRepository'
 import { ArticleIdDuplicated } from '../domain/ArticleIdDuplicated'
 
@@ -16,6 +17,7 @@ export type CreateArticleRequest = {
   content: string
   bookIds: string[]
   relatedLinks: Array<{ text: string; url: string }>
+  status?: string
 }
 
 export class CreateArticle {
@@ -40,6 +42,7 @@ export class CreateArticle {
       bookIds: ArticleBookIds.create(request.bookIds),
       relatedLinks: ArticleRelatedLinks.create(request.relatedLinks),
       slug: ArticleSlug.fromTitle(request.title),
+      status: request.status ? new ArticleStatus(request.status) : undefined,
       createdAt: now,
       updatedAt: now,
     })

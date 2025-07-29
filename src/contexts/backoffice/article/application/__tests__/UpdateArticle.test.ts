@@ -6,10 +6,13 @@ import { ArticleExcerpt } from '../../domain/ArticleExcerpt'
 import { ArticleContent } from '../../domain/ArticleContent'
 import { ArticleBookIds } from '../../domain/ArticleBookIds'
 import { ArticleRelatedLinks } from '../../domain/ArticleRelatedLinks'
+import { ArticleStatus } from '../../domain/ArticleStatus'
+import { ArticleStatusInvalid } from '../../domain/ArticleStatusInvalid'
 import { ArticleIdMother } from '../../domain/__tests__/mothers/ArticleIdMother'
 import { ArticleTitleMother } from '../../domain/__tests__/mothers/ArticleTitleMother'
 import { ArticleBookIdsMother } from '../../domain/__tests__/mothers/ArticleBookIdsMother'
 import { ArticleRelatedLinksMother } from '../../domain/__tests__/mothers/ArticleRelatedLinksMother'
+import { ArticleMother } from '../../domain/__tests__/mothers/ArticleMother'
 import { ArticleSlug } from '../../domain/ArticleSlug'
 import { ArticleNotFound } from '../ArticleNotFound'
 
@@ -127,5 +130,85 @@ describe('UpdateArticle', () => {
         title: 'Updated Title',
       }),
     ).rejects.toThrow(ArticleNotFound)
+  })
+
+  describe('Status updates', () => {
+    it('should update status from DRAFT to PUBLISHED', async () => {
+      const draftArticle = ArticleMother.createDraft()
+      repository.search.mockResolvedValue(draftArticle)
+
+      await updateArticle.run({
+        id: draftArticle.id.value,
+        status: 'PUBLISHED',
+      })
+
+      expect(repository.update).toHaveBeenCalled()
+      const updatedArticle = (repository.update as jest.Mock).mock.calls[0][0]
+
+      expect(updatedArticle.status.isPublished()).toBe(true)
+      expect(updatedArticle.status.value).toBe('PUBLISHED')
+    })
+
+    it('should keep status as DRAFT when explicitly set', async () => {
+      const draftArticle = ArticleMother.createDraft()
+      repository.search.mockResolvedValue(draftArticle)
+
+      await updateArticle.run({
+        id: draftArticle.id.value,
+        status: 'DRAFT',
+        title: 'Updated Title',
+      })
+
+      expect(repository.update).toHaveBeenCalled()
+      const updatedArticle = (repository.update as jest.Mock).mock.calls[0][0]
+
+      expect(updatedArticle.status.isDraft()).toBe(true)
+      expect(updatedArticle.status.value).toBe('DRAFT')
+      expect(updatedArticle.title.value).toBe('Updated Title')
+    })
+
+    it('should not allow changing from PUBLISHED to DRAFT', async () => {
+      const publishedArticle = ArticleMother.createPublished()
+      repository.search.mockResolvedValue(publishedArticle)
+
+      await expect(
+        updateArticle.run({
+          id: publishedArticle.id.value,
+          status: 'DRAFT',
+        }),
+      ).rejects.toThrow(ArticleStatusInvalid)
+
+      expect(repository.update).not.toHaveBeenCalled()
+    })
+
+    it('should maintain status when not specified in update', async () => {
+      const publishedArticle = ArticleMother.createPublished()
+      repository.search.mockResolvedValue(publishedArticle)
+
+      await updateArticle.run({
+        id: publishedArticle.id.value,
+        title: 'Updated Title',
+      })
+
+      expect(repository.update).toHaveBeenCalled()
+      const updatedArticle = (repository.update as jest.Mock).mock.calls[0][0]
+
+      expect(updatedArticle.status.isPublished()).toBe(true)
+      expect(updatedArticle.title.value).toBe('Updated Title')
+    })
+
+    it('should throw error for invalid status value', async () => {
+      const draftArticle = ArticleMother.createDraft()
+      repository.search.mockResolvedValue(draftArticle)
+
+      await expect(
+        updateArticle.run({
+          id: draftArticle.id.value,
+          status: 'INVALID_STATUS',
+        }),
+      ).rejects.toThrow(ArticleStatusInvalid)
+
+      expect(repository.update).not.toHaveBeenCalled()
+    })
   })
 })

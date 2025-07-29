@@ -68,6 +68,17 @@ export class PostgresTestSetup {
         relatedLinksAndSlugMigration,
         'Related links columns might already exist'
       )
+
+      // Add article status column (ignorar error si ya existe)
+      const statusMigration = readFileSync(
+        join(__dirname, '../databases/migrations/007-add-status-to-articles.sql'),
+        'utf-8'
+      )
+      await this.runQuery(
+        articlesDbPool, 
+        statusMigration,
+        'Status column might already exist'
+      )
       await articlesDbPool.end()
 
       // Setup Books Database

@@ -7,6 +7,7 @@ import { ArticleExcerpt } from '../domain/ArticleExcerpt'
 import { ArticleRepository } from '../domain/ArticleRepository'
 import { ArticleBookIds } from '../domain/ArticleBookIds'
 import { ArticleRelatedLinks } from '../domain/ArticleRelatedLinks'
+import { ArticleStatus } from '../domain/ArticleStatus'
 import { ArticleNotFound } from './ArticleNotFound'
 
 export type UpdateArticleRequest = {
@@ -16,6 +17,7 @@ export type UpdateArticleRequest = {
   content?: string
   bookIds?: string[]
   relatedLinks?: Array<{ text: string; url: string }>
+  status?: string
 }
 
 export class UpdateArticle {
@@ -29,12 +31,16 @@ export class UpdateArticle {
       throw new ArticleNotFound(articleId)
     }
 
-    const updateParams = this.buildUpdateParams(request)
-    const updatedArticle = article.update(updateParams)
+    // Handle status update first (may throw validation errors)
+    const statusUpdatedArticle = this.updateStatus(article, request.status)
+    
+    // Then handle other field updates
+    const updateParams = this.buildUpdateParams(request, statusUpdatedArticle)
+    const updatedArticle = statusUpdatedArticle.update(updateParams)
     await this.repository.update(updatedArticle)
   }
 
-  private buildUpdateParams(request: UpdateArticleRequest): Partial<{
+  private buildUpdateParams(request: UpdateArticleRequest, currentArticle: Article): Partial<{
     title: ArticleTitle
     excerpt: ArticleExcerpt
     content: ArticleContent
@@ -66,5 +72,25 @@ export class UpdateArticle {
     }
 
     return params
+  }
+
+  private updateStatus(article: Article, newStatus?: string): Article {
+    if (newStatus === undefined) {
+      return article
+    }
+
+    const requestedStatus = new ArticleStatus(newStatus)
+    
+    if (requestedStatus.isPublished()) {
+      return article.publish()
+    }
+    
+    // If requesting DRAFT status, validate the transition
+    if (requestedStatus.isDraft() && article.status.isPublished()) {
+      // This will throw ArticleStatusInvalid
+      article.status.toDraft()
+    }
+    
+    return article
   }
 }

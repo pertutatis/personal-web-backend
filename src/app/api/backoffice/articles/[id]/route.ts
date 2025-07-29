@@ -91,6 +91,7 @@ export async function PUT(
         content?: string
         bookIds?: string[]
         relatedLinks?: RelatedLink[]
+        status?: string
       } = { id: params.id }
 
       // Process and validate only provided fields
@@ -131,6 +132,17 @@ export async function PUT(
           )
         }
         updateData.content = content
+      }
+
+      if (data.status !== undefined) {
+        if (typeof data.status !== 'string') {
+          throw new ApiValidationError('status must be a string')
+        }
+        const status = data.status.trim()
+        if (status !== 'DRAFT' && status !== 'PUBLISHED') {
+          throw new ApiValidationError('status must be either "DRAFT" or "PUBLISHED"')
+        }
+        updateData.status = status
       }
 
       if (data.bookIds !== undefined) {

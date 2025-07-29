@@ -33,7 +33,7 @@ export class PostgresBlogArticleRepository implements BlogArticleRepository {
   constructor(private readonly connection: DatabaseConnection) {}
 
   async findAll(): Promise<BlogArticle[]> {
-    // First get all articles
+    // First get all published articles only
     const articlesQuery = `
       SELECT
         a.id,
@@ -46,6 +46,7 @@ export class PostgresBlogArticleRepository implements BlogArticleRepository {
         a.created_at,
         a.updated_at
       FROM articles a
+      WHERE a.status = 'PUBLISHED'
       ORDER BY a.created_at DESC;
     `
 
@@ -101,7 +102,7 @@ export class PostgresBlogArticleRepository implements BlogArticleRepository {
         a.created_at,
         a.updated_at
       FROM articles a
-      WHERE a.slug = $1;
+      WHERE a.slug = $1 AND a.status = 'PUBLISHED';
     `
 
     const articleResult = await this.connection.execute<ArticleRow>(
