@@ -1,7 +1,6 @@
 const { Client } = require('pg')
 const fs = require('fs')
 const path = require('path')
-const { Logger } = require('./src/contexts/shared/infrastructure/Logger')
 
 async function initializeDatabase() {
   const client = new Client({
@@ -14,15 +13,44 @@ async function initializeDatabase() {
 
   try {
     await client.connect()
-    Logger.info('Connected to database')
+    console.log('Connected to database')
 
+    // Execute base schema
     const sqlFile = path.join(__dirname, '..', 'databases', 'blog.sql')
     const sql = fs.readFileSync(sqlFile, 'utf8')
-
     await client.query(sql)
-    Logger.info('Successfully initialized database schema')
+    console.log('Successfully initialized database schema')
+
+    // Apply migrations
+    const migrationsDir = path.join(__dirname, '..', 'databases', 'migrations')
+    const migrationFiles = fs
+      .readdirSync(migrationsDir)
+      .filter((file) => file.endsWith('.sql'))
+      .sort() // Ensure migrations are applied in order
+
+    for (const migrationFile of migrationFiles) {
+      try {
+        const migrationPath = path.join(migrationsDir, migrationFile)
+        const migrationSql = fs.readFileSync(migrationPath, 'utf8')
+        await client.query(migrationSql)
+        console.log(`Applied migration: ${migrationFile}`)
+      } catch (error) {
+        // Skip if migration already applied (column/constraint already exists)
+        if (
+          error.message.includes('already exists') ||
+          error.message.includes('column') ||
+          error.message.includes('constraint')
+        ) {
+          console.log(`Migration ${migrationFile} already applied (skipped)`)
+        } else {
+          throw error
+        }
+      }
+    }
+
+    console.log('All migrations applied successfully')
   } catch (error) {
-    Logger.error('Error initializing database:', error)
+    console.error('Error initializing database:', error)
     throw error
   } finally {
     await client.end()
@@ -30,6 +58,6 @@ async function initializeDatabase() {
 }
 
 initializeDatabase().catch((error) => {
-  Logger.error('Database initialization failed:', error)
+  console.error('Database initialization failed:', error)
   process.exit(1)
 })
