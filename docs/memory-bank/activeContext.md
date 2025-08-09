@@ -1,81 +1,50 @@
-# Active Context Memory Bank
+# Active Context
 
 ## Current Focus
-**✅ Task 15: Draft Mode for Articles - COMPLETED**
-Full implementation successfully completed with all tests passing. Ready for next task assignment.
 
-## Recent Changes (2024-12-19)
+- Implementación de Series de Artículos
+- Mejora de la organización del contenido
+- Expansión de funcionalidades del blog
 
-### ✅ Task 15 Final Implementation Completed
-1. **All Issues Resolved**: Fixed status persistence, blog endpoint structure, slug generation, and validation
-2. **Complete Test Suite Passing**: 304 unit + 39 integration + 59 E2E tests all green
-3. **Production Ready**: Database migrations, API endpoints, comprehensive documentation
-4. **Quality Validated**: TDD approach, clean architecture, backward compatibility maintained
+## Recent Changes
 
-### ✅ Key Deliverables Achieved
-- **DRAFT/PUBLISHED States**: Two article states with proper defaults and validation
-- **Unidirectional Transitions**: DRAFT → PUBLISHED only, with domain-enforced rules
-- **Repository Filtering**: Blog context shows only PUBLISHED, backoffice shows all
-- **API Endpoints**: Full CRUD with status support + dedicated publish endpoint
-- **Database Schema**: Migration with constraints, indexes, and proper defaults
-- **Complete Testing**: Comprehensive coverage across all architectural layers
+- ADR-019: Decisión de implementar series de artículos
+- OBR-002: Definición de casos de uso y reglas de negocio para series
+- Decisiones sobre gestión de series:
+  - No se permite eliminar series con artículos publicados
+  - Implementación de paginación estándar
+  - Ordenación por fecha de publicación
 
-## Next Task Readiness
+## Next Steps
 
-### ✅ Technical Foundation Solid
-- **Architecture**: Hexagonal architecture with clean separation maintained
-- **Code Quality**: TDD approach, comprehensive test coverage, domain-driven design
-- **API Design**: RESTful endpoints with proper OpenAPI documentation
-- **Database**: Robust schema with migrations and referential integrity
-- **Testing Infrastructure**: Full unit/integration/E2E test pipeline
+1. Diseñar e implementar modelo de dominio para Series
+2. Crear nuevos endpoints con soporte de paginación
+3. Actualizar estructura de base de datos
+4. Desarrollar pruebas unitarias, de integración y e2e
 
-### 🎯 Ready for Next Priority
-**Current Status**: Awaiting next task assignment
+## Active Decisions
 
-**Potential Next Tasks** (in order of typical priority):
-1. **Search & Filtering**: Enhanced article/book search capabilities
-2. **Performance Optimization**: Caching, query optimization, rate limiting
-3. **Advanced Features**: Article scheduling, versioning, or workflow states
-4. **Observability**: Monitoring, logging, metrics, alerting
-5. **User Experience**: Admin dashboard, content analytics, workflow improvements
+- Un artículo solo puede pertenecer a una serie
+- Series con artículos publicados no pueden ser eliminadas
+- Paginación estándar (10 artículos por página por defecto)
+- Ordenación por fecha de publicación dentro de series
 
-### 📊 Current System Capabilities
-- **Article Management**: Full CRUD with draft/publish workflow
-- **Book Management**: Complete inventory with referential integrity
-- **Authentication**: JWT-based with secure user management  
-- **Blog API**: Public endpoints with proper content filtering
-- **Data Integrity**: Domain events, validation, error handling
-- **Testing**: Comprehensive coverage ensuring system reliability
+## Technical Considerations
 
-## Available Resources
+- Mantener consistencia en validación de eliminación de series
+- Optimizar consultas paginadas de artículos por serie
+- Asegurar integridad referencial en base de datos
+- Implementar validaciones de unicidad de título de serie
+- Gestionar eficientemente la paginación en queries
 
-### ✅ Development Infrastructure
-- **Local Environment**: Docker, PostgreSQL, Next.js fully configured
-- **Testing Framework**: Jest, Playwright, comprehensive test utilities
-- **Documentation**: ADRs, OBRs, OpenAPI specs, memory bank updated
-- **Code Quality**: ESLint, TypeScript strict mode, architectural discipline
+## Integration Points
 
-### ✅ Team Knowledge
-- **Domain Expertise**: Article/book management, content workflows
-- **Technical Skills**: Hexagonal architecture, DDD, TDD, API design
-- **Quality Standards**: Testing best practices, documentation culture
-- **Delivery Capability**: Proven ability to implement complex features end-to-end
+- Integración con el módulo existente de artículos
+- Actualización de endpoints de blog para incluir información de series
+- Nuevos endpoints en backoffice para gestión de series
 
-## Success Metrics Achieved
+## Performance Considerations
 
-### ✅ Task 15 Results
-- **Functionality**: 100% requirements implemented and tested
-- **Quality**: Zero critical bugs, comprehensive test coverage
-- **Performance**: All tests passing, no regressions introduced
-- **Maintainability**: Clean code, proper documentation, architectural consistency
-- **User Value**: Clear content workflow with editorial control
-- **Technical Debt**: Minimal, well-managed codebase
-
-### 🎯 Ready for Scale
-The system is now ready for:
-- **Advanced Features**: Complex workflows, integrations, analytics
-- **Performance Optimization**: Large datasets, caching strategies
-- **User Experience**: Enhanced interfaces, automation, reporting
-- **Infrastructure**: Monitoring, scaling, deployment automation
-
-**Status**: ✅ **READY FOR NEXT TASK ASSIGNMENT**
+- Índices optimizados para consultas paginadas
+- Caching de resultados de series populares
+- Optimización de queries de conteo para paginación
