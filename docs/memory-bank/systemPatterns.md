@@ -1,165 +1,201 @@
 # System Patterns
 
-## System Architecture
+## Architecture
 
-### API Controllers Structure (Next.js)
+- Hexagonal Architecture
+- DDD (Domain-Driven Design)
+- CQRS pattern for queries and commands
+- Event-Driven Architecture
+
 ```mermaid
-flowchart TD
-    subgraph API[API Layer]
-        R[route.ts] --> G[GET Handler]
-        R --> P[POST Handler]
-        R --> U[PUT Handler]
-        R --> D[DELETE Handler]
+graph TD
+    subgraph Blog API
+        BC[Blog Controller]
+        BA[Blog Application]
+        BR[Blog Repository]
     end
-    
-    subgraph Application[Application Layer]
-        UC[Use Cases]
+
+    subgraph Backoffice API
+        BOC[Backoffice Controller]
+        BOA[Backoffice Application]
+        BOR[Backoffice Repository]
     end
-    
-    G --> UC
-    P --> UC
-    U --> UC
-    D --> UC
-```
 
-Los controladores API se mantienen en un único archivo route.ts por:
-- Mejor cohesión de endpoints relacionados
-- Facilita compartir configuración (ej: conexiones DB)
-- Controladores delgados que solo orquestan casos de uso
-- Sigue el principio "Common Closure Principle"
-
-
-### Arquitectura Hexagonal (Ports & Adapters)
-```mermaid
-flowchart TB
     subgraph Domain
-        D[Domain Models]
-        R[Repository Interfaces]
+        A[Article]
+        S[Series]
+        VOS[Series Value Objects]
+        VOA[Article Value Objects]
     end
-    
-    subgraph Application
-        UC[Use Cases]
-    end
-    
+
     subgraph Infrastructure
-        API[API Routes]
-        DB[Postgres Repository]
-    end
-    
-    API --> UC
-    UC --> D
-    UC --> R
-    DB --> R
-```
-
-1. **Domain Layer**
-   - Modelos de dominio (Article, Book)
-   - Interfaces de repositorio
-   - Value Objects
-   - Domain Events
-   - Reglas de negocio
-
-2. **Application Layer**
-   - Casos de uso (Create, Update, Delete, List)
-   - Orquestación de entidades
-   - Validaciones de aplicación
-
-3. **Infrastructure Layer**
-   - Implementaciones de repositorio
-   - Controladores API
-   - Configuración de base de datos
-
-## Key Technical Decisions
-
-### 1. Value Objects
-- Encapsulación de reglas de validación
-- Inmutabilidad
-- Auto-validación
-Ejemplos: ArticleTitle, BookIsbn, ArticleContent
-
-### 2. Repository Pattern
-- Abstracción de persistencia
-- Interfaces en dominio
-- Implementaciones en infraestructura
-- Soporte para testing
-
-### 3. Object Mother Pattern
-- Creación de objetos para testing
-- Generadores de datos válidos/inválidos
-- Reutilización en tests
-
-### 4. Domain Events
-- Eventos para cambios importantes
-- ArticleCreatedDomainEvent
-- BookUpdatedDomainEvent
-
-## Design Patterns in Use
-
-### Creational Patterns
-- Factory Method (en Value Objects)
-- Object Mother (testing)
-
-### Structural Patterns
-- Adapter (en repositorios)
-- Composite (en Value Objects)
-
-### Behavioral Patterns
-- Observer (Domain Events)
-- Command (Use Cases)
-
-## Component Relationships
-
-### Articles Context
-```mermaid
-flowchart LR
-    subgraph Backoffice
-        A[Article] --> AVO[Value Objects]
-        A --> B[Book References]
-        AR[ArticleRepository] --> A
-        UC[Use Cases] --> AR
+        DB[(Database)]
+        Cache[(Cache)]
     end
 
-    subgraph Blog
-        BA[BlogArticle] --> BB[BlogBook]
-        BAR[BlogArticleRepository] --> BA
-        BUC[Blog Use Cases] --> BAR
-    end
+    BC --> BA
+    BA --> BR
+    BR --> DB
 
-    A --> BA
+    BOC --> BOA
+    BOA --> BOR
+    BOR --> DB
+
+    A --> VOA
+    S --> VOS
+    A --> S
+
+    BR --> Cache
+    BOR --> Cache
 ```
 
-### Books Context
+## Domain Models
+
 ```mermaid
-flowchart LR
-    B[Book] --> BVO[Value Objects]
-    BR[BookRepository] --> B
-    UC[Use Cases] --> BR
+classDiagram
+    class Article {
+        +ArticleId id
+        +ArticleTitle title
+        +ArticleContent content
+        +ArticleExcerpt excerpt
+        +ArticleSlug slug
+        +ArticleBookIds bookIds
+        +ArticleRelatedLinks relatedLinks
+        +ArticleStatus status
+        +SeriesId seriesId
+        +Date createdAt
+        +Date updatedAt
+        +publish()
+        +update()
+        +assignToSeries()
+        +removeFromSeries()
+    }
+
+    class ArticleSeries {
+        +SeriesId id
+        +SeriesTitle title
+        +SeriesDescription description
+        +Date createdAt
+        +Date updatedAt
+        +create()
+        +update()
+        +delete()
+    }
+
+    class SeriesId {
+        +String value
+        +validate()
+    }
+
+    class SeriesTitle {
+        +String value
+        +validate()
+    }
+
+    class SeriesDescription {
+        +String value
+        +validate()
+    }
+
+    Article "0..*" --> "0..1" ArticleSeries : belongs to
+    ArticleSeries --> SeriesId
+    ArticleSeries --> SeriesTitle
+    ArticleSeries --> SeriesDescription
 ```
 
-### Shared Context
+## Event Flow
+
 ```mermaid
-flowchart TB
-    VO[Value Objects]
-    DE[Domain Events]
-    AR[Aggregate Root]
-    
-    Article --> AR
-    Book --> AR
-    Article --> DE
-    Book --> DE
+sequenceDiagram
+    participant BOC as Backoffice Controller
+    participant BOA as Backoffice Application
+    participant DOM as Domain
+    participant EVT as Event Bus
+    participant REP as Repository
+    participant DB as Database
+
+    BOC->>BOA: Create Series
+    BOA->>DOM: Create Series Entity
+    DOM->>EVT: Emit SeriesCreatedEvent
+    DOM->>REP: Save Series
+    REP->>DB: Persist
+    EVT->>BOA: Handle Event
+    BOA->>BOC: Return Response
 ```
+
+## Design Patterns
+
+- Repository Pattern para acceso a datos
+- Factory Pattern para creación de objetos
+- Command Pattern para operaciones
+- Event-Driven para eventos de dominio
+- Strategy Pattern para ordenación de artículos en series
+- Observer Pattern para reaccionar a cambios en series
+- Decorator Pattern para enriquecer artículos con info de series
 
 ## Testing Strategy
 
-1. **Unit Tests**
-   - Domain Models
-   - Value Objects
-   - Use Cases
+- Unit Tests:
+  - Lógica de dominio de Series
+  - Value Objects de Series
+  - Servicios de aplicación
+  - Validaciones de negocio
+- Integration Tests:
+  - Repositorios
+  - Eventos de dominio
+  - Flujos completos de operaciones
+- E2E Tests:
+  - Endpoints API
+  - Flujos de usuario completos
+- Enfoque TDD para todas las nuevas características
 
-2. **Integration Tests**
-   - Repositories
-   - Database Operations
+## API Design
 
-3. **E2E Tests**
-   - API Endpoints
-   - Full Flow Testing
+- Principios REST
+- URLs basadas en recursos
+- Uso consistente de métodos HTTP
+- Formatos de respuesta uniformes
+- Manejo adecuado de errores
+- Versionado de API cuando sea necesario
+- Documentación OpenAPI/Swagger
+- Rate Limiting según necesidad
+
+## Database Patterns
+
+- Uso de claves foráneas para integridad referencial
+- Índices para optimización de consultas
+- Soft deletes para preservar historial
+- Timestamps para auditoría
+- Constraints de unicidad
+- Índices compuestos según patrones de consulta
+- Optimización de queries N+1
+
+## Validations
+
+- Validación a nivel de dominio
+- Validación de unicidad en base de datos
+- Validación de integridad referencial
+- Manejo de errores consistente
+- Validaciones específicas de series:
+  - Unicidad de título
+  - Longitud máxima de descripción
+  - Referencias válidas de artículos
+  - Reglas de negocio de series
+
+## Security Patterns
+
+- Autenticación requerida para operaciones de backoffice
+- Autorización basada en roles
+- Validación de entrada
+- Sanitización de datos
+- Protección contra CSRF
+- Rate Limiting
+- Logging de operaciones sensibles
+
+## Performance Patterns
+
+- Caching de series y artículos
+- Lazy loading de relaciones
+- Optimización de queries
+- Paginación de resultados
+- Índices específicos para búsquedas comunes
