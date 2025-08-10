@@ -2,49 +2,129 @@
 
 ## Current Focus
 
-- Implementación de Series de Artículos
-- Mejora de la organización del contenido
-- Expansión de funcionalidades del blog
+- Implementación de Series de Artículos como dominio independiente
+- Integración con dominio de Articles existente
+- Desarrollo siguiendo TDD
 
-## Recent Changes
+## Pasos de Desarrollo
 
-- ADR-019: Decisión de implementar series de artículos
-- OBR-002: Definición de casos de uso y reglas de negocio para series
-- Decisiones sobre gestión de series:
-  - No se permite eliminar series con artículos publicados
-  - Implementación de paginación estándar
-  - Ordenación por fecha de publicación
+### 1. Preparación del Dominio Series
 
-## Next Steps
+1. Crear estructura de directorios:
 
-1. Diseñar e implementar modelo de dominio para Series
-2. Crear nuevos endpoints con soporte de paginación
-3. Actualizar estructura de base de datos
-4. Desarrollar pruebas unitarias, de integración y e2e
+   ```
+   src/contexts/blog/series/
+   ├── domain/
+   │   ├── SeriesId.ts
+   │   ├── SeriesTitle.ts
+   │   ├── SeriesDescription.ts
+   │   ├── ArticleSeries.ts
+   │   └── SeriesRepository.ts
+   ├── application/
+   │   ├── CreateSeries.ts
+   │   ├── UpdateSeries.ts
+   │   └── DeleteSeries.ts
+   └── infrastructure/
+       ├── persistence/
+       │   └── SeriesRepository.ts
+       └── http/
+           └── SeriesController.ts
+   ```
 
-## Active Decisions
+2. Implementar Value Objects (TDD):
 
-- Un artículo solo puede pertenecer a una serie
-- Series con artículos publicados no pueden ser eliminadas
-- Paginación estándar (10 artículos por página por defecto)
-- Ordenación por fecha de publicación dentro de series
+   - SeriesId: Tests + Implementación
+   - SeriesTitle: Tests + Implementación
+   - SeriesDescription: Tests + Implementación
 
-## Technical Considerations
+3. Implementar Agregado Series (TDD):
+   - ArticleSeries: Tests + Implementación
+   - SeriesRepository interface
+   - Eventos de dominio
 
-- Mantener consistencia en validación de eliminación de series
-- Optimizar consultas paginadas de artículos por serie
-- Asegurar integridad referencial en base de datos
-- Implementar validaciones de unicidad de título de serie
-- Gestionar eficientemente la paginación en queries
+### 2. Actualización del Dominio Articles
 
-## Integration Points
+1. Añadir SeriesId a Article:
 
-- Integración con el módulo existente de artículos
-- Actualización de endpoints de blog para incluir información de series
-- Nuevos endpoints en backoffice para gestión de series
+   - Modificar Article entity
+   - Actualizar tests existentes
+   - Añadir nuevos tests para funcionalidad de series
 
-## Performance Considerations
+2. Implementar eventos de dominio:
+   - ArticleAssignedToSeriesDomainEvent
+   - ArticleRemovedFromSeriesDomainEvent
 
-- Índices optimizados para consultas paginadas
-- Caching de resultados de series populares
-- Optimización de queries de conteo para paginación
+### 3. Infraestructura
+
+1. Base de datos:
+
+   - Crear migración para tabla article_series
+   - Añadir campo series_id a articles
+   - Crear índices necesarios
+
+2. Implementar SeriesRepository:
+   - Tests de integración
+   - Implementación PostgreSQL
+
+### 4. Casos de Uso (TDD)
+
+1. Dominio Series:
+
+   - CreateSeries
+   - UpdateSeries
+   - DeleteSeries
+   - GetSeriesById
+   - ListSeries
+
+2. Dominio Articles:
+   - AssignArticleToSeries
+   - RemoveArticleFromSeries
+   - ListArticlesBySeries
+
+### 5. API Endpoints
+
+1. Backoffice:
+
+   - POST /api/backoffice/series
+   - PUT /api/backoffice/series/{id}
+   - DELETE /api/backoffice/series/{id}
+   - GET /api/backoffice/series
+   - PATCH /api/backoffice/articles/{id}/series
+
+2. Blog:
+   - GET /api/blog/series
+   - GET /api/blog/series/{id}/articles
+
+### 6. Testing E2E
+
+1. Series Management:
+
+   - Crear serie
+   - Actualizar serie
+   - Eliminar serie
+   - Validar restricciones
+
+2. Article Integration:
+   - Asignar artículo a serie
+   - Listar artículos de serie
+   - Paginación
+   - Ordenación
+
+### 7. Documentación
+
+1. Actualizar Swagger/OpenAPI
+2. Actualizar README
+3. Documentar endpoints y ejemplos
+
+## Estado Actual
+
+- Diseño completado
+- Documentación inicial creada
+- Pendiente aprobación para inicio de implementación
+
+## Consideraciones Técnicas
+
+- Usar TDD en cada paso
+- Mantener separación clara entre dominios
+- Validar eventos de dominio
+- Asegurar consistencia en base de datos

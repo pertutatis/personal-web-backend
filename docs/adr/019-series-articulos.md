@@ -12,16 +12,29 @@ Necesitamos una forma de agrupar artículos relacionados que tratan sobre un mis
 
 ## Decisión
 
-Implementaremos un sistema de "Series de Artículos" con las siguientes características:
+Implementaremos un sistema de "Series de Artículos" como un dominio independiente, separado del dominio de artículos, con las siguientes características:
 
-1. Una serie es una colección de artículos relacionados
-2. Un artículo puede pertenecer a una única serie (relación 1:N)
-3. Las series tendrán:
+1. Nuevo subdominio `series` dentro de los contextos blog y backoffice
+2. Una serie es una colección de artículos relacionados
+3. Un artículo puede pertenecer a una única serie (relación 1:N)
+4. Las series tendrán:
    - ID único
    - Título
    - Descripción
    - Lista de artículos asociados
    - Fecha de creación/actualización
+
+### Estructura de Directorios
+
+```
+src/contexts/
+├── blog/
+│   ├── article/     (dominio existente)
+│   └── series/      (nuevo dominio)
+└── backoffice/
+    ├── article/     (dominio existente)
+    └── series/      (nuevo dominio)
+```
 
 ### Modelo de Dominio
 
@@ -43,6 +56,19 @@ classDiagram
     ArticleSeries "1" -- "*" Article : contains
 ```
 
+### Separación de Responsabilidades
+
+1. Dominio de Series:
+
+   - Gestión del ciclo de vida de las series
+   - Validación de reglas específicas de series
+   - Eventos de dominio relacionados con series
+
+2. Dominio de Artículos:
+   - Mantiene su responsabilidad actual
+   - Se añade referencia a SeriesId
+   - Eventos de asignación/desasignación de series
+
 ### Endpoints
 
 Blog:
@@ -62,13 +88,16 @@ Backoffice:
 ### Positivas
 
 - Mejor organización del contenido
-- Facilita la navegación entre artículos relacionados
+- Separación clara de responsabilidades
+- Dominio de artículos más enfocado y cohesivo
+- Facilita la evolución independiente de cada dominio
 - Mejora SEO al establecer relaciones entre contenidos
 
 ### Negativas
 
-- Añade complejidad al modelo de dominio
-- Requiere mantener la consistencia al eliminar series
+- Necesidad de coordinar eventos entre dominios
+- Mayor complejidad en la infraestructura
+- Requiere mantener consistencia entre dominios
 - Necesidad de migrar datos existentes si hay artículos que deberían estar en series
 
 ## Referencias
