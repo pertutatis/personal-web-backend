@@ -11,21 +11,32 @@
 graph TD
     subgraph Blog API
         BC[Blog Controller]
-        BA[Blog Application]
-        BR[Blog Repository]
+        BAC[Article Application]
+        BSC[Series Application]
+        BAR[Article Repository]
+        BSR[Series Repository]
     end
 
     subgraph Backoffice API
         BOC[Backoffice Controller]
-        BOA[Backoffice Application]
-        BOR[Backoffice Repository]
+        BOAC[Article Application]
+        BOSC[Series Application]
+        BOAR[Article Repository]
+        BOSR[Series Repository]
     end
 
     subgraph Domain
-        A[Article]
-        S[Series]
-        VOS[Series Value Objects]
-        VOA[Article Value Objects]
+        subgraph Articles
+            A[Article]
+            VOA[Article Value Objects]
+        end
+
+        subgraph Series
+            S[Series]
+            VOS[Series Value Objects]
+        end
+
+        EB[Event Bus]
     end
 
     subgraph Infrastructure
@@ -33,23 +44,36 @@ graph TD
         Cache[(Cache)]
     end
 
-    BC --> BA
-    BA --> BR
-    BR --> DB
-
-    BOC --> BOA
-    BOA --> BOR
-    BOR --> DB
-
     A --> VOA
     S --> VOS
-    A --> S
+    A -.-> S
 
-    BR --> Cache
-    BOR --> Cache
+    BC --> BAC
+    BC --> BSC
+    BAC --> BAR
+    BSC --> BSR
+
+    BOC --> BOAC
+    BOC --> BOSC
+    BOAC --> BOAR
+    BOSC --> BOSR
+
+    BAR --> DB
+    BSR --> DB
+    BOAR --> DB
+    BOSR --> DB
+
+    A --> EB
+    S --> EB
+    EB --> BAC
+    EB --> BSC
+    EB --> BOAC
+    EB --> BOSC
 ```
 
 ## Domain Models
+
+### Articles Domain
 
 ```mermaid
 classDiagram
@@ -71,6 +95,19 @@ classDiagram
         +removeFromSeries()
     }
 
+    class ArticleRepository {
+        +findAll()
+        +findById()
+        +save()
+        +update()
+        +findBySeries()
+    }
+```
+
+### Series Domain
+
+```mermaid
+classDiagram
     class ArticleSeries {
         +SeriesId id
         +SeriesTitle title
@@ -78,6 +115,14 @@ classDiagram
         +Date createdAt
         +Date updatedAt
         +create()
+        +update()
+        +delete()
+    }
+
+    class SeriesRepository {
+        +findAll()
+        +findById()
+        +save()
         +update()
         +delete()
     }
@@ -97,7 +142,6 @@ classDiagram
         +validate()
     }
 
-    Article "0..*" --> "0..1" ArticleSeries : belongs to
     ArticleSeries --> SeriesId
     ArticleSeries --> SeriesTitle
     ArticleSeries --> SeriesDescription
@@ -108,94 +152,80 @@ classDiagram
 ```mermaid
 sequenceDiagram
     participant BOC as Backoffice Controller
-    participant BOA as Backoffice Application
+    participant BOSC as Series Application
+    participant BOAC as Article Application
     participant DOM as Domain
     participant EVT as Event Bus
-    participant REP as Repository
+    participant REP as Repositories
     participant DB as Database
 
-    BOC->>BOA: Create Series
-    BOA->>DOM: Create Series Entity
+    BOC->>BOSC: Create Series
+    BOSC->>DOM: Create Series Entity
     DOM->>EVT: Emit SeriesCreatedEvent
     DOM->>REP: Save Series
-    REP->>DB: Persist
-    EVT->>BOA: Handle Event
-    BOA->>BOC: Return Response
+    REP->>DB: Persist Series
+    EVT->>BOAC: Update Article References
+    BOAC->>REP: Update Articles
+    REP->>DB: Persist Articles
+    BOAC->>BOC: Return Response
 ```
 
 ## Design Patterns
 
-- Repository Pattern para acceso a datos
+- Repository Pattern para cada dominio
 - Factory Pattern para creación de objetos
 - Command Pattern para operaciones
-- Event-Driven para eventos de dominio
-- Strategy Pattern para ordenación de artículos en series
-- Observer Pattern para reaccionar a cambios en series
-- Decorator Pattern para enriquecer artículos con info de series
+- Event-Driven para comunicación entre dominios
+- Strategy Pattern para ordenación de artículos
+- Observer Pattern para reacciones a eventos
+- Decorator Pattern para enriquecer respuestas
 
 ## Testing Strategy
 
-- Unit Tests:
-  - Lógica de dominio de Series
-  - Value Objects de Series
+- Unit Tests por dominio:
+  - Lógica de dominio
+  - Value Objects
   - Servicios de aplicación
-  - Validaciones de negocio
+  - Validaciones
 - Integration Tests:
-  - Repositorios
+  - Repositorios por dominio
+  - Comunicación entre dominios
   - Eventos de dominio
-  - Flujos completos de operaciones
 - E2E Tests:
   - Endpoints API
-  - Flujos de usuario completos
-- Enfoque TDD para todas las nuevas características
+  - Flujos completos
 
 ## API Design
 
 - Principios REST
-- URLs basadas en recursos
+- Separación de endpoints por dominio
 - Uso consistente de métodos HTTP
 - Formatos de respuesta uniformes
-- Manejo adecuado de errores
-- Versionado de API cuando sea necesario
+- Manejo de errores por dominio
 - Documentación OpenAPI/Swagger
-- Rate Limiting según necesidad
 
 ## Database Patterns
 
-- Uso de claves foráneas para integridad referencial
-- Índices para optimización de consultas
-- Soft deletes para preservar historial
+- Tablas separadas por dominio
+- Claves foráneas para referencias
+- Índices optimizados por dominio
+- Soft deletes donde aplique
 - Timestamps para auditoría
-- Constraints de unicidad
-- Índices compuestos según patrones de consulta
-- Optimización de queries N+1
-
-## Validations
-
-- Validación a nivel de dominio
-- Validación de unicidad en base de datos
-- Validación de integridad referencial
-- Manejo de errores consistente
-- Validaciones específicas de series:
-  - Unicidad de título
-  - Longitud máxima de descripción
-  - Referencias válidas de artículos
-  - Reglas de negocio de series
+- Constraints específicos por dominio
 
 ## Security Patterns
 
 - Autenticación requerida para operaciones de backoffice
 - Autorización basada en roles
-- Validación de entrada
+- Validación de entrada por dominio
 - Sanitización de datos
 - Protección contra CSRF
-- Rate Limiting
-- Logging de operaciones sensibles
+- Rate Limiting por endpoints
 
 ## Performance Patterns
 
-- Caching de series y artículos
+- Caching por dominio
 - Lazy loading de relaciones
 - Optimización de queries
 - Paginación de resultados
-- Índices específicos para búsquedas comunes
+- Índices específicos por dominio
