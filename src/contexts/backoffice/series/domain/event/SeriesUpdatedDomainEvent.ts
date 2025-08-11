@@ -1,43 +1,38 @@
 import { DomainEvent } from '@/contexts/shared/domain/event/DomainEvent'
 
-type PrimitiveArticleSeriesCreated = {
+type PrimitiveSeriesUpdated = {
   id: string
   title: string
   description: string
-  createdAt: Date
   updatedAt: Date
   occurredOn: Date
 }
 
-export class ArticleSeriesCreatedDomainEvent extends DomainEvent {
-  static readonly EVENT_NAME = 'article_series.created'
+export class SeriesUpdatedDomainEvent extends DomainEvent {
+  static readonly EVENT_NAME = 'series.updated'
 
   readonly title: string
   readonly description: string
-  readonly createdAt: Date
   readonly updatedAt: Date
 
   constructor({
     id,
     title,
     description,
-    createdAt,
     updatedAt,
     occurredOn,
-  }: PrimitiveArticleSeriesCreated) {
-    super(ArticleSeriesCreatedDomainEvent.EVENT_NAME, id, occurredOn)
+  }: PrimitiveSeriesUpdated) {
+    super(SeriesUpdatedDomainEvent.EVENT_NAME, id, occurredOn)
     this.title = title
     this.description = description
-    this.createdAt = createdAt
     this.updatedAt = updatedAt
   }
 
-  toPrimitives(): PrimitiveArticleSeriesCreated {
+  toPrimitives(): PrimitiveSeriesUpdated {
     return {
       id: this.aggregateId,
       title: this.title,
       description: this.description,
-      createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       occurredOn: this.occurredOn,
     }

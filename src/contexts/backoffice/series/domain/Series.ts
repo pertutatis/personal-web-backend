@@ -2,8 +2,8 @@ import { AggregateRoot } from '@/contexts/shared/domain/AggregateRoot'
 import { SeriesId } from './SeriesId'
 import { SeriesTitle } from './SeriesTitle'
 import { SeriesDescription } from './SeriesDescription'
-import { ArticleSeriesCreatedDomainEvent } from './event/ArticleSeriesCreatedDomainEvent'
-import { ArticleSeriesUpdatedDomainEvent } from './event/ArticleSeriesUpdatedDomainEvent'
+import { SeriesCreatedDomainEvent } from './event/SeriesCreatedDomainEvent'
+import { SeriesUpdatedDomainEvent } from './event/SeriesUpdatedDomainEvent'
 
 type PrimitiveSeries = {
   id: string
@@ -13,7 +13,7 @@ type PrimitiveSeries = {
   updatedAt: string
 }
 
-type CreateArticleSeriesParams = {
+type CreateSeriesParams = {
   id: SeriesId
   title: SeriesTitle
   description: SeriesDescription
@@ -21,19 +21,19 @@ type CreateArticleSeriesParams = {
   updatedAt: Date
 }
 
-type UpdateArticleSeriesParams = Partial<{
+type UpdateSeriesParams = Partial<{
   title: SeriesTitle
   description: SeriesDescription
 }>
 
-export class ArticleSeries extends AggregateRoot {
+export class Series extends AggregateRoot {
   readonly id: SeriesId
   title: SeriesTitle
   description: SeriesDescription
   readonly createdAt: Date
   updatedAt: Date
 
-  constructor(params: CreateArticleSeriesParams) {
+  constructor(params: CreateSeriesParams) {
     super()
     this.id = params.id
     this.title = params.title
@@ -42,10 +42,10 @@ export class ArticleSeries extends AggregateRoot {
     this.updatedAt = params.updatedAt
   }
 
-  static create(params: CreateArticleSeriesParams): ArticleSeries {
-    const series = new ArticleSeries(params)
+  static create(params: CreateSeriesParams): Series {
+    const series = new Series(params)
     series.record(
-      new ArticleSeriesCreatedDomainEvent({
+      new SeriesCreatedDomainEvent({
         id: params.id.value,
         title: params.title.value,
         description: params.description.value,
@@ -57,7 +57,7 @@ export class ArticleSeries extends AggregateRoot {
     return series
   }
 
-  update(params: UpdateArticleSeriesParams): ArticleSeries {
+  update(params: UpdateSeriesParams): Series {
     if (Object.keys(params).length === 0) {
       return this
     }
@@ -75,7 +75,7 @@ export class ArticleSeries extends AggregateRoot {
     this.updatedAt = now
 
     this.record(
-      new ArticleSeriesUpdatedDomainEvent({
+      new SeriesUpdatedDomainEvent({
         id: this.id.value,
         title: this.title.value,
         description: this.description.value,
@@ -97,7 +97,7 @@ export class ArticleSeries extends AggregateRoot {
     }
   }
 
-  equals(other: ArticleSeries): boolean {
+  equals(other: Series): boolean {
     return this.id.equals(other.id)
   }
 }
