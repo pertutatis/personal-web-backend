@@ -1,11 +1,14 @@
-import { DomainEvent } from '@/contexts/shared/domain/event/DomainEvent'
+import {
+  DomainEvent,
+  DomainEventJSON,
+} from '@/contexts/shared/domain/DomainEvent'
 
-type PrimitiveSeriesUpdated = {
-  id: string
-  title: string
-  description: string
-  updatedAt: Date
-  occurredOn: Date
+type SeriesUpdatedEventBody = {
+  readonly aggregateId: string
+  readonly title: string
+  readonly description: string
+  readonly updatedAt: Date
+  readonly occurredOn: Date
 }
 
 export class SeriesUpdatedDomainEvent extends DomainEvent {
@@ -14,27 +17,46 @@ export class SeriesUpdatedDomainEvent extends DomainEvent {
   readonly title: string
   readonly description: string
   readonly updatedAt: Date
+  readonly occurredOn: Date
 
   constructor({
-    id,
+    aggregateId,
     title,
     description,
     updatedAt,
     occurredOn,
-  }: PrimitiveSeriesUpdated) {
-    super(SeriesUpdatedDomainEvent.EVENT_NAME, id, occurredOn)
+  }: SeriesUpdatedEventBody) {
+    super(aggregateId, SeriesUpdatedDomainEvent.EVENT_NAME)
     this.title = title
     this.description = description
     this.updatedAt = updatedAt
+    this.occurredOn = occurredOn
   }
 
-  toPrimitives(): PrimitiveSeriesUpdated {
+  toPrimitives(): DomainEventJSON {
     return {
-      id: this.aggregateId,
-      title: this.title,
-      description: this.description,
-      updatedAt: this.updatedAt,
+      aggregateId: this.getAggregateId(),
+      eventName: this.getEventName(),
       occurredOn: this.occurredOn,
     }
+  }
+
+  static fromPrimitives(
+    aggregateId: string,
+    eventName: string,
+    body: {
+      title: string
+      description: string
+      updatedAt: Date
+      occurredOn: Date
+    },
+  ): SeriesUpdatedDomainEvent {
+    return new SeriesUpdatedDomainEvent({
+      aggregateId,
+      title: body.title,
+      description: body.description,
+      updatedAt: body.updatedAt,
+      occurredOn: body.occurredOn,
+    })
   }
 }
