@@ -58,7 +58,7 @@
 
 1. Base de datos:
 
-   - Crear migración para tabla article_series
+   - Crear migración para tabla series
    - Añadir campo series_id a articles
    - Crear índices necesarios
 

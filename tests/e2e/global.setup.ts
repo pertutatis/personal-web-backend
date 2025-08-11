@@ -98,7 +98,7 @@ async function globalSetup(config: FullConfig) {
         throw new Error('Database connection failed')
       }
 
-      // Limpiar datos existentes de artículos y libros
+      // Limpiar datos existentes
       Logger.info('Cleaning up test data...')
       await apiHelpers.cleanupTestData()
       Logger.info('Test data cleaned up')

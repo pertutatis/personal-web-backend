@@ -80,7 +80,7 @@ export class PostgresTestSetup {
           ...baseConfig,
           database: config.databases.blog,
         })
-        const tables = ['articles', 'books', 'users']
+        const tables = ['articles', 'books', 'users', 'series']
         let missingTables: string[] = []
         for (const table of tables) {
           try {
@@ -111,6 +111,25 @@ export class PostgresTestSetup {
           relatedLinksAndSlugMigration,
           'Related links columns might already exist',
         )
+
+        // Leer y ejecutar la migración de series
+        try {
+          const seriesMigration = readFileSync(
+            join(
+              process.cwd(),
+              'databases/migrations/008-create-article-series.sql',
+            ),
+            'utf-8',
+          )
+          await this.runQuery(
+            blogDbPool,
+            seriesMigration,
+            'Article series table might already exist',
+          )
+        } catch (err) {
+          Logger.warn('Could not find or apply series migration:', err)
+        }
+
         for (const table of tables) {
           try {
             await blogDbPool.query(`TRUNCATE ${table} CASCADE`)

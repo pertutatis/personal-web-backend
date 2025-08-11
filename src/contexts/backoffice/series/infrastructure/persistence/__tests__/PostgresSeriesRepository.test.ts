@@ -3,18 +3,19 @@ import { Series } from '../../../domain/Series'
 import { SeriesId } from '../../../domain/SeriesId'
 import { SeriesTitle } from '../../../domain/SeriesTitle'
 import { SeriesDescription } from '../../../domain/SeriesDescription'
-
-const mockPool = {
-  query: jest.fn(),
-  end: jest.fn(),
-}
+import { DatabaseConnection } from '@/contexts/shared/infrastructure/persistence/DatabaseConnection'
 
 describe('PostgresSeriesRepository', () => {
   let repository: PostgresSeriesRepository
+  let mockDb: jest.Mocked<DatabaseConnection>
 
   beforeEach(() => {
-    jest.clearAllMocks()
-    repository = new PostgresSeriesRepository(mockPool as any)
+    mockDb = {
+      execute: jest.fn(),
+      close: jest.fn(),
+      getDatabase: jest.fn(),
+    }
+    repository = new PostgresSeriesRepository(mockDb)
   })
 
   describe('save', () => {
@@ -28,12 +29,12 @@ describe('PostgresSeriesRepository', () => {
         updatedAt: now,
       })
 
-      mockPool.query.mockResolvedValueOnce({ rows: [] })
+      mockDb.execute.mockResolvedValueOnce({ rows: [] } as any)
 
       await repository.save(series)
 
-      expect(mockPool.query).toHaveBeenCalledWith(
-        expect.stringContaining('INSERT INTO article_series'),
+      expect(mockDb.execute).toHaveBeenCalledWith(
+        expect.stringContaining('INSERT INTO series'),
         [
           series.id.value,
           series.title.value,
@@ -45,16 +46,84 @@ describe('PostgresSeriesRepository', () => {
     })
   })
 
+  describe('findAll', () => {
+    it('should return all series without pagination', async () => {
+      const now = new Date('2025-08-10T21:00:00Z')
+      const series = [
+        new Series({
+          id: SeriesId.random(),
+          title: new SeriesTitle('Series 1'),
+          description: new SeriesDescription('Description 1'),
+          createdAt: now,
+          updatedAt: now,
+        })
+      ]
+
+      mockDb.execute.mockResolvedValueOnce({
+        rows: series.map(s => ({
+          id: s.id.value,
+          title: s.title.value,
+          description: s.description.value,
+          created_at: s.createdAt.toISOString(),
+          updated_at: s.updatedAt.toISOString(),
+        }))
+      } as any)
+
+      const result = await repository.findAll()
+
+      expect(result.map(s => s.toPrimitives())).toEqual(
+        series.map(s => s.toPrimitives())
+      )
+      expect(mockDb.execute).toHaveBeenCalledWith(
+        'SELECT * FROM series ORDER BY created_at DESC',
+        []
+      )
+    })
+
+    it('should return paginated series', async () => {
+      const now = new Date('2025-08-10T21:00:00Z')
+      const series = [
+        new Series({
+          id: SeriesId.random(),
+          title: new SeriesTitle('Series 1'),
+          description: new SeriesDescription('Description 1'),
+          createdAt: now,
+          updatedAt: now,
+        })
+      ]
+
+      mockDb.execute.mockResolvedValueOnce({
+        rows: series.map(s => ({
+          id: s.id.value,
+          title: s.title.value,
+          description: s.description.value,
+          created_at: s.createdAt.toISOString(),
+          updated_at: s.updatedAt.toISOString(),
+        }))
+      } as any)
+
+      const result = await repository.findAll(1, 0)
+
+      expect(result.map(s => s.toPrimitives())).toEqual(
+        series.map(s => s.toPrimitives())
+      )
+      expect(mockDb.execute).toHaveBeenCalledWith(
+        'SELECT * FROM series ORDER BY created_at DESC LIMIT $1 OFFSET $2',
+        [1, 0]
+      )
+    })
+  })
+
   describe('findById', () => {
     it('should return null when series does not exist', async () => {
       const id = SeriesId.random()
-      mockPool.query.mockResolvedValueOnce({ rows: [] })
+      mockDb.execute.mockResolvedValueOnce({ rows: [] } as any)
 
       const result = await repository.findById(id)
 
       expect(result).toBeNull()
-      expect(mockPool.query).toHaveBeenCalledWith(
-        expect.stringContaining('SELECT * FROM article_series WHERE id = $1'),
+      expect(mockDb.execute).toHaveBeenCalledWith(
+        'SELECT * FROM series WHERE id = $1',
         [id.value],
       )
     })
@@ -69,7 +138,7 @@ describe('PostgresSeriesRepository', () => {
         updatedAt: now,
       })
 
-      mockPool.query.mockResolvedValueOnce({
+      mockDb.execute.mockResolvedValueOnce({
         rows: [
           {
             id: series.id.value,
@@ -79,7 +148,7 @@ describe('PostgresSeriesRepository', () => {
             updated_at: series.updatedAt.toISOString(),
           },
         ],
-      })
+      } as any)
 
       const result = await repository.findById(series.id)
 
@@ -90,15 +159,13 @@ describe('PostgresSeriesRepository', () => {
   describe('findByTitle', () => {
     it('should return null when series does not exist', async () => {
       const title = new SeriesTitle('Nonexistent Series')
-      mockPool.query.mockResolvedValueOnce({ rows: [] })
+      mockDb.execute.mockResolvedValueOnce({ rows: [] } as any)
 
       const result = await repository.findByTitle(title)
 
       expect(result).toBeNull()
-      expect(mockPool.query).toHaveBeenCalledWith(
-        expect.stringContaining(
-          'SELECT * FROM article_series WHERE title = $1',
-        ),
+      expect(mockDb.execute).toHaveBeenCalledWith(
+        'SELECT * FROM series WHERE title = $1',
         [title.value],
       )
     })
@@ -107,12 +174,12 @@ describe('PostgresSeriesRepository', () => {
   describe('delete', () => {
     it('should delete an existing series', async () => {
       const id = SeriesId.random()
-      mockPool.query.mockResolvedValueOnce({ rows: [] })
+      mockDb.execute.mockResolvedValueOnce({ rows: [] } as any)
 
       await repository.delete(id)
 
-      expect(mockPool.query).toHaveBeenCalledWith(
-        expect.stringContaining('DELETE FROM article_series WHERE id = $1'),
+      expect(mockDb.execute).toHaveBeenCalledWith(
+        'DELETE FROM series WHERE id = $1',
         [id.value],
       )
     })
@@ -121,20 +188,20 @@ describe('PostgresSeriesRepository', () => {
   describe('existsByTitle', () => {
     it('should return true when title exists', async () => {
       const title = new SeriesTitle('Existing Series')
-      mockPool.query.mockResolvedValueOnce({ rows: [{ exists: true }] })
+      mockDb.execute.mockResolvedValueOnce({ rows: [{ exists: true }] } as any)
 
       const result = await repository.existsByTitle(title)
 
       expect(result).toBe(true)
-      expect(mockPool.query).toHaveBeenCalledWith(
-        expect.stringContaining('SELECT EXISTS'),
+      expect(mockDb.execute).toHaveBeenCalledWith(
+        'SELECT EXISTS(SELECT 1 FROM series WHERE title = $1)',
         [title.value],
       )
     })
 
     it('should return false when title does not exist', async () => {
       const title = new SeriesTitle('Nonexistent Series')
-      mockPool.query.mockResolvedValueOnce({ rows: [{ exists: false }] })
+      mockDb.execute.mockResolvedValueOnce({ rows: [{ exists: false }] } as any)
 
       const result = await repository.existsByTitle(title)
 

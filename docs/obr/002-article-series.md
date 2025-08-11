@@ -157,7 +157,7 @@ Responsable de:
 
 ```sql
 -- Dominio Series
-CREATE TABLE article_series (
+CREATE TABLE series (
   id UUID PRIMARY KEY,
   title VARCHAR(100) UNIQUE NOT NULL,
   description VARCHAR(500) NOT NULL,
@@ -166,7 +166,7 @@ CREATE TABLE article_series (
 );
 
 -- Dominio Artículos (Alteración)
-ALTER TABLE articles ADD COLUMN series_id UUID REFERENCES article_series(id);
+ALTER TABLE articles ADD COLUMN series_id UUID REFERENCES series(id);
 CREATE INDEX idx_articles_series ON articles(series_id);
 ```
 
