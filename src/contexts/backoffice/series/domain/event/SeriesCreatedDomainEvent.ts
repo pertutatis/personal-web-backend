@@ -1,12 +1,15 @@
-import { DomainEvent } from '@/contexts/shared/domain/event/DomainEvent'
+import {
+  DomainEvent,
+  DomainEventJSON,
+} from '@/contexts/shared/domain/DomainEvent'
 
-type PrimitiveSeriesCreated = {
-  id: string
-  title: string
-  description: string
-  createdAt: Date
-  updatedAt: Date
-  occurredOn: Date
+type SeriesCreatedEventBody = {
+  readonly aggregateId: string
+  readonly title: string
+  readonly description: string
+  readonly createdAt: Date
+  readonly updatedAt: Date
+  readonly occurredOn: Date
 }
 
 export class SeriesCreatedDomainEvent extends DomainEvent {
@@ -16,30 +19,50 @@ export class SeriesCreatedDomainEvent extends DomainEvent {
   readonly description: string
   readonly createdAt: Date
   readonly updatedAt: Date
+  readonly occurredOn: Date
 
   constructor({
-    id,
+    aggregateId,
     title,
     description,
     createdAt,
     updatedAt,
     occurredOn,
-  }: PrimitiveSeriesCreated) {
-    super(SeriesCreatedDomainEvent.EVENT_NAME, id, occurredOn)
+  }: SeriesCreatedEventBody) {
+    super(aggregateId, SeriesCreatedDomainEvent.EVENT_NAME)
     this.title = title
     this.description = description
     this.createdAt = createdAt
     this.updatedAt = updatedAt
+    this.occurredOn = occurredOn
   }
 
-  toPrimitives(): PrimitiveSeriesCreated {
+  toPrimitives(): DomainEventJSON {
     return {
-      id: this.aggregateId,
-      title: this.title,
-      description: this.description,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
+      aggregateId: this.getAggregateId(),
+      eventName: this.getEventName(),
       occurredOn: this.occurredOn,
     }
+  }
+
+  static fromPrimitives(
+    aggregateId: string,
+    eventName: string,
+    body: {
+      title: string
+      description: string
+      createdAt: Date
+      updatedAt: Date
+      occurredOn: Date
+    },
+  ): SeriesCreatedDomainEvent {
+    return new SeriesCreatedDomainEvent({
+      aggregateId,
+      title: body.title,
+      description: body.description,
+      createdAt: body.createdAt,
+      updatedAt: body.updatedAt,
+      occurredOn: body.occurredOn,
+    })
   }
 }

@@ -44,16 +44,19 @@ export class Series extends AggregateRoot {
 
   static create(params: CreateSeriesParams): Series {
     const series = new Series(params)
+    const now = new Date()
+
     series.record(
       new SeriesCreatedDomainEvent({
-        id: params.id.value,
+        aggregateId: params.id.value,
         title: params.title.value,
         description: params.description.value,
         createdAt: params.createdAt,
         updatedAt: params.updatedAt,
-        occurredOn: new Date(),
+        occurredOn: now,
       }),
     )
+
     return series
   }
 
@@ -76,7 +79,7 @@ export class Series extends AggregateRoot {
 
     this.record(
       new SeriesUpdatedDomainEvent({
-        id: this.id.value,
+        aggregateId: this.id.value,
         title: this.title.value,
         description: this.description.value,
         updatedAt: now,
