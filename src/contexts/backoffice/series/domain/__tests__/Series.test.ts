@@ -1,16 +1,16 @@
-import { ArticleSeries } from '../ArticleSeries'
+import { Series } from '../Series'
 import { SeriesId } from '../SeriesId'
 import { SeriesTitle } from '../SeriesTitle'
 import { SeriesDescription } from '../SeriesDescription'
 
-describe('ArticleSeries', () => {
+describe('Series', () => {
   const validId = SeriesId.random()
   const validTitle = new SeriesTitle('Test Series')
   const validDescription = new SeriesDescription('Test Description')
   const validDate = new Date()
 
-  it('should create a valid ArticleSeries', () => {
-    const series = ArticleSeries.create({
+  it('should create a valid Series', () => {
+    const series = Series.create({
       id: validId,
       title: validTitle,
       description: validDescription,
@@ -26,7 +26,7 @@ describe('ArticleSeries', () => {
   })
 
   it('should update series title and description', () => {
-    const series = ArticleSeries.create({
+    const series = Series.create({
       id: validId,
       title: validTitle,
       description: validDescription,
@@ -47,7 +47,7 @@ describe('ArticleSeries', () => {
   })
 
   it('should not update when no changes provided', () => {
-    const series = ArticleSeries.create({
+    const series = Series.create({
       id: validId,
       title: validTitle,
       description: validDescription,
@@ -62,7 +62,7 @@ describe('ArticleSeries', () => {
   })
 
   it('should only update title when only title is provided', () => {
-    const series = ArticleSeries.create({
+    const series = Series.create({
       id: validId,
       title: validTitle,
       description: validDescription,
@@ -79,7 +79,7 @@ describe('ArticleSeries', () => {
   })
 
   it('should only update description when only description is provided', () => {
-    const series = ArticleSeries.create({
+    const series = Series.create({
       id: validId,
       title: validTitle,
       description: validDescription,
@@ -96,7 +96,7 @@ describe('ArticleSeries', () => {
   })
 
   it('should generate proper domain events', () => {
-    const series = ArticleSeries.create({
+    const series = Series.create({
       id: validId,
       title: validTitle,
       description: validDescription,
@@ -106,13 +106,13 @@ describe('ArticleSeries', () => {
 
     const createdEvents = series.pullDomainEvents()
     expect(createdEvents).toHaveLength(1)
-    expect(createdEvents[0]?.eventName).toBe('article_series.created')
+    expect(createdEvents[0]?.eventName).toBe('series.created')
 
     const newTitle = new SeriesTitle('Updated Series')
     const updatedSeries = series.update({ title: newTitle })
 
     const updatedEvents = updatedSeries.pullDomainEvents()
     expect(updatedEvents).toHaveLength(1)
-    expect(updatedEvents[0]?.eventName).toBe('article_series.updated')
+    expect(updatedEvents[0]?.eventName).toBe('series.updated')
   })
 })
