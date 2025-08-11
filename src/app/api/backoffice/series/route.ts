@@ -19,16 +19,16 @@ async function getConnections() {
 export async function GET(request: NextRequest) {
   return executeWithErrorHandling(async () => {
     const { seriesConnection } = await getConnections()
-    const searchParams = request.nextUrl.searchParams
-    const limit = searchParams.get('limit')
-    const offset = searchParams.get('offset')
+    const url = new URL(request.url)
+    const limit = url.searchParams.get('limit')
+    const offset = url.searchParams.get('offset')
 
     const repository = new PostgresSeriesRepository(seriesConnection)
     const listSeries = new ListSeries(repository)
 
     const series = await listSeries.run({
       limit: limit ? parseInt(limit) : undefined,
-      offset: offset ? parseInt(offset) : undefined
+      offset: offset ? parseInt(offset) : undefined,
     })
 
     return HttpNextResponse.ok({ data: series }, request.headers.get('origin'))
@@ -60,7 +60,8 @@ export async function POST(request: NextRequest) {
     // Validate fields
     const id = typeof data.id === 'string' ? data.id.trim() : null
     const title = typeof data.title === 'string' ? data.title.trim() : null
-    const description = typeof data.description === 'string' ? data.description.trim() : null
+    const description =
+      typeof data.description === 'string' ? data.description.trim() : null
 
     // Validate UUID
     if (!id) {
@@ -91,7 +92,7 @@ export async function POST(request: NextRequest) {
     const seriesData = {
       id: id!,
       title: title!,
-      description: description!
+      description: description!,
     }
 
     const repository = new PostgresSeriesRepository(seriesConnection)
@@ -99,20 +100,26 @@ export async function POST(request: NextRequest) {
       publish: async (events) => {
         // TODO: Implement event bus
         console.log('Events published:', events)
-      }
+      },
     })
 
     try {
       await createSeries.run(seriesData)
-      return HttpNextResponse.created(request.headers.get('origin'))
+      return HttpNextResponse.created(
+        { message: 'Series created successfully' },
+        request.headers.get('origin'),
+      )
     } catch (error) {
       if (error instanceof SeriesTitleAlreadyExists) {
         return HttpNextResponse.conflict(
           {
             type: 'ValidationError',
             message: error.message,
+            details: {
+              errorCode: 'API_VALIDATION_ERROR',
+            },
           },
-          request.headers.get('origin')
+          request.headers.get('origin'),
         )
       }
       throw error
@@ -122,9 +129,5 @@ export async function POST(request: NextRequest) {
 
 // Handle OPTIONS requests for CORS
 export async function OPTIONS(request: NextRequest) {
-  const response = await corsMiddleware(request)
-  return response
+  return corsMiddleware(request)
 }
-
-// Asegurarse de que las conexiones están listas al iniciar
-getConnections().catch(console.error)
