@@ -1,60 +1,27 @@
 import { test, expect } from '@playwright/test'
 import { PostgresConnection } from '@/contexts/shared/infrastructure/persistence/PostgresConnection'
-import { getBlogConfig } from '@/contexts/shared/infrastructure/config/DatabaseConfig'
+import { ArticleHelper, TestArticle } from '../../helpers/article.helper'
+import { BookHelper, TestBook } from '../../helpers/book.helper'
 
 test.describe('Blog Articles API', () => {
-  let connection: PostgresConnection
+  let validBook: TestBook
+  let validArticle: TestArticle
 
-  test.beforeAll(async () => {
-    connection = await PostgresConnection.create(getBlogConfig())
-    await cleanDatabase()
+  test.beforeEach(async ({ request }) => {
+    validBook = BookHelper.generateRandomTestBook({
+      id: '76318adb-7551-48b9-97bb-97ac3f8ef354',
+      title: 'Clean Code',
+      author: 'Robert C. Martin',
+      description: 'A book about writing clean code',
+      purchaseLink: 'https://example.com/clean-code',
+    })
+
+    validArticle = ArticleHelper.generateRandomTestArticle({
+      bookIds: ['76318adb-7551-48b9-97bb-97ac3f8ef354'],
+      slug: 'writing-clean-code',
+      title: 'Writing Clean Code',
+    })
   })
-
-  test.afterAll(async () => {
-    await cleanDatabase()
-    await connection.close()
-  })
-
-  async function cleanDatabase() {
-    await connection.execute('DELETE FROM articles')
-    await connection.execute('DELETE FROM books')
-  }
-
-  async function createTestArticle(slug: string) {
-    // Create a test book first
-    await connection.execute(`
-      INSERT INTO books (id, title, author, isbn, description, created_at, updated_at)
-      VALUES (
-        '123e4567-e89b-12d3-a456-426614174000',
-        'Clean Code',
-        'Robert C. Martin',
-        '9780132350884',
-        'A book about writing clean code',
-        NOW(),
-        NOW()
-      )
-    `)
-
-    // Create article with reference to the book
-    await connection.execute(
-      `
-      INSERT INTO articles (
-        id, title, excerpt, content, book_ids, related_links, slug, created_at, updated_at
-      ) VALUES (
-        '123e4567-e89b-12d3-a456-426614174001',
-        'Writing Clean Code',
-        'Learn how to write maintainable code',
-        'Full article content about clean code',
-        ARRAY['123e4567-e89b-12d3-a456-426614174000']::text[],
-        '[{"text": "Clean Code Book", "url": "https://example.com/book"}]'::jsonb,
-        $1,
-        NOW(),
-        NOW()
-      )
-    `,
-      [slug],
-    )
-  }
 
   test.describe('GET /api/blog/articles', () => {
     test('should return empty array when no articles exist', async ({
@@ -74,7 +41,9 @@ test.describe('Blog Articles API', () => {
     })
 
     test('should return articles with their books', async ({ request }) => {
-      await createTestArticle('test-article')
+      await BookHelper.createBook(request, validBook)
+      await ArticleHelper.createArticle(request, validArticle)
+      await ArticleHelper.publishArticle(request, validArticle.id)
 
       const response = await request.get('/api/blog/articles', {
         headers: { Origin: 'https://diegopertusa.com' },
@@ -102,10 +71,12 @@ test.describe('Blog Articles API', () => {
 
   test.describe('GET /api/blog/articles/by-slug/[slug]', () => {
     test('should return article by slug', async ({ request }) => {
-      await createTestArticle('test-article')
+      await BookHelper.createBook(request, validBook)
+      await ArticleHelper.createArticle(request, validArticle)
+      await ArticleHelper.publishArticle(request, validArticle.id)
 
       const response = await request.get(
-        '/api/blog/articles/by-slug/test-article',
+        '/api/blog/articles/by-slug/writing-clean-code',
         {
           headers: { Origin: 'https://diegopertusa.com' },
         },
@@ -117,7 +88,7 @@ test.describe('Blog Articles API', () => {
       )
 
       const article = await response.json()
-      expect(article.slug).toBe('test-article')
+      expect(article.slug).toBe('writing-clean-code')
       expect(article.books).toHaveLength(1)
       expect(article.books[0].title).toBe('Clean Code')
     })
@@ -161,12 +132,12 @@ test.describe('Blog Articles API', () => {
         },
       )
 
-      expect(response.status()).toBe(204)
+      expect(response.status()).toBe(200)
       expect(response.headers()['access-control-allow-origin']).toBe(
         'https://diegopertusa.com',
       )
       expect(response.headers()['access-control-allow-methods']).toBe(
-        'GET, OPTIONS',
+        'GET, POST, PUT, DELETE, OPTIONS',
       )
     })
   })

@@ -25,7 +25,7 @@ test.describe('Article Draft Mode', () => {
         content: 'Content for draft article',
         bookIds: [],
         relatedLinks: [],
-        slug: 'draft-article-by-default'
+        slug: 'draft-article-by-default',
       }
 
       const response = await articlesAPI.createArticle(articleData)
@@ -38,7 +38,9 @@ test.describe('Article Draft Mode', () => {
       expect(articleBody.status).toBe('DRAFT')
     })
 
-    test('should create article with explicit DRAFT status', async ({ request }) => {
+    test('should create article with explicit DRAFT status', async ({
+      request,
+    }) => {
       const articleData = {
         id: uuidv4(),
         title: 'Explicit Draft Article',
@@ -47,7 +49,7 @@ test.describe('Article Draft Mode', () => {
         bookIds: [],
         relatedLinks: [],
         slug: 'explicit-draft-article',
-        status: 'DRAFT'
+        status: 'DRAFT',
       } as any
 
       const response = await articlesAPI.createArticle(articleData)
@@ -69,7 +71,7 @@ test.describe('Article Draft Mode', () => {
         bookIds: [],
         relatedLinks: [],
         slug: 'published-article',
-        status: 'PUBLISHED'
+        status: 'PUBLISHED',
       } as any
 
       const response = await articlesAPI.createArticle(articleData)
@@ -91,18 +93,22 @@ test.describe('Article Draft Mode', () => {
         bookIds: [],
         relatedLinks: [],
         slug: 'invalid-status-article',
-        status: 'INVALID_STATUS'
+        status: 'INVALID_STATUS',
       } as any
 
       const response = await articlesAPI.createArticle(articleData)
       expect(response.status()).toBe(400)
       const errorBody = await response.json()
-      expect(errorBody.message).toContain('status must be either "DRAFT" or "PUBLISHED"')
+      expect(errorBody.message).toContain(
+        'status must be either "DRAFT" or "PUBLISHED"',
+      )
     })
   })
 
   test.describe('Publishing Articles', () => {
-    test('should publish a DRAFT article via publish endpoint', async ({ request }) => {
+    test('should publish a DRAFT article via publish endpoint', async ({
+      request,
+    }) => {
       // Create a draft article
       const articleData = {
         id: uuidv4(),
@@ -112,7 +118,7 @@ test.describe('Article Draft Mode', () => {
         bookIds: [],
         relatedLinks: [],
         slug: 'article-to-publish',
-        status: 'DRAFT'
+        status: 'DRAFT',
       } as any
 
       await articlesAPI.createArticle(articleData)
@@ -130,7 +136,9 @@ test.describe('Article Draft Mode', () => {
       expect(articleBody.status).toBe('PUBLISHED')
     })
 
-    test('should handle publishing already published article', async ({ request }) => {
+    test('should handle publishing already published article', async ({
+      request,
+    }) => {
       // Create a published article
       const articleData = {
         id: uuidv4(),
@@ -140,7 +148,7 @@ test.describe('Article Draft Mode', () => {
         bookIds: [],
         relatedLinks: [],
         slug: 'already-published-article',
-        status: 'PUBLISHED'
+        status: 'PUBLISHED',
       } as any
 
       await articlesAPI.createArticle(articleData)
@@ -156,7 +164,9 @@ test.describe('Article Draft Mode', () => {
       expect(articleBody.status).toBe('PUBLISHED')
     })
 
-    test('should reject publishing non-existent article', async ({ request }) => {
+    test('should reject publishing non-existent article', async ({
+      request,
+    }) => {
       const nonExistentId = uuidv4()
       const publishResponse = await articlesAPI.publishArticle(nonExistentId)
       expect(publishResponse.status()).toBe(404)
@@ -164,7 +174,9 @@ test.describe('Article Draft Mode', () => {
   })
 
   test.describe('Updating Article Status', () => {
-    test('should update DRAFT article to PUBLISHED via PUT', async ({ request }) => {
+    test('should update DRAFT article to PUBLISHED via PUT', async ({
+      request,
+    }) => {
       // Create a draft article
       const articleData = {
         id: uuidv4(),
@@ -173,13 +185,15 @@ test.describe('Article Draft Mode', () => {
         content: 'Content for draft to publish',
         bookIds: [],
         relatedLinks: [],
-        status: 'DRAFT'
+        status: 'DRAFT',
       }
 
       await articlesAPI.createArticle(articleData)
 
       // Update status to PUBLISHED
-      const updateResponse = await articlesAPI.updateArticle(articleData.id, { status: 'PUBLISHED' })
+      const updateResponse = await articlesAPI.updateArticle(articleData.id, {
+        status: 'PUBLISHED',
+      })
       expect(updateResponse.status()).toBe(204)
 
       // Verify article is now published
@@ -189,7 +203,9 @@ test.describe('Article Draft Mode', () => {
       expect(articleBody.status).toBe('PUBLISHED')
     })
 
-    test('should prevent PUBLISHED article from reverting to DRAFT', async ({ request }) => {
+    test('should prevent PUBLISHED article from reverting to DRAFT', async ({
+      request,
+    }) => {
       // Create a published article
       const articleData = {
         id: uuidv4(),
@@ -198,19 +214,23 @@ test.describe('Article Draft Mode', () => {
         content: 'Content for published article',
         bookIds: [],
         relatedLinks: [],
-        status: 'PUBLISHED'
+        status: 'PUBLISHED',
       }
 
       await articlesAPI.createArticle(articleData)
 
       // Try to revert to DRAFT - should fail
-      const updateResponse = await articlesAPI.updateArticle(articleData.id, { status: 'DRAFT' })
+      const updateResponse = await articlesAPI.updateArticle(articleData.id, {
+        status: 'DRAFT',
+      })
       expect(updateResponse.status()).toBe(400)
       const errorBody = await updateResponse.json()
       expect(errorBody.message).toContain('Invalid article status')
     })
 
-    test('should allow other field updates without affecting status', async ({ request }) => {
+    test('should allow other field updates without affecting status', async ({
+      request,
+    }) => {
       // Create a draft article
       const articleData = {
         id: uuidv4(),
@@ -219,14 +239,14 @@ test.describe('Article Draft Mode', () => {
         content: 'Original content',
         bookIds: [],
         relatedLinks: [],
-        status: 'DRAFT'
+        status: 'DRAFT',
       }
 
       await articlesAPI.createArticle(articleData)
 
       // Update title without changing status
-      const updateResponse = await articlesAPI.updateArticle(articleData.id, { 
-        title: 'Updated Title' 
+      const updateResponse = await articlesAPI.updateArticle(articleData.id, {
+        title: 'Updated Title',
       })
       expect(updateResponse.status()).toBe(204)
 
@@ -240,7 +260,9 @@ test.describe('Article Draft Mode', () => {
   })
 
   test.describe('Blog Endpoint Filtering', () => {
-    test('should only return PUBLISHED articles in blog endpoints', async ({ request }) => {
+    test('should only return PUBLISHED articles in blog endpoints', async ({
+      request,
+    }) => {
       // Create both draft and published articles
       const draftArticle = {
         id: uuidv4(),
@@ -250,7 +272,7 @@ test.describe('Article Draft Mode', () => {
         bookIds: [],
         relatedLinks: [],
         slug: 'draft-article-for-blog-test',
-        status: 'DRAFT'
+        status: 'DRAFT',
       }
 
       const publishedArticle = {
@@ -261,7 +283,7 @@ test.describe('Article Draft Mode', () => {
         bookIds: [],
         relatedLinks: [],
         slug: 'published-article-for-blog-test',
-        status: 'PUBLISHED'
+        status: 'PUBLISHED',
       }
 
       // Create both articles
@@ -271,25 +293,31 @@ test.describe('Article Draft Mode', () => {
       // Check blog articles list endpoint (public)
       const blogListResponse = await request.get('/api/blog/articles')
       expect(blogListResponse.status()).toBe(200)
-      
+
       const blogData = await blogListResponse.json()
-      const articleTitles = blogData.items.map((article: any) => article.title)
-      
+      const articleTitles = blogData.map((article: any) => article.title)
+
       // Should contain published article but not draft
       expect(articleTitles).toContain('Published Article for Blog Test')
       expect(articleTitles).not.toContain('Draft Article for Blog Test')
 
       // Check blog article by slug endpoint (public)
-      const blogSlugResponse = await request.get(`/api/blog/articles/by-slug/${publishedArticle.slug}`)
+      const blogSlugResponse = await request.get(
+        `/api/blog/articles/by-slug/${publishedArticle.slug}`,
+      )
       expect(blogSlugResponse.status()).toBe(200)
 
-      const draftSlugResponse = await request.get(`/api/blog/articles/by-slug/${draftArticle.slug}`)
+      const draftSlugResponse = await request.get(
+        `/api/blog/articles/by-slug/${draftArticle.slug}`,
+      )
       expect(draftSlugResponse.status()).toBe(404)
     })
   })
 
   test.describe('Status Validation', () => {
-    test('should reject invalid status in update request', async ({ request }) => {
+    test('should reject invalid status in update request', async ({
+      request,
+    }) => {
       // Create a draft article
       const articleData = {
         id: uuidv4(),
@@ -298,21 +326,25 @@ test.describe('Article Draft Mode', () => {
         content: 'Content for status validation',
         bookIds: [],
         relatedLinks: [],
-        status: 'DRAFT'
+        status: 'DRAFT',
       }
 
       await articlesAPI.createArticle(articleData)
 
       // Try to update with invalid status
-      const updateResponse = await articlesAPI.updateArticle(articleData.id, { 
-        status: 'INVALID_STATUS'
+      const updateResponse = await articlesAPI.updateArticle(articleData.id, {
+        status: 'INVALID_STATUS',
       })
       expect(updateResponse.status()).toBe(400)
       const errorBody = await updateResponse.json()
-      expect(errorBody.message).toContain('status must be either "DRAFT" or "PUBLISHED"')
+      expect(errorBody.message).toContain(
+        'status must be either "DRAFT" or "PUBLISHED"',
+      )
     })
 
-    test('should handle empty status in update request', async ({ request }) => {
+    test('should handle empty status in update request', async ({
+      request,
+    }) => {
       // Create a draft article
       const articleData = {
         id: uuidv4(),
@@ -321,21 +353,23 @@ test.describe('Article Draft Mode', () => {
         content: 'Content for empty status test',
         bookIds: [],
         relatedLinks: [],
-        status: 'DRAFT'
+        status: 'DRAFT',
       }
 
       await articlesAPI.createArticle(articleData)
 
       // Update with empty status should be rejected
-      const updateResponse = await articlesAPI.updateArticle(articleData.id, { 
-        status: ''
+      const updateResponse = await articlesAPI.updateArticle(articleData.id, {
+        status: '',
       })
       expect(updateResponse.status()).toBe(400)
     })
   })
 
   test.describe('Backoffice vs Blog Context', () => {
-    test('should show both DRAFT and PUBLISHED articles in backoffice', async ({ request }) => {
+    test('should show both DRAFT and PUBLISHED articles in backoffice', async ({
+      request,
+    }) => {
       // Create both types of articles
       const draftArticle = {
         id: uuidv4(),
@@ -344,7 +378,7 @@ test.describe('Article Draft Mode', () => {
         content: 'Draft content',
         bookIds: [],
         relatedLinks: [],
-        status: 'DRAFT'
+        status: 'DRAFT',
       }
 
       const publishedArticle = {
@@ -354,7 +388,7 @@ test.describe('Article Draft Mode', () => {
         content: 'Published content',
         bookIds: [],
         relatedLinks: [],
-        status: 'PUBLISHED'
+        status: 'PUBLISHED',
       }
 
       await articlesAPI.createArticle(draftArticle)
@@ -363,9 +397,11 @@ test.describe('Article Draft Mode', () => {
       // Check backoffice list - should show both
       const backofficeResponse = await articlesAPI.listArticles()
       expect(backofficeResponse.status()).toBe(200)
-      
+
       const backofficeData = await backofficeResponse.json()
-      const articleTitles = backofficeData.items.map((article: any) => article.title)
+      const articleTitles = backofficeData.items.map(
+        (article: any) => article.title,
+      )
       expect(articleTitles).toContain('Backoffice Draft Article')
       expect(articleTitles).toContain('Backoffice Published Article')
 
@@ -375,10 +411,12 @@ test.describe('Article Draft Mode', () => {
       const draftBody = await getDraftResponse.json()
       expect(draftBody.status).toBe('DRAFT')
 
-      const getPublishedResponse = await articlesAPI.getArticle(publishedArticle.id)
+      const getPublishedResponse = await articlesAPI.getArticle(
+        publishedArticle.id,
+      )
       expect(getPublishedResponse.status()).toBe(200)
       const publishedBody = await getPublishedResponse.json()
       expect(publishedBody.status).toBe('PUBLISHED')
     })
   })
-}) 
+})
