@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test'
 import { PostgresConnection } from '@/contexts/shared/infrastructure/persistence/PostgresConnection'
 import { ArticleHelper, TestArticle } from '../../helpers/article.helper'
 import { BookHelper, TestBook } from '../../helpers/book.helper'
+import { SeriesHelper } from '../../helpers/series.helper'
 
 test.describe('Blog Articles API', () => {
   let validBook: TestBook
@@ -139,6 +140,82 @@ test.describe('Blog Articles API', () => {
       expect(response.headers()['access-control-allow-methods']).toBe(
         'GET, POST, PUT, DELETE, OPTIONS',
       )
+    })
+  })
+
+  test.describe('Integración artículo-serie en endpoint público', () => {
+    test('debe exponer la información de la serie asociada en la respuesta', async ({
+      request,
+    }) => {
+      // Crear serie
+      const testSeries = SeriesHelper.generateRandomTestSeries()
+      const createSeriesResp = await SeriesHelper.createSeries(
+        request,
+        testSeries,
+      )
+      expect(createSeriesResp.ok()).toBeTruthy()
+
+      // Crear artículo asociado a la serie
+      const testArticle = ArticleHelper.generateRandomTestArticle({
+        seriesId: testSeries.id,
+        slug: 'article-with-series',
+        title: 'Article with series',
+      })
+      await ArticleHelper.createArticle(request, testArticle)
+      await ArticleHelper.publishArticle(request, testArticle.id)
+
+      // Consultar endpoint público
+      const response = await request.get('/api/blog/articles', {
+        headers: { Origin: 'https://diegopertusa.com' },
+      })
+      expect(response.ok()).toBeTruthy()
+      const articles = await response.json()
+      const found = articles.find((a: any) => a.slug === 'article-with-series')
+      expect(found).toBeDefined()
+      expect(found.serie).toBeDefined()
+      expect(found.serie.id).toBe(testSeries.id)
+      expect(found.serie.title).toBe(testSeries.title)
+      expect(found.serie.description).toBe(testSeries.description)
+      expect(found.serie.createdAt).toBeDefined()
+      expect(found.serie.updatedAt).toBeDefined()
+    })
+  })
+
+  test.describe('GET /api/blog/articles/by-slug/[slug] con serie', () => {
+    test('debe exponer la información de la serie asociada en la respuesta de detalle', async ({
+      request,
+    }) => {
+      // Crear serie
+      const testSeries = SeriesHelper.generateRandomTestSeries()
+      const createSeriesResp = await SeriesHelper.createSeries(
+        request,
+        testSeries,
+      )
+      expect(createSeriesResp.ok()).toBeTruthy()
+
+      // Crear artículo asociado a la serie
+      const testArticle = ArticleHelper.generateRandomTestArticle({
+        seriesId: testSeries.id,
+        slug: 'article-with-series-detail',
+        title: 'Article with series detail',
+      })
+      await ArticleHelper.createArticle(request, testArticle)
+      await ArticleHelper.publishArticle(request, testArticle.id)
+
+      // Consultar endpoint de detalle
+      const response = await request.get(
+        '/api/blog/articles/by-slug/article-with-series-detail',
+        { headers: { Origin: 'https://diegopertusa.com' } },
+      )
+      expect(response.ok()).toBeTruthy()
+      const article = await response.json()
+      expect(article.slug).toBe('article-with-series-detail')
+      expect(article.serie).toBeDefined()
+      expect(article.serie.id).toBe(testSeries.id)
+      expect(article.serie.title).toBe(testSeries.title)
+      expect(article.serie.description).toBe(testSeries.description)
+      expect(article.serie.createdAt).toBeDefined()
+      expect(article.serie.updatedAt).toBeDefined()
     })
   })
 })

@@ -92,7 +92,21 @@ export async function PUT(
         bookIds?: string[]
         relatedLinks?: RelatedLink[]
         status?: string
+        seriesId?: string
       } = { id: params.id }
+      if (data.seriesId !== undefined) {
+        if (data.seriesId !== null && typeof data.seriesId !== 'string') {
+          throw new ApiValidationError('seriesId must be a string or null')
+        }
+        if (
+          typeof data.seriesId === 'string' &&
+          data.seriesId.trim() !== '' &&
+          !UuidValidator.isValidUuid(data.seriesId)
+        ) {
+          throw new ApiValidationError('seriesId must be a valid UUID v4')
+        }
+        updateData.seriesId = data.seriesId ? data.seriesId.trim() : undefined
+      }
 
       // Process and validate only provided fields
       if (data.title !== undefined) {
@@ -140,7 +154,9 @@ export async function PUT(
         }
         const status = data.status.trim()
         if (status !== 'DRAFT' && status !== 'PUBLISHED') {
-          throw new ApiValidationError('status must be either "DRAFT" or "PUBLISHED"')
+          throw new ApiValidationError(
+            'status must be either "DRAFT" or "PUBLISHED"',
+          )
         }
         updateData.status = status
       }

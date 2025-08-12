@@ -15,6 +15,11 @@ interface ArticleRow {
   slug: string
   created_at: Date
   updated_at: Date
+  series_id?: string | null
+  series_title?: string | null
+  series_description?: string | null
+  series_created_at?: Date | null
+  series_updated_at?: Date | null
 }
 
 interface BookRow {
@@ -44,8 +49,14 @@ export class PostgresBlogArticleRepository implements BlogArticleRepository {
         a.related_links,
         a.slug,
         a.created_at,
-        a.updated_at
+        a.updated_at,
+        a.series_id,
+        s.title as series_title,
+        s.description as series_description,
+        s.created_at as series_created_at,
+        s.updated_at as series_updated_at
       FROM articles a
+      LEFT JOIN series s ON a.series_id = s.id
       WHERE a.status = 'PUBLISHED'
       ORDER BY a.created_at DESC;
     `
@@ -100,8 +111,14 @@ export class PostgresBlogArticleRepository implements BlogArticleRepository {
         a.related_links,
         a.slug,
         a.created_at,
-        a.updated_at
+        a.updated_at,
+        a.series_id,
+        s.title as series_title,
+        s.description as series_description,
+        s.created_at as series_created_at,
+        s.updated_at as series_updated_at
       FROM articles a
+      LEFT JOIN series s ON a.series_id = s.id
       WHERE a.slug = $1 AND a.status = 'PUBLISHED';
     `
 
@@ -154,6 +171,21 @@ export class PostgresBlogArticleRepository implements BlogArticleRepository {
         ),
     )
 
+    let serie = undefined
+    if (article.series_id) {
+      serie = {
+        id: article.series_id,
+        title: article.series_title ?? '',
+        description: article.series_description ?? '',
+        createdAt: article.series_created_at
+          ? new Date(article.series_created_at).toISOString()
+          : '',
+        updatedAt: article.series_updated_at
+          ? new Date(article.series_updated_at).toISOString()
+          : '',
+      }
+    }
+
     return new BlogArticle(
       article.id,
       article.title,
@@ -166,6 +198,7 @@ export class PostgresBlogArticleRepository implements BlogArticleRepository {
       article.slug,
       new Date(article.created_at),
       new Date(article.updated_at),
+      serie,
     )
   }
 }

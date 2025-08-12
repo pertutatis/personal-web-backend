@@ -104,4 +104,50 @@ describe('BlogArticle', () => {
       expect(article.books).toHaveLength(2)
     })
   })
+
+  it('should create a BlogArticle with serie and clone it correctly', () => {
+    const id = '123e4567-e89b-12d3-a456-426614174000'
+    const title = 'Writing Clean Code'
+    const excerpt = 'Learn how to write maintainable code'
+    const content = 'Full article content about clean code'
+    const books = BlogBookMother.createMultiple(2)
+    const relatedLinks = [
+      { text: 'Clean Code Book', url: 'https://example.com/book' },
+    ]
+    const slug = 'writing-clean-code'
+    const createdAt = new Date('2024-01-01')
+    const updatedAt = new Date('2024-01-02')
+    const serie = {
+      id: 'serie-1',
+      title: 'Serie de pruebas',
+      description: 'Descripción de la serie',
+      createdAt: '2024-01-01T00:00:00.000Z',
+      updatedAt: '2024-01-02T00:00:00.000Z',
+    }
+
+    const article = new BlogArticle(
+      id,
+      title,
+      excerpt,
+      content,
+      books,
+      relatedLinks,
+      slug,
+      createdAt,
+      updatedAt,
+      serie,
+    )
+
+    expect(article.serie).toBeDefined()
+    expect(article.serie?.id).toBe('serie-1')
+    expect(article.serie?.title).toBe('Serie de pruebas')
+    expect(article.serie?.description).toBe('Descripción de la serie')
+    expect(article.serie?.createdAt).toBe('2024-01-01T00:00:00.000Z')
+    expect(article.serie?.updatedAt).toBe('2024-01-02T00:00:00.000Z')
+
+    // Clonado
+    const clone = article.clone()
+    expect(clone.serie).toEqual(article.serie)
+    expect(clone.serie).not.toBe(article.serie)
+  })
 })
