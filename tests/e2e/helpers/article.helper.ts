@@ -59,6 +59,19 @@ export class ArticleHelper {
     )
   }
 
+  static async publishArticle(
+    request: any,
+    articleId: string,
+  ): Promise<Response> {
+    return await AuthHelper.makeAuthenticatedRequest(
+      request,
+      `/api/backoffice/articles/${articleId}/publish`,
+      {
+        method: 'POST',
+      },
+    )
+  }
+
   /**
    * Limpia la base de datos de artículos para pruebas
    */
