@@ -10,6 +10,7 @@ import { ArticleBookIds } from '../ArticleBookIds'
 import { ArticleStatus } from '../ArticleStatus'
 import { ArticleStatusMother } from './mothers/ArticleStatusMother'
 import { ArticleStatusInvalid } from '../ArticleStatusInvalid'
+import { ArticleSeriesId } from '../ArticleSeriesId'
 
 describe('Article', () => {
   const id = new ArticleId('cc8d8194-e099-4e3a-a431-6b4412dc5f6a')
@@ -184,9 +185,9 @@ describe('Article', () => {
 
     it('should publish draft article', () => {
       const article = ArticleMother.createDraft()
-      
+
       const publishedArticle = article.publish()
-      
+
       expect(publishedArticle.status.isPublished()).toBe(true)
       expect(publishedArticle.status.value).toBe('PUBLISHED')
       expect(publishedArticle.id.equals(article.id)).toBe(true)
@@ -194,9 +195,9 @@ describe('Article', () => {
 
     it('should not change status when publishing already published article', () => {
       const article = ArticleMother.createPublished()
-      
+
       const publishedArticle = article.publish()
-      
+
       expect(publishedArticle.status.isPublished()).toBe(true)
       expect(publishedArticle.status.value).toBe('PUBLISHED')
       expect(publishedArticle.id.equals(article.id)).toBe(true)
@@ -204,16 +205,16 @@ describe('Article', () => {
 
     it('should not allow unpublishing published article', () => {
       const article = ArticleMother.createPublished()
-      
+
       expect(() => article.unpublish()).toThrow(ArticleStatusInvalid)
     })
 
     it('should allow saving draft article multiple times', () => {
       const article = ArticleMother.createDraft()
       const newTitle = new ArticleTitle('Updated Draft Title')
-      
+
       const updatedArticle = article.update({ title: newTitle })
-      
+
       expect(updatedArticle.status.isDraft()).toBe(true)
       expect(updatedArticle.title.value).toBe('Updated Draft Title')
     })
@@ -221,10 +222,10 @@ describe('Article', () => {
     it('should include status in primitives', () => {
       const draftArticle = ArticleMother.createDraft()
       const publishedArticle = ArticleMother.createPublished()
-      
+
       const draftPrimitives = draftArticle.toPrimitives()
       const publishedPrimitives = publishedArticle.toPrimitives()
-      
+
       expect(draftPrimitives.status).toBe('DRAFT')
       expect(publishedPrimitives.status).toBe('PUBLISHED')
     })
@@ -232,7 +233,7 @@ describe('Article', () => {
     it('should check if article is publishable', () => {
       const draftArticle = ArticleMother.createDraft()
       const publishedArticle = ArticleMother.createPublished()
-      
+
       expect(draftArticle.canBePublished()).toBe(true)
       expect(publishedArticle.canBePublished()).toBe(false)
     })
@@ -240,7 +241,7 @@ describe('Article', () => {
     it('should check if article is draft', () => {
       const draftArticle = ArticleMother.createDraft()
       const publishedArticle = ArticleMother.createPublished()
-      
+
       expect(draftArticle.isDraft()).toBe(true)
       expect(publishedArticle.isDraft()).toBe(false)
     })
@@ -248,9 +249,68 @@ describe('Article', () => {
     it('should check if article is published', () => {
       const draftArticle = ArticleMother.createDraft()
       const publishedArticle = ArticleMother.createPublished()
-      
+
       expect(draftArticle.isPublished()).toBe(false)
       expect(publishedArticle.isPublished()).toBe(true)
     })
+  })
+
+  it('should create article with a valid seriesId', () => {
+    const emptyBookIds = ArticleBookIds.createEmpty()
+    const validSeriesId = ArticleSeriesId.create()
+    const article = Article.create({
+      id,
+      slug,
+      title,
+      excerpt,
+      content,
+      bookIds: emptyBookIds,
+      relatedLinks: ArticleRelatedLinksMother.createEmpty(),
+      createdAt,
+      updatedAt,
+      seriesId: validSeriesId,
+    })
+
+    expect(article.seriesId).toBeDefined()
+    expect(article.seriesId?.equals(validSeriesId)).toBe(true)
+    expect(article.toPrimitives().seriesId).toBe(validSeriesId.value)
+  })
+
+  it('should throw error when creating ArticleSeriesId with invalid value', () => {
+    expect(() => {
+      new ArticleSeriesId('not-a-uuid')
+    }).toThrow('Invalid SeriesId: not-a-uuid')
+  })
+
+  it('should update the seriesId of an article (assign, change, remove)', () => {
+    const emptyBookIds = ArticleBookIds.createEmpty()
+    const initialSeriesId = ArticleSeriesId.create()
+    const newSeriesId = ArticleSeriesId.create()
+    const article = Article.create({
+      id,
+      slug,
+      title,
+      excerpt,
+      content,
+      bookIds: emptyBookIds,
+      relatedLinks: ArticleRelatedLinksMother.createEmpty(),
+      createdAt,
+      updatedAt,
+      seriesId: initialSeriesId,
+    })
+
+    // Cambiar seriesId
+    const updatedArticle = article.update({ seriesId: newSeriesId })
+    expect(updatedArticle.seriesId?.equals(newSeriesId)).toBe(true)
+
+    // Quitar seriesId
+    const removedSeriesArticle = updatedArticle.update({ seriesId: undefined })
+    expect(removedSeriesArticle.seriesId).toBeUndefined()
+
+    // Asignar de nuevo
+    const reassignedArticle = removedSeriesArticle.update({
+      seriesId: initialSeriesId,
+    })
+    expect(reassignedArticle.seriesId?.equals(initialSeriesId)).toBe(true)
   })
 })

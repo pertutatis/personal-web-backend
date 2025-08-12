@@ -81,6 +81,8 @@ export async function POST(request: NextRequest) {
       ? (data.relatedLinks as RelatedLink[])
       : []
     const status = typeof data.status === 'string' ? data.status.trim() : null
+    const seriesId =
+      typeof data.seriesId === 'string' ? data.seriesId.trim() : undefined
 
     // Validate UUID
     if (!id) {
@@ -120,6 +122,11 @@ export async function POST(request: NextRequest) {
       errors.push('status must be either "DRAFT" or "PUBLISHED"')
     }
 
+    // Validate seriesId (optional)
+    if (seriesId && !UuidValidator.isValidUuid(seriesId)) {
+      errors.push('seriesId must be a valid UUID v4')
+    }
+
     if (errors.length > 0) {
       throw new ApiValidationError(errors.join(', '))
     }
@@ -139,6 +146,7 @@ export async function POST(request: NextRequest) {
         url: link.url.trim(),
       })),
       ...(status && { status }),
+      ...(seriesId && { seriesId }),
     }
 
     const repository = new PostgresArticleRepository(articlesConnection)

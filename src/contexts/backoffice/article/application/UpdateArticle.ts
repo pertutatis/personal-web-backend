@@ -9,6 +9,7 @@ import { ArticleBookIds } from '../domain/ArticleBookIds'
 import { ArticleRelatedLinks } from '../domain/ArticleRelatedLinks'
 import { ArticleStatus } from '../domain/ArticleStatus'
 import { ArticleNotFound } from './ArticleNotFound'
+import { ArticleSeriesId } from '../domain/ArticleSeriesId'
 
 export type UpdateArticleRequest = {
   id: string
@@ -18,6 +19,7 @@ export type UpdateArticleRequest = {
   bookIds?: string[]
   relatedLinks?: Array<{ text: string; url: string }>
   status?: string
+  seriesId?: string // UUID de la serie asociada (opcional)
 }
 
 export class UpdateArticle {
@@ -33,20 +35,24 @@ export class UpdateArticle {
 
     // Handle status update first (may throw validation errors)
     const statusUpdatedArticle = this.updateStatus(article, request.status)
-    
+
     // Then handle other field updates
     const updateParams = this.buildUpdateParams(request, statusUpdatedArticle)
     const updatedArticle = statusUpdatedArticle.update(updateParams)
     await this.repository.update(updatedArticle)
   }
 
-  private buildUpdateParams(request: UpdateArticleRequest, currentArticle: Article): Partial<{
+  private buildUpdateParams(
+    request: UpdateArticleRequest,
+    currentArticle: Article,
+  ): Partial<{
     title: ArticleTitle
     excerpt: ArticleExcerpt
     content: ArticleContent
     bookIds: ArticleBookIds
     relatedLinks: ArticleRelatedLinks
     slug: ArticleSlug
+    seriesId: ArticleSeriesId
   }> {
     const params: ReturnType<UpdateArticle['buildUpdateParams']> = {}
 
@@ -71,6 +77,12 @@ export class UpdateArticle {
       params.relatedLinks = ArticleRelatedLinks.create(request.relatedLinks)
     }
 
+    if (request.seriesId !== undefined) {
+      params.seriesId = request.seriesId
+        ? new ArticleSeriesId(request.seriesId)
+        : undefined
+    }
+
     return params
   }
 
@@ -80,17 +92,17 @@ export class UpdateArticle {
     }
 
     const requestedStatus = new ArticleStatus(newStatus)
-    
+
     if (requestedStatus.isPublished()) {
       return article.publish()
     }
-    
+
     // If requesting DRAFT status, validate the transition
     if (requestedStatus.isDraft() && article.status.isPublished()) {
       // This will throw ArticleStatusInvalid
       article.status.toDraft()
     }
-    
+
     return article
   }
 }

@@ -9,6 +9,7 @@ import { ArticleRelatedLinks } from '../domain/ArticleRelatedLinks'
 import { ArticleStatus } from '../domain/ArticleStatus'
 import { ArticleRepository } from '../domain/ArticleRepository'
 import { ArticleIdDuplicated } from '../domain/ArticleIdDuplicated'
+import { ArticleSeriesId } from '../domain/ArticleSeriesId'
 
 export type CreateArticleRequest = {
   id: string
@@ -18,6 +19,7 @@ export type CreateArticleRequest = {
   bookIds: string[]
   relatedLinks: Array<{ text: string; url: string }>
   status?: string
+  seriesId?: string // UUID de la serie asociada (opcional)
 }
 
 export class CreateArticle {
@@ -45,6 +47,9 @@ export class CreateArticle {
       status: request.status ? new ArticleStatus(request.status) : undefined,
       createdAt: now,
       updatedAt: now,
+      seriesId: request.seriesId
+        ? new ArticleSeriesId(request.seriesId)
+        : undefined,
     })
 
     await this.repository.save(article)

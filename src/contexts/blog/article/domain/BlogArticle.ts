@@ -15,6 +15,13 @@ export class BlogArticle {
     readonly slug: string,
     readonly createdAt: Date,
     readonly updatedAt: Date,
+    readonly serie?: {
+      id: string
+      title: string
+      description: string
+      createdAt: string
+      updatedAt: string
+    } | null,
   ) {}
 
   /**
@@ -31,6 +38,7 @@ export class BlogArticle {
       this.slug,
       this.createdAt,
       this.updatedAt,
+      this.serie ? { ...this.serie } : undefined,
     )
   }
 

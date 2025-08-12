@@ -13,6 +13,7 @@ export interface TestArticle {
     text: string
     url: string
   }>
+  seriesId?: string // UUID de la serie asociada (opcional)
 }
 
 export class ArticleHelper {

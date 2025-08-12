@@ -10,6 +10,7 @@ import { ArticleStatus } from './ArticleStatus'
 import { ArticleStatusInvalid } from './ArticleStatusInvalid'
 import { ArticleCreatedDomainEvent } from './event/ArticleCreatedDomainEvent'
 import { ArticleUpdatedDomainEvent } from './event/ArticleUpdatedDomainEvent'
+import { ArticleSeriesId } from './ArticleSeriesId'
 
 type PrimitiveArticle = {
   id: string
@@ -22,6 +23,7 @@ type PrimitiveArticle = {
   status: string
   createdAt: string
   updatedAt: string
+  seriesId?: string
 }
 
 type CreateArticleParams = {
@@ -35,6 +37,7 @@ type CreateArticleParams = {
   updatedAt: Date
   slug?: ArticleSlug
   status?: ArticleStatus
+  seriesId?: ArticleSeriesId
 }
 
 type UpdateArticleParams = Partial<{
@@ -43,6 +46,7 @@ type UpdateArticleParams = Partial<{
   content: ArticleContent
   bookIds: ArticleBookIds
   relatedLinks: ArticleRelatedLinks
+  seriesId: ArticleSeriesId | undefined
 }>
 
 export class Article extends AggregateRoot {
@@ -56,6 +60,7 @@ export class Article extends AggregateRoot {
   status: ArticleStatus
   readonly createdAt: Date
   updatedAt: Date
+  seriesId?: ArticleSeriesId
 
   constructor(params: CreateArticleParams) {
     super()
@@ -69,6 +74,7 @@ export class Article extends AggregateRoot {
     this.status = params.status ?? ArticleStatus.createDraft()
     this.createdAt = params.createdAt
     this.updatedAt = params.updatedAt
+    this.seriesId = params.seriesId
   }
 
   static create(params: CreateArticleParams): Article {
@@ -119,6 +125,10 @@ export class Article extends AggregateRoot {
       this.relatedLinks = params.relatedLinks
     }
 
+    if ('seriesId' in params) {
+      this.seriesId = params.seriesId
+    }
+
     this.updatedAt = now
 
     this.record(
@@ -151,6 +161,7 @@ export class Article extends AggregateRoot {
       status: this.status.value,
       createdAt: this.createdAt.toISOString(),
       updatedAt: this.updatedAt.toISOString(),
+      seriesId: this.seriesId ? this.seriesId.value : undefined,
     }
   }
 
