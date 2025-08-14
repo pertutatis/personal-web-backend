@@ -175,7 +175,8 @@ const openApiDocument = {
             type: 'string',
             description: 'Extracto del artículo',
             maxLength: 300,
-            example: 'Una guía completa sobre los principios fundamentales de DDD',
+            example:
+              'Una guía completa sobre los principios fundamentales de DDD',
           },
           content: {
             type: 'string',
@@ -222,7 +223,18 @@ const openApiDocument = {
             example: '2024-01-15T14:45:00Z',
           },
         },
-        required: ['id', 'title', 'excerpt', 'content', 'slug', 'status', 'bookIds', 'relatedLinks', 'createdAt', 'updatedAt'],
+        required: [
+          'id',
+          'title',
+          'excerpt',
+          'content',
+          'slug',
+          'status',
+          'bookIds',
+          'relatedLinks',
+          'createdAt',
+          'updatedAt',
+        ],
       },
       CreateArticleRequest: {
         type: 'object',
@@ -245,7 +257,8 @@ const openApiDocument = {
             description: 'Extracto del artículo',
             maxLength: 300,
             minLength: 1,
-            example: 'Una guía completa sobre los principios fundamentales de DDD',
+            example:
+              'Una guía completa sobre los principios fundamentales de DDD',
           },
           content: {
             type: 'string',
@@ -256,7 +269,8 @@ const openApiDocument = {
           },
           status: {
             $ref: '#/components/schemas/ArticleStatus',
-            description: 'Estado inicial del artículo (opcional, por defecto DRAFT)',
+            description:
+              'Estado inicial del artículo (opcional, por defecto DRAFT)',
           },
           bookIds: {
             type: 'array',
@@ -306,7 +320,8 @@ const openApiDocument = {
           },
           status: {
             $ref: '#/components/schemas/ArticleStatus',
-            description: 'Nuevo estado del artículo (DRAFT->PUBLISHED permitido, PUBLISHED->DRAFT NO permitido)',
+            description:
+              'Nuevo estado del artículo (DRAFT->PUBLISHED permitido, PUBLISHED->DRAFT NO permitido)',
           },
           bookIds: {
             type: 'array',
@@ -326,7 +341,8 @@ const openApiDocument = {
             maxItems: 10,
           },
         },
-        description: 'Todos los campos son opcionales. Solo se actualizan los campos proporcionados.',
+        description:
+          'Todos los campos son opcionales. Solo se actualizan los campos proporcionados.',
       },
       ArticleCollection: {
         type: 'object',
@@ -391,7 +407,8 @@ const openApiDocument = {
           isbn: {
             type: 'string',
             description: 'ISBN del libro',
-            pattern: '^(97[89]-?\\d{1,5}-?\\d{1,7}-?\\d{1,6}-?\\d|\\d{1,5}-?\\d{1,7}-?\\d{1,6}-?[\\dX])$',
+            pattern:
+              '^(97[89]-?\\d{1,5}-?\\d{1,7}-?\\d{1,6}-?\\d|\\d{1,5}-?\\d{1,7}-?\\d{1,6}-?[\\dX])$',
             example: '978-0-321-12521-7',
           },
           description: {
@@ -421,7 +438,15 @@ const openApiDocument = {
             example: '2024-01-15T14:45:00Z',
           },
         },
-        required: ['id', 'title', 'author', 'isbn', 'description', 'createdAt', 'updatedAt'],
+        required: [
+          'id',
+          'title',
+          'author',
+          'isbn',
+          'description',
+          'createdAt',
+          'updatedAt',
+        ],
       },
       CreateBookRequest: {
         type: 'object',
@@ -449,7 +474,8 @@ const openApiDocument = {
           isbn: {
             type: 'string',
             description: 'ISBN del libro',
-            pattern: '^(97[89]-?\\d{1,5}-?\\d{1,7}-?\\d{1,6}-?\\d|\\d{1,5}-?\\d{1,7}-?\\d{1,6}-?[\\dX])$',
+            pattern:
+              '^(97[89]-?\\d{1,5}-?\\d{1,7}-?\\d{1,6}-?\\d|\\d{1,5}-?\\d{1,7}-?\\d{1,6}-?[\\dX])$',
             example: '978-0-321-12521-7',
           },
           description: {
@@ -490,7 +516,8 @@ const openApiDocument = {
           isbn: {
             type: 'string',
             description: 'Nuevo ISBN del libro',
-            pattern: '^(97[89]-?\\d{1,5}-?\\d{1,7}-?\\d{1,6}-?\\d|\\d{1,5}-?\\d{1,7}-?\\d{1,6}-?[\\dX])$',
+            pattern:
+              '^(97[89]-?\\d{1,5}-?\\d{1,7}-?\\d{1,6}-?\\d|\\d{1,5}-?\\d{1,7}-?\\d{1,6}-?[\\dX])$',
             example: '978-0-321-12521-8',
           },
           description: {
@@ -509,7 +536,8 @@ const openApiDocument = {
             example: 'https://example.com/new-book',
           },
         },
-        description: 'Todos los campos son opcionales. Solo se actualizan los campos proporcionados.',
+        description:
+          'Todos los campos son opcionales. Solo se actualizan los campos proporcionados.',
       },
       BookCollection: {
         type: 'object',
@@ -630,7 +658,231 @@ const openApiDocument = {
       BearerAuth: [],
     },
   ],
+  components: {
+    schemas: {
+      Serie: {
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+            format: 'uuid',
+            description: 'Identificador único de la serie',
+          },
+          title: {
+            type: 'string',
+            maxLength: 100,
+            description: 'Título de la serie',
+          },
+          description: {
+            type: 'string',
+            maxLength: 500,
+            description: 'Descripción de la serie',
+          },
+        },
+        required: ['id', 'title'],
+      },
+      // ...existing schemas...
+    },
+  },
   paths: {
+    // Endpoints backoffice de series
+    '/backoffice/series': {
+      get: {
+        tags: ['Series'],
+        summary: 'Listar series (backoffice)',
+        description: 'Obtiene una lista de series para gestión backoffice',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          '200': {
+            description: 'Lista de series obtenida correctamente',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'array',
+                  items: { $ref: '#/components/schemas/Serie' },
+                },
+              },
+            },
+          },
+          '401': {
+            description: 'No autorizado',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+      post: {
+        tags: ['Series'],
+        summary: 'Crear serie',
+        description: 'Crea una nueva serie',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Serie' },
+            },
+          },
+        },
+        responses: {
+          '201': { description: 'Serie creada correctamente' },
+          '400': {
+            description: 'Error de validación',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+          '401': {
+            description: 'No autorizado',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+          '409': {
+            description: 'El ID ya existe',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/backoffice/series/{id}': {
+      get: {
+        tags: ['Series'],
+        summary: 'Obtener serie (backoffice)',
+        description: 'Obtiene una serie por su ID para gestión backoffice',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string', format: 'uuid' },
+            description: 'ID de la serie',
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'Serie encontrada',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Serie' },
+              },
+            },
+          },
+          '401': {
+            description: 'No autorizado',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+          '404': {
+            description: 'Serie no encontrada',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+      put: {
+        tags: ['Series'],
+        summary: 'Actualizar serie',
+        description: 'Actualiza una serie existente',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string', format: 'uuid' },
+            description: 'ID de la serie',
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Serie' },
+            },
+          },
+        },
+        responses: {
+          '200': { description: 'Serie actualizada correctamente' },
+          '400': {
+            description: 'Error de validación',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+          '401': {
+            description: 'No autorizado',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+          '404': {
+            description: 'Serie no encontrada',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+      delete: {
+        tags: ['Series'],
+        summary: 'Eliminar serie',
+        description: 'Elimina una serie existente',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string', format: 'uuid' },
+            description: 'ID de la serie',
+          },
+        ],
+        responses: {
+          '204': { description: 'Serie eliminada correctamente' },
+          '401': {
+            description: 'No autorizado',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+          '404': {
+            description: 'Serie no encontrada',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/Error' },
+              },
+            },
+          },
+        },
+      },
+    },
     '/health': {
       get: {
         tags: ['System'],
@@ -963,7 +1215,8 @@ const openApiDocument = {
       get: {
         tags: ['Articles'],
         summary: 'Listar artículos',
-        description: 'Obtiene una lista paginada de artículos (incluye DRAFT y PUBLISHED)',
+        description:
+          'Obtiene una lista paginada de artículos (incluye DRAFT y PUBLISHED)',
         parameters: paginationParameters,
         responses: {
           '200': {
@@ -1049,7 +1302,8 @@ const openApiDocument = {
       get: {
         tags: ['Articles'],
         summary: 'Obtener artículo',
-        description: 'Obtiene un artículo por su ID (incluye DRAFT y PUBLISHED)',
+        description:
+          'Obtiene un artículo por su ID (incluye DRAFT y PUBLISHED)',
         parameters: [articleIdParameter],
         responses: {
           '200': {
@@ -1087,7 +1341,8 @@ const openApiDocument = {
       put: {
         tags: ['Articles'],
         summary: 'Actualizar artículo',
-        description: 'Actualiza un artículo existente. Permite transición DRAFT->PUBLISHED, pero NO PUBLISHED->DRAFT.',
+        description:
+          'Actualiza un artículo existente. Permite transición DRAFT->PUBLISHED, pero NO PUBLISHED->DRAFT.',
         parameters: [articleIdParameter],
         requestBody: {
           required: true,
@@ -1115,7 +1370,8 @@ const openApiDocument = {
                     summary: 'Transición de estado inválida',
                     value: {
                       type: 'ValidationError',
-                      message: 'Invalid article status: Cannot change from PUBLISHED to DRAFT',
+                      message:
+                        'Invalid article status: Cannot change from PUBLISHED to DRAFT',
                     },
                   },
                   invalidStatus: {
@@ -1187,7 +1443,8 @@ const openApiDocument = {
       post: {
         tags: ['Articles'],
         summary: 'Publicar artículo',
-        description: 'Publica un artículo cambiando su estado a PUBLISHED. Si ya está publicado, no hace nada.',
+        description:
+          'Publica un artículo cambiando su estado a PUBLISHED. Si ya está publicado, no hace nada.',
         parameters: [articleIdParameter],
         responses: {
           '200': {
@@ -1227,7 +1484,8 @@ const openApiDocument = {
       get: {
         tags: ['Articles'],
         summary: 'Obtener artículo por slug (backoffice)',
-        description: 'Obtiene un artículo por su slug (incluye DRAFT y PUBLISHED)',
+        description:
+          'Obtiene un artículo por su slug (incluye DRAFT y PUBLISHED)',
         parameters: [slugParameter],
         responses: {
           '200': {
@@ -1267,7 +1525,8 @@ const openApiDocument = {
       get: {
         tags: ['Blog'],
         summary: 'Listar artículos públicos',
-        description: 'Obtiene una lista paginada de artículos PUBLICADOS solamente (endpoint público)',
+        description:
+          'Obtiene una lista paginada de artículos PUBLICADOS solamente (endpoint público)',
         security: [],
         parameters: paginationParameters,
         responses: {
@@ -1288,7 +1547,8 @@ const openApiDocument = {
       get: {
         tags: ['Blog'],
         summary: 'Obtener artículo público por slug',
-        description: 'Obtiene un artículo PUBLICADO por su slug (endpoint público)',
+        description:
+          'Obtiene un artículo PUBLICADO por su slug (endpoint público)',
         security: [],
         parameters: [slugParameter],
         responses: {
