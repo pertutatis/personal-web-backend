@@ -18,6 +18,6 @@ export class DeleteSeries {
     }
 
     await this.repository.delete(seriesId)
-    await this.eventBus.publish(series.pullDomainEvents())
+    // await this.eventBus.publish(series.pullDomainEvents())
   }
 }
