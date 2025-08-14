@@ -658,30 +658,28 @@ const openApiDocument = {
       BearerAuth: [],
     },
   ],
-  components: {
-    schemas: {
-      Serie: {
-        type: 'object',
-        properties: {
-          id: {
-            type: 'string',
-            format: 'uuid',
-            description: 'Identificador único de la serie',
-          },
-          title: {
-            type: 'string',
-            maxLength: 100,
-            description: 'Título de la serie',
-          },
-          description: {
-            type: 'string',
-            maxLength: 500,
-            description: 'Descripción de la serie',
-          },
+  schemas: {
+    // ...existing schemas...
+    Serie: {
+      type: 'object',
+      properties: {
+        id: {
+          type: 'string',
+          format: 'uuid',
+          description: 'Identificador único de la serie',
         },
-        required: ['id', 'title'],
+        title: {
+          type: 'string',
+          maxLength: 100,
+          description: 'Título de la serie',
+        },
+        description: {
+          type: 'string',
+          maxLength: 500,
+          description: 'Descripción de la serie',
+        },
       },
-      // ...existing schemas...
+      required: ['id', 'title'],
     },
   },
   paths: {
