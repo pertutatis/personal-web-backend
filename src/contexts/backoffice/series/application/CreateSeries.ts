@@ -37,6 +37,5 @@ export class CreateSeries {
     })
 
     await this.repository.save(series)
-    await this.eventBus.publish(series.pullDomainEvents())
   }
 }
