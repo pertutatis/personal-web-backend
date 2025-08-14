@@ -40,6 +40,6 @@ export class UpdateSeries {
     })
 
     await this.repository.save(updatedSeries)
-    await this.eventBus.publish(updatedSeries.pullDomainEvents())
+    // await this.eventBus.publish(updatedSeries.pullDomainEvents())
   }
 }
