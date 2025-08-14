@@ -12,18 +12,17 @@ import { UuidValidator } from '@/contexts/shared/domain/validation/UuidValidator
 import { SeriesTitleAlreadyExists } from '@/contexts/backoffice/series/application/SeriesTitleAlreadyExists'
 
 async function getConnections() {
-  const seriesConnection = await PostgresConnection.create(getBlogConfig())
-  return { seriesConnection }
+  return await PostgresConnection.create(getBlogConfig())
 }
 
 export async function GET(request: NextRequest) {
   return executeWithErrorHandling(async () => {
-    const { seriesConnection } = await getConnections()
+    const connection = await getConnections()
     const url = new URL(request.url)
     const limit = url.searchParams.get('limit')
     const offset = url.searchParams.get('offset')
 
-    const repository = new PostgresSeriesRepository(seriesConnection)
+    const repository = new PostgresSeriesRepository(connection)
     const listSeries = new ListSeries(repository)
 
     const series = await listSeries.run({
@@ -31,13 +30,18 @@ export async function GET(request: NextRequest) {
       offset: offset ? parseInt(offset) : undefined,
     })
 
-    return HttpNextResponse.ok({ data: series }, request.headers.get('origin'))
+    return HttpNextResponse.ok(
+      {
+        data: series.map((serie) => serie.toPrimitives()),
+      },
+      request.headers.get('origin'),
+    )
   }, request)
 }
 
 export async function POST(request: NextRequest) {
   return executeWithErrorHandling(async () => {
-    const { seriesConnection } = await getConnections()
+    const connection = await getConnections()
 
     // Validate request content type
     const contentType = request.headers.get('content-type')
@@ -95,7 +99,7 @@ export async function POST(request: NextRequest) {
       description: description!,
     }
 
-    const repository = new PostgresSeriesRepository(seriesConnection)
+    const repository = new PostgresSeriesRepository(connection)
     const createSeries = new CreateSeries(repository, {
       publish: async (events) => {
         // TODO: Implement event bus
