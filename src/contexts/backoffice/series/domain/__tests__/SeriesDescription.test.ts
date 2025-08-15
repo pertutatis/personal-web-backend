@@ -14,7 +14,7 @@ describe('SeriesDescription', () => {
   })
 
   it('should throw InvalidArgumentError when description exceeds max length', () => {
-    const longDescription = 'a'.repeat(501)
+    const longDescription = 'a'.repeat(1001)
     expect(() => new SeriesDescription(longDescription)).toThrow(
       InvalidArgumentError,
     )

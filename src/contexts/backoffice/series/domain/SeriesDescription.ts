@@ -14,9 +14,9 @@ export class SeriesDescription {
       throw new InvalidArgumentError('Series description cannot be empty')
     }
 
-    if (value.length > 500) {
+    if (value.length > 1000) {
       throw new InvalidArgumentError(
-        'Series description cannot exceed 500 characters',
+        'Series description cannot exceed 1000 characters',
       )
     }
   }
