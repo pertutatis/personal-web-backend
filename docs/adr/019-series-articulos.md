@@ -4,7 +4,7 @@ Fecha: 2025-08-09
 
 ## Estado
 
-Propuesto
+Implemented
 
 ## Contexto
 

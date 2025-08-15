@@ -2,129 +2,21 @@
 
 ## Current Focus
 
-- Implementación de Series de Artículos como dominio independiente
-- Integración con dominio de Articles existente
-- Desarrollo siguiendo TDD
+- Implementación de la funcionalidad de publicación y ordenación de artículos en el blog
+- Añadir campo `publishedAt` al modelo de artículo
+- Modificar el proceso de publicación para asignar fecha/hora
+- Actualizar el endpoint GET para ordenar por `publishedAt` descendente
+- Documentación y tests siguiendo TDD
+
+## Decisiones recientes
+
+- ADR [`020-publishedat-ordenacion-articulos.md`](docs/adr/020-publishedat-ordenacion-articulos.md): Añadir campo publishedAt y ordenación por fecha de publicación
+- OBR [`007-publicacion-ordenacion-articulos.md`](docs/obr/007-publicacion-ordenacion-articulos.md): Reglas de negocio, casos de uso y escenarios de test
 
 ## Pasos de Desarrollo
 
-### 1. Preparación del Dominio Series
-
-1. Crear estructura de directorios:
-
-   ```
-   src/contexts/blog/series/
-   ├── domain/
-   │   ├── SeriesId.ts
-   │   ├── SeriesTitle.ts
-   │   ├── SeriesDescription.ts
-   │   ├── ArticleSeries.ts
-   │   └── SeriesRepository.ts
-   ├── application/
-   │   ├── CreateSeries.ts
-   │   ├── UpdateSeries.ts
-   │   └── DeleteSeries.ts
-   └── infrastructure/
-       ├── persistence/
-       │   └── SeriesRepository.ts
-       └── http/
-           └── SeriesController.ts
-   ```
-
-2. Implementar Value Objects (TDD):
-
-   - SeriesId: Tests + Implementación
-   - SeriesTitle: Tests + Implementación
-   - SeriesDescription: Tests + Implementación
-
-3. Implementar Agregado Series (TDD):
-   - ArticleSeries: Tests + Implementación
-   - SeriesRepository interface
-   - Eventos de dominio
-
-### 2. Actualización del Dominio Articles
-
-1. Añadir SeriesId a Article:
-
-   - Modificar Article entity
-   - Actualizar tests existentes
-   - Añadir nuevos tests para funcionalidad de series
-
-2. Implementar eventos de dominio:
-   - ArticleAssignedToSeriesDomainEvent
-   - ArticleRemovedFromSeriesDomainEvent
-
-### 3. Infraestructura
-
-1. Base de datos:
-
-   - Crear migración para tabla series
-   - Añadir campo series_id a articles
-   - Crear índices necesarios
-
-2. Implementar SeriesRepository:
-   - Tests de integración
-   - Implementación PostgreSQL
-
-### 4. Casos de Uso (TDD)
-
-1. Dominio Series:
-
-   - CreateSeries
-   - UpdateSeries
-   - DeleteSeries
-   - GetSeriesById
-   - ListSeries
-
-2. Dominio Articles:
-   - AssignArticleToSeries
-   - RemoveArticleFromSeries
-   - ListArticlesBySeries
-
-### 5. API Endpoints
-
-1. Backoffice:
-
-   - POST /api/backoffice/series
-   - PUT /api/backoffice/series/{id}
-   - DELETE /api/backoffice/series/{id}
-   - GET /api/backoffice/series
-   - PATCH /api/backoffice/articles/{id}/series
-
-2. Blog:
-   - GET /api/blog/series
-   - GET /api/blog/series/{id}/articles
-
-### 6. Testing E2E
-
-1. Series Management:
-
-   - Crear serie
-   - Actualizar serie
-   - Eliminar serie
-   - Validar restricciones
-
-2. Article Integration:
-   - Asignar artículo a serie
-   - Listar artículos de serie
-   - Paginación
-   - Ordenación
-
-### 7. Documentación
-
-1. Actualizar Swagger/OpenAPI
-2. Actualizar README
-3. Documentar endpoints y ejemplos
-
-## Estado Actual
-
-- Diseño completado
-- Documentación inicial creada
-- Pendiente aprobación para inicio de implementación
-
-## Consideraciones Técnicas
-
-- Usar TDD en cada paso
-- Mantener separación clara entre dominios
-- Validar eventos de dominio
-- Asegurar consistencia en base de datos
+1. Actualizar modelo de artículo y migraciones
+2. Modificar proceso de publicación
+3. Actualizar lógica de listado y ordenación
+4. Escribir tests unitarios y e2e
+5. Actualizar documentación Swagger/OpenAPI
