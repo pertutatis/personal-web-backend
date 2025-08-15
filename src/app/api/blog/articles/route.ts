@@ -1,4 +1,3 @@
-import { BlogArticleRepositoryFactory } from '@/contexts/blog/article/infrastructure/persistence/BlogArticleRepositoryFactory'
 import { PostgresConnection } from '@/contexts/shared/infrastructure/persistence/PostgresConnection'
 import { getBlogDatabaseConfig } from '@/contexts/shared/infrastructure/config/database'
 import { NextResponse } from 'next/server'
