@@ -15,6 +15,7 @@ interface ArticleRow {
   slug: string
   created_at: Date
   updated_at: Date
+  published_at?: Date | null
   series_id?: string | null
   series_title?: string | null
   series_description?: string | null
@@ -50,6 +51,7 @@ export class PostgresBlogArticleRepository implements BlogArticleRepository {
         a.slug,
         a.created_at,
         a.updated_at,
+        a.published_at,
         a.series_id,
         s.title as series_title,
         s.description as series_description,
@@ -171,18 +173,20 @@ export class PostgresBlogArticleRepository implements BlogArticleRepository {
         ),
     )
 
-    let serie = undefined
-    if (article.series_id) {
+    let serie = null
+    if (
+      article.series_id &&
+      article.series_title &&
+      article.series_description &&
+      article.series_created_at &&
+      article.series_updated_at
+    ) {
       serie = {
         id: article.series_id,
-        title: article.series_title ?? '',
-        description: article.series_description ?? '',
-        createdAt: article.series_created_at
-          ? new Date(article.series_created_at).toISOString()
-          : '',
-        updatedAt: article.series_updated_at
-          ? new Date(article.series_updated_at).toISOString()
-          : '',
+        title: article.series_title,
+        description: article.series_description,
+        createdAt: new Date(article.series_created_at).toISOString(),
+        updatedAt: new Date(article.series_updated_at).toISOString(),
       }
     }
 
@@ -198,6 +202,7 @@ export class PostgresBlogArticleRepository implements BlogArticleRepository {
       article.slug,
       new Date(article.created_at),
       new Date(article.updated_at),
+      article.published_at ? new Date(article.published_at) : undefined,
       serie,
     )
   }

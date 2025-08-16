@@ -51,6 +51,19 @@ export class PostgresTestSetup {
           relatedLinksAndSlugMigration,
           'Related links columns might already exist',
         )
+        // Ejecutar migración published_at
+        const publishedAtMigration = readFileSync(
+          join(
+            process.cwd(),
+            'databases/migrations/009-add-published-at-to-articles.sql',
+          ),
+          'utf-8',
+        )
+        await this.runQuery(
+          blogDbPool,
+          publishedAtMigration,
+          'Published_at column might already exist',
+        )
         await blogDbPool.end()
         Logger.info('✅ test_blog creada y configurada correctamente.')
         Logger.info(
@@ -111,6 +124,24 @@ export class PostgresTestSetup {
           relatedLinksAndSlugMigration,
           'Related links columns might already exist',
         )
+
+        // Leer y ejecutar la migración published_at
+        try {
+          const publishedAtMigration = readFileSync(
+            join(
+              process.cwd(),
+              'databases/migrations/009-add-published-at-to-articles.sql',
+            ),
+            'utf-8',
+          )
+          await this.runQuery(
+            blogDbPool,
+            publishedAtMigration,
+            'Published_at column might already exist',
+          )
+        } catch (err) {
+          Logger.warn('Could not find or apply published_at migration:', err)
+        }
 
         // Leer y ejecutar la migración de series
         try {

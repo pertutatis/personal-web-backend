@@ -13,7 +13,12 @@ export async function GET() {
     const repository = new PostgresBlogArticleRepository(connection)
     const articles = await repository.findAll()
 
-    return NextResponse.json(articles)
+    // Asegura que todos los artículos incluyan el campo 'serie' (aunque sea undefined)
+    const articlesWithSerie = articles.map((a) => ({
+      ...a,
+      publishedAt: a.publishedAt ? a.publishedAt.toISOString() : null,
+    }))
+    return NextResponse.json(articlesWithSerie)
   } catch (error) {
     Logger.error('Error fetching articles:', error)
     return NextResponse.json(
