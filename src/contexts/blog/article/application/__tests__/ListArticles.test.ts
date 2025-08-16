@@ -1,4 +1,5 @@
 import { BlogArticleMother } from '../../domain/__tests__/mothers/BlogArticleMother'
+import { BlogBookMother } from '../../domain/__tests__/mothers/BlogBookMother'
 import { BlogArticleRepositoryMock } from '../../domain/__tests__/mothers/BlogArticleRepositoryMock'
 import { ListArticles } from '../ListArticles'
 
@@ -11,7 +12,7 @@ describe('ListArticles', () => {
     useCase = new ListArticles(repository)
   })
 
-  it('should return all articles ordered by creation date', async () => {
+  it('should return all published articles ordered by publishedAt descending', async () => {
     const article1 = BlogArticleMother.create(
       'article-1',
       'Article 1',
@@ -20,7 +21,9 @@ describe('ListArticles', () => {
       [],
       [],
       'article-1',
+      new Date('2024-01-01'), // updatedAt
       new Date('2024-01-01'),
+      new Date('2024-01-01'), // publishedAt
     )
 
     const article2 = BlogArticleMother.create(
@@ -31,7 +34,9 @@ describe('ListArticles', () => {
       [],
       [],
       'article-2',
+      new Date('2024-01-02'), // updatedAt
       new Date('2024-01-02'),
+      new Date('2024-01-02'), // publishedAt
     )
 
     const article3 = BlogArticleMother.create(
@@ -42,7 +47,9 @@ describe('ListArticles', () => {
       [],
       [],
       'article-3',
+      new Date('2024-01-03'), // updatedAt
       new Date('2024-01-03'),
+      new Date('2024-01-03'), // publishedAt
     )
 
     // Return articles in random order
@@ -70,7 +77,32 @@ describe('ListArticles', () => {
   })
 
   it('should return articles with their books', async () => {
-    const articles = BlogArticleMother.createMultiple(2) // Creates articles with books
+    const articles = [
+      BlogArticleMother.create(
+        'article-1',
+        'Article 1',
+        'Excerpt 1',
+        'Content 1',
+        BlogBookMother.createMultiple(2),
+        [],
+        'article-1',
+        new Date('2024-01-01'),
+        new Date('2024-01-01'), // updatedAt
+        new Date('2024-01-01'), // publishedAt
+      ),
+      BlogArticleMother.create(
+        'article-2',
+        'Article 2',
+        'Excerpt 2',
+        'Content 2',
+        BlogBookMother.createMultiple(2),
+        [],
+        'article-2',
+        new Date('2024-01-02'),
+        new Date('2024-01-02'), // updatedAt
+        new Date('2024-01-02'), // publishedAt
+      ),
+    ]
     repository.returnOnFindAll(articles)
 
     const result = await useCase.execute()

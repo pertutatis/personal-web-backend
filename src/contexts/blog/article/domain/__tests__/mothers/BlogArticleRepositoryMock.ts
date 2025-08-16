@@ -14,7 +14,12 @@ export class BlogArticleRepositoryMock implements BlogArticleRepository {
   }
 
   returnOnFindAll(articles: BlogArticle[]): void {
-    this.mockFindAll.mockResolvedValue(articles)
+    console.log(articles)
+
+    const sorted = articles
+      .filter((a) => a.publishedAt instanceof Date)
+      .sort((a, b) => b.publishedAt!.getTime() - a.publishedAt!.getTime())
+    this.mockFindAll.mockResolvedValue(sorted)
   }
 
   returnOnFindBySlug(article: BlogArticle | null): void {

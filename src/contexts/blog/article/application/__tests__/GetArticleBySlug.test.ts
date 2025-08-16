@@ -42,7 +42,18 @@ describe('GetArticleBySlug', () => {
   })
 
   it('should return article with its books', async () => {
-    const article = BlogArticleMother.create() // Creates article with default books
+    const article = BlogArticleMother.create(
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      new Date('2024-01-01'),
+    ) // Creates article with default books y publishedAt
     repository.returnOnFindBySlug(article)
 
     const result = await useCase.execute(article.slug)
@@ -66,7 +77,18 @@ describe('GetArticleBySlug', () => {
   })
 
   it('should include related links in the response', async () => {
-    const article = BlogArticleMother.create() // Creates article with default related links
+    const article = BlogArticleMother.create(
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      new Date('2024-01-01'),
+    ) // Creates article con publishedAt
     repository.returnOnFindBySlug(article)
 
     const result = await useCase.execute(article.slug)
