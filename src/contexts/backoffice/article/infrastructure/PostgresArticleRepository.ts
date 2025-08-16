@@ -27,6 +27,7 @@ interface ArticleRow {
   status: string
   created_at: Date
   updated_at: Date
+  published_at?: Date | null
   series_id?: string | null
 }
 
@@ -85,9 +86,9 @@ export class PostgresArticleRepository implements ArticleRepository {
 
       await this.connection.execute(
         `INSERT INTO articles (
-          id, title, excerpt, content, book_ids, related_links, slug, status, created_at, updated_at, series_id
+          id, title, excerpt, content, book_ids, related_links, slug, status, created_at, updated_at, published_at, series_id
         ) VALUES (
-          $1, $2, $3, $4, $5::text[], $6::jsonb, $7, $8, $9, $10, $11
+          $1, $2, $3, $4, $5::text[], $6::jsonb, $7, $8, $9, $10, $11, $12
         )`,
         [
           primitives.id,
@@ -100,6 +101,7 @@ export class PostgresArticleRepository implements ArticleRepository {
           primitives.status,
           new Date(primitives.createdAt),
           new Date(primitives.updatedAt),
+          primitives.publishedAt ? new Date(primitives.publishedAt) : null,
           primitives.seriesId ?? null,
         ],
       )
@@ -217,13 +219,14 @@ export class PostgresArticleRepository implements ArticleRepository {
              slug = $6,
              status = $7,
              series_id = $8,
+             published_at = $9,
              updated_at = (
                SELECT GREATEST(
                  timezone('UTC', NOW()),
-                 (SELECT updated_at + interval '1 second' FROM articles WHERE id = $9)
+                 (SELECT updated_at + interval '1 second' FROM articles WHERE id = $10)
                )
              )
-         WHERE id = $9`,
+         WHERE id = $10`,
         [
           primitives.title,
           primitives.excerpt,
@@ -233,6 +236,7 @@ export class PostgresArticleRepository implements ArticleRepository {
           primitives.slug,
           primitives.status,
           primitives.seriesId ?? null,
+          primitives.publishedAt ? new Date(primitives.publishedAt) : null,
           primitives.id,
         ],
       )
@@ -297,6 +301,7 @@ export class PostgresArticleRepository implements ArticleRepository {
         status: new ArticleStatus(row.status),
         createdAt: new Date(row.created_at),
         updatedAt: new Date(row.updated_at),
+        publishedAt: row.published_at ? new Date(row.published_at) : undefined,
         seriesId: row.series_id
           ? new ArticleSeriesId(row.series_id)
           : undefined,
