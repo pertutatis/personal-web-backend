@@ -23,6 +23,7 @@ type PrimitiveArticle = {
   status: string
   createdAt: string
   updatedAt: string
+  publishedAt?: string
   seriesId?: string
 }
 
@@ -35,6 +36,7 @@ type CreateArticleParams = {
   relatedLinks?: ArticleRelatedLinks
   createdAt: Date
   updatedAt: Date
+  publishedAt?: Date
   slug?: ArticleSlug
   status?: ArticleStatus
   seriesId?: ArticleSeriesId
@@ -60,6 +62,7 @@ export class Article extends AggregateRoot {
   status: ArticleStatus
   readonly createdAt: Date
   updatedAt: Date
+  publishedAt?: Date
   seriesId?: ArticleSeriesId
 
   constructor(params: CreateArticleParams) {
@@ -74,6 +77,7 @@ export class Article extends AggregateRoot {
     this.status = params.status ?? ArticleStatus.createDraft()
     this.createdAt = params.createdAt
     this.updatedAt = params.updatedAt
+    this.publishedAt = params.publishedAt ?? undefined
     this.seriesId = params.seriesId
   }
 
@@ -161,6 +165,9 @@ export class Article extends AggregateRoot {
       status: this.status.value,
       createdAt: this.createdAt.toISOString(),
       updatedAt: this.updatedAt.toISOString(),
+      publishedAt: this.publishedAt
+        ? this.publishedAt.toISOString()
+        : undefined,
       seriesId: this.seriesId ? this.seriesId.value : undefined,
     }
   }
@@ -176,6 +183,7 @@ export class Article extends AggregateRoot {
 
     this.status = publishedStatus
     this.updatedAt = now
+    this.publishedAt = now
 
     this.record(
       new ArticleUpdatedDomainEvent({
