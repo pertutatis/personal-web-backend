@@ -1,0 +1,78 @@
+swagger: "2.0"
+info:
+  title: Blog API
+  version: "1.0.0"
+  description: API pública para artículos del blog, incluyendo ordenación por publishedAt y datos de serie.
+basePath: /api
+schemes:
+  - http
+paths:
+  /blog/articles:
+    get:
+      summary: Listar artículos publicados
+      description: Devuelve todos los artículos con status PUBLISHED, ordenados por publishedAt descendente.
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Lista de artículos publicados
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/BlogArticle'
+  /blog/articles/by-slug/{slug}:
+    get:
+      summary: Obtener detalle de artículo por slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          type: string
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Detalle del artículo
+          schema:
+            $ref: '#/definitions/BlogArticle'
+        404:
+          description: Artículo no encontrado
+definitions:
+  Serie:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+      title:
+        type: string
+      description:
+        type: string
+      createdAt:
+        type: string
+        format: date-time
+      updatedAt:
+        type: string
+        format: date-time
+  BlogArticle:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+      slug:
+        type: string
+      title:
+        type: string
+      body:
+        type: string
+      publishedAt:
+        type: string
+        format: date-time
+      serie:
+        $ref: '#/definitions/Serie'
+      books:
+        type: array
+        items:
+          type: string
+          format: uuid
