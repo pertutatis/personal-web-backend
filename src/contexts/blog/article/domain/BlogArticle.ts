@@ -15,6 +15,7 @@ export class BlogArticle {
     readonly slug: string,
     readonly createdAt: Date,
     readonly updatedAt: Date,
+    readonly publishedAt?: Date,
     readonly serie?: {
       id: string
       title: string
@@ -38,6 +39,7 @@ export class BlogArticle {
       this.slug,
       this.createdAt,
       this.updatedAt,
+      this.publishedAt,
       this.serie ? { ...this.serie } : undefined,
     )
   }

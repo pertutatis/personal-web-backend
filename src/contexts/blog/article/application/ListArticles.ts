@@ -16,8 +16,12 @@ export class ListArticles {
     const articles = await this.repository.findAll()
 
     // Sort by creation date, newest first
-    return articles.sort(
-      (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
-    )
+    return articles.sort((a, b) => {
+      if (!a.publishedAt || !b.publishedAt) {
+        return 0 // If either article has no published date, keep original order
+      }
+
+      return b.publishedAt.getTime() - a.publishedAt.getTime()
+    })
   }
 }

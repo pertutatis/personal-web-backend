@@ -16,6 +16,7 @@ describe('BlogArticle', () => {
     const createdAt = new Date('2024-01-01')
     const updatedAt = new Date('2024-01-02')
 
+    const publishedAt = new Date('2024-01-03')
     const article = new BlogArticle(
       id,
       title,
@@ -26,6 +27,7 @@ describe('BlogArticle', () => {
       slug,
       createdAt,
       updatedAt,
+      publishedAt,
     )
 
     expect(article.id).toBe(id)
@@ -135,6 +137,7 @@ describe('BlogArticle', () => {
       slug,
       createdAt,
       updatedAt,
+      undefined, // publishedAt
       serie,
     )
 

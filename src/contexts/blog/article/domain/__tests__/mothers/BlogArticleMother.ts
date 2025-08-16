@@ -16,6 +16,14 @@ export class BlogArticleMother {
     slug: string = 'clean-code-writing-maintainable-code',
     createdAt: Date = new Date('2024-01-01'),
     updatedAt: Date = new Date('2024-01-02'),
+    publishedAt?: Date,
+    serie?: {
+      id: string
+      title: string
+      description: string
+      createdAt: string
+      updatedAt: string
+    } | null,
   ): BlogArticle {
     return new BlogArticle(
       id,
@@ -27,6 +35,8 @@ export class BlogArticleMother {
       slug,
       createdAt,
       updatedAt,
+      publishedAt,
+      serie,
     )
   }
 
@@ -39,6 +49,9 @@ export class BlogArticleMother {
       [],
       [{ text: 'Clean Code Book', url: 'https://example.com/book' }],
       'writing-clean-code',
+      new Date('2024-01-01'),
+      new Date('2024-01-02'),
+      new Date('2024-01-01'), // publishedAt
     )
   }
 
@@ -51,6 +64,9 @@ export class BlogArticleMother {
       BlogBookMother.createMultiple(2),
       [],
       'writing-clean-code',
+      new Date('2024-01-01'),
+      new Date('2024-01-02'),
+      new Date('2024-01-01'), // publishedAt
     )
   }
 
@@ -69,6 +85,9 @@ export class BlogArticleMother {
           },
         ],
         `article-${index + 1}`,
+        new Date(`2024-01-0${index + 1}`),
+        new Date(`2024-01-0${index + 1}`),
+        new Date(`2024-01-0${index + 1}`), // publishedAt
       ),
     )
   }
