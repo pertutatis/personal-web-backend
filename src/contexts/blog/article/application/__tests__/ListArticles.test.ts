@@ -23,7 +23,7 @@ describe('ListArticles', () => {
       'article-1',
       new Date('2024-01-01'), // updatedAt
       new Date('2024-01-01'),
-      new Date('2024-01-01'), // publishedAt
+      new Date('2024-01-05'), // publishedAt
     )
 
     const article2 = BlogArticleMother.create(
@@ -62,9 +62,9 @@ describe('ListArticles', () => {
 
     // Verify articles are returned in correct order (newest first)
     expect(articles).toHaveLength(3)
-    expect(articles[0].id).toBe('article-3')
-    expect(articles[1].id).toBe('article-2')
-    expect(articles[2].id).toBe('article-1')
+    expect(articles[0].id).toBe('article-1')
+    expect(articles[1].id).toBe('article-3')
+    expect(articles[2].id).toBe('article-2')
   })
 
   it('should return empty array when no articles exist', async () => {

@@ -60,7 +60,7 @@ export class PostgresBlogArticleRepository implements BlogArticleRepository {
       FROM articles a
       LEFT JOIN series s ON a.series_id = s.id
       WHERE a.status = 'PUBLISHED'
-      ORDER BY a.created_at DESC;
+      ORDER BY a.published_at DESC;
     `
 
     const articlesResult =
@@ -114,6 +114,7 @@ export class PostgresBlogArticleRepository implements BlogArticleRepository {
         a.slug,
         a.created_at,
         a.updated_at,
+        a.published_at,
         a.series_id,
         s.title as series_title,
         s.description as series_description,
