@@ -2,21 +2,22 @@
 
 ## Current Focus
 
-- Implementación de la funcionalidad de publicación y ordenación de artículos en el blog
-- Añadir campo `publishedAt` al modelo de artículo
-- Modificar el proceso de publicación para asignar fecha/hora
-- Actualizar el endpoint GET para ordenar por `publishedAt` descendente
-- Documentación y tests siguiendo TDD
+- Implementación de la integración del servidor MCP para gestión automatizada del blog por agente IA
+- Definir comandos MCP: publicación, edición, moderación automática y control de versiones
+- Actualizar arquitectura e infraestructura para incluir adaptador MCP y middleware de autenticación
+- Documentar reglas de negocio, edge-cases y escenarios de test para MCP
+- Actualizar endpoints y contratos para soportar operaciones del agente IA
+- Planificar pruebas de integración y seguridad
 
 ## Decisiones recientes
 
-- ADR [`020-publishedat-ordenacion-articulos.md`](docs/adr/020-publishedat-ordenacion-articulos.md): Añadir campo publishedAt y ordenación por fecha de publicación
-- OBR [`007-publicacion-ordenacion-articulos.md`](docs/obr/007-publicacion-ordenacion-articulos.md): Reglas de negocio, casos de uso y escenarios de test
+- ADR [`014-mcp-server.md`](adr/014-mcp-server.md): Integración de servidor MCP y agente IA
+- OBR [`004-mcp-server-rules.md`](obr/004-mcp-server-rules.md): Reglas de negocio, casos de uso y escenarios de test para MCP
 
 ## Pasos de Desarrollo
 
-1. Actualizar modelo de artículo y migraciones
-2. Modificar proceso de publicación
-3. Actualizar lógica de listado y ordenación
-4. Escribir tests unitarios y e2e
-5. Actualizar documentación Swagger/OpenAPI
+1. Redactar ADR y OBR para MCP
+2. Actualizar memory bank con contexto MCP y agente IA
+3. Definir contratos y comandos MCP
+4. Planificar pruebas de integración y seguridad
+5. Preparar despliegue y monitorización de acciones automáticas

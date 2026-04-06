@@ -6,6 +6,7 @@
 - DDD (Domain-Driven Design)
 - CQRS pattern for queries and commands
 - Event-Driven Architecture
+- Integración MCP: Adaptador MCP en infraestructura para comunicación con agente IA, middleware de autenticación y control de acceso, logging y auditoría de acciones automáticas.
 
 ```mermaid
 graph TD
@@ -15,6 +16,7 @@ graph TD
         BSC[Series Application]
         BAR[Article Repository]
         BSR[Series Repository]
+        MCP[MCP Adapter]
     end
 
     subgraph Backoffice API
@@ -52,6 +54,8 @@ graph TD
     BC --> BSC
     BAC --> BAR
     BSC --> BSR
+    BC --> MCP
+    MCP --> BAC
 
     BOC --> BOAC
     BOC --> BOSC
@@ -93,139 +97,23 @@ classDiagram
         +update()
         +assignToSeries()
         +removeFromSeries()
+        +moderate() // Moderación automática por agente IA
+        +version()  // Control de versiones
     }
 
     class ArticleRepository {
         +findAll()
         +findById()
         +save()
-        +update()
-        +findBySeries()
-    }
-```
-
-### Series Domain
-
-```mermaid
-classDiagram
-    class ArticleSeries {
-        +SeriesId id
-        +SeriesTitle title
-        +SeriesDescription description
-        +Date createdAt
-        +Date updatedAt
-        +create()
-        +update()
         +delete()
+        +findVersions()
     }
 
-    class SeriesRepository {
-        +findAll()
-        +findById()
-        +save()
-        +update()
-        +delete()
+    class MCPAdapter {
+        +connect()
+        +sendCommand()
+        +receiveEvent()
+        +authenticateAgent()
+        +logAction()
     }
-
-    class SeriesId {
-        +String value
-        +validate()
-    }
-
-    class SeriesTitle {
-        +String value
-        +validate()
-    }
-
-    class SeriesDescription {
-        +String value
-        +validate()
-    }
-
-    ArticleSeries --> SeriesId
-    ArticleSeries --> SeriesTitle
-    ArticleSeries --> SeriesDescription
 ```
-
-## Event Flow
-
-```mermaid
-sequenceDiagram
-    participant BOC as Backoffice Controller
-    participant BOSC as Series Application
-    participant BOAC as Article Application
-    participant DOM as Domain
-    participant EVT as Event Bus
-    participant REP as Repositories
-    participant DB as Database
-
-    BOC->>BOSC: Create Series
-    BOSC->>DOM: Create Series Entity
-    DOM->>EVT: Emit SeriesCreatedEvent
-    DOM->>REP: Save Series
-    REP->>DB: Persist Series
-    EVT->>BOAC: Update Article References
-    BOAC->>REP: Update Articles
-    REP->>DB: Persist Articles
-    BOAC->>BOC: Return Response
-```
-
-## Design Patterns
-
-- Repository Pattern para cada dominio
-- Factory Pattern para creación de objetos
-- Command Pattern para operaciones
-- Event-Driven para comunicación entre dominios
-- Strategy Pattern para ordenación de artículos
-- Observer Pattern para reacciones a eventos
-- Decorator Pattern para enriquecer respuestas
-
-## Testing Strategy
-
-- Unit Tests por dominio:
-  - Lógica de dominio
-  - Value Objects
-  - Servicios de aplicación
-  - Validaciones
-- Integration Tests:
-  - Repositorios por dominio
-  - Comunicación entre dominios
-  - Eventos de dominio
-- E2E Tests:
-  - Endpoints API
-  - Flujos completos
-
-## API Design
-
-- Principios REST
-- Separación de endpoints por dominio
-- Uso consistente de métodos HTTP
-- Formatos de respuesta uniformes
-- Manejo de errores por dominio
-- Documentación OpenAPI/Swagger
-
-## Database Patterns
-
-- Tablas separadas por dominio
-- Claves foráneas para referencias
-- Índices optimizados por dominio
-- Soft deletes donde aplique
-- Timestamps para auditoría
-- Constraints específicos por dominio
-
-## Security Patterns
-
-- Autenticación requerida para operaciones de backoffice
-- Autorización basada en roles
-- Validación de entrada por dominio
-- Sanitización de datos
-- Protección contra CSRF
-- Rate Limiting por endpoints
-
-## Performance Patterns
-
-- Caching por dominio
-- Lazy loading de relaciones
-- Optimización de queries
-- Paginación de resultados
-- Índices específicos por dominio
