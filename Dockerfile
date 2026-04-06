@@ -10,6 +10,10 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
+ARG JWT_SECRET
+ARG JWT_EXPIRES_IN=1h
+ENV JWT_SECRET=$JWT_SECRET
+ENV JWT_EXPIRES_IN=$JWT_EXPIRES_IN
 RUN npm run build
 
 # Stage 3: Production

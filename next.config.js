@@ -5,6 +5,11 @@ const nextConfig = {
   output: 'standalone',
   compress: true,
 
+  env: {
+    JWT_SECRET: process.env.JWT_SECRET,
+    JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN,
+  },
+
   images: {
     unoptimized: true,
   },
@@ -20,9 +25,9 @@ const nextConfig = {
         minimize: false,
         moduleIds: 'named',
         splitChunks: false,
-      };
+      }
     }
-    return config;
+    return config
   },
 
   async headers() {
@@ -35,8 +40,8 @@ const nextConfig = {
           { key: 'X-Content-Type-Options', value: 'nosniff' },
         ],
       },
-    ];
+    ]
   },
-};
+}
 
-module.exports = nextConfig;
+module.exports = nextConfig

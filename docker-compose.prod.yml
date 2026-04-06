@@ -3,6 +3,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - JWT_SECRET=${JWT_SECRET}
+        - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-1h}
     container_name: blog-api
     restart: unless-stopped
     ports:
@@ -16,6 +19,8 @@ services:
       - DB_NAME=${DB_NAME}
       - DB_SSL=${DB_SSL:-false}
       - DB_MAX_CONNECTIONS=${DB_MAX_CONNECTIONS:-10}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-1h}
     depends_on:
       blog-db:
         condition: service_healthy
