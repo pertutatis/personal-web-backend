@@ -7,6 +7,7 @@ export const ALLOWED_ORIGINS = [
   'http://localhost:5173', // Vite default port
   'https://diegopertusa.netlify.app',
   'https://diegopertusa.com',
+  'https://blog-api.diegopertusa.com',
 ]
 
 /**

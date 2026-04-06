@@ -21,13 +21,17 @@ export class PostgresConnection implements DatabaseConnection {
     max?: number
   }): Promise<DatabaseConnection> {
     try {
-      // Si estamos en producción, forzamos SSL para Supabase y otros proveedores que lo requieran
-      const isProduction = process.env.NODE_ENV === 'production'
       const poolConfig = { ...config }
-      if (isProduction) {
+
+      const sslEnabled = process.env.DB_SSL === 'true'
+      if (sslEnabled) {
         poolConfig['ssl'] = { rejectUnauthorized: false }
-        poolConfig['max'] = 2 // Limitar conexiones en producción
       }
+
+      const maxConnections =
+        Number(process.env.DB_MAX_CONNECTIONS) || config.max || 10
+      poolConfig['max'] = maxConnections
+
       const pool = new Pool(poolConfig)
       const client = await pool.connect()
       await client.query('SELECT 1')
@@ -38,7 +42,8 @@ export class PostgresConnection implements DatabaseConnection {
         port: config.port,
         database: config.database,
         user: config.user,
-        ssl: isProduction ? 'enabled' : 'disabled',
+        ssl: sslEnabled ? 'enabled' : 'disabled',
+        maxConnections,
       })
 
       return new PostgresConnection(pool, config.database)
