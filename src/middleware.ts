@@ -68,7 +68,7 @@ export async function middleware(request: NextRequest) {
     }
 
     const token = authHeader.replace('Bearer ', '')
-    const config = AuthConfig.getTestConfiguration()
+    const config = AuthConfig.getConfiguration()
     const jwtGenerator = new EdgeJwtTokenGenerator(
       config.secret,
       config.expiresIn,

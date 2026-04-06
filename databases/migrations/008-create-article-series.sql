@@ -2,7 +2,7 @@
 CREATE TABLE series (
   id UUID PRIMARY KEY,
   title VARCHAR(100) NOT NULL UNIQUE,
-  description VARCHAR(500) NOT NULL,
+  description TEXT NOT NULL,
   created_at TIMESTAMP NOT NULL,
   updated_at TIMESTAMP NOT NULL
 );
