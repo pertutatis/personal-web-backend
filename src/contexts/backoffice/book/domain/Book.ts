@@ -5,6 +5,7 @@ import { BookAuthor } from './BookAuthor'
 import { BookIsbn } from './BookIsbn'
 import { BookDescription } from './BookDescription'
 import { BookPurchaseLink } from './BookPurchaseLink'
+import { BookImageUrl } from './BookImageUrl'
 import { BookCreatedDomainEvent } from './event/BookCreatedDomainEvent'
 import { BookUpdatedDomainEvent } from './event/BookUpdatedDomainEvent'
 
@@ -15,6 +16,7 @@ type BookPrimitives = {
   isbn: string
   description: string
   purchaseLink: string | null
+  imageUrl: string | null
   createdAt: Date
   updatedAt: Date
 }
@@ -26,6 +28,7 @@ type CreateBookParams = {
   isbn: BookIsbn
   description: BookDescription
   purchaseLink: BookPurchaseLink
+  imageUrl: BookImageUrl
   createdAt: Date
   updatedAt: Date
 }
@@ -45,6 +48,7 @@ export class Book extends AggregateRoot {
   isbn: BookIsbn
   description: BookDescription
   purchaseLink: BookPurchaseLink
+  imageUrl: BookImageUrl
   readonly createdAt: Date
   updatedAt: Date
 
@@ -56,6 +60,7 @@ export class Book extends AggregateRoot {
     this.isbn = params.isbn
     this.description = params.description
     this.purchaseLink = params.purchaseLink
+    this.imageUrl = params.imageUrl
     this.createdAt = params.createdAt
     this.updatedAt = params.updatedAt
   }
@@ -70,6 +75,7 @@ export class Book extends AggregateRoot {
         isbn: params.isbn.value,
         description: params.description.value,
         purchaseLink: params.purchaseLink.value,
+        imageUrl: params.imageUrl.value,
         createdAt: params.createdAt,
         updatedAt: params.updatedAt,
       }),
@@ -102,6 +108,11 @@ export class Book extends AggregateRoot {
     )
   }
 
+  updateImageUrl(imageUrl: BookImageUrl): void {
+    this.imageUrl = imageUrl
+    this.updatedAt = new Date()
+  }
+
   toFormattedPrimitives(): BookPrimitives {
     return {
       id: this.id.value,
@@ -110,6 +121,7 @@ export class Book extends AggregateRoot {
       isbn: this.isbn.toFormattedString(),
       description: this.description.value,
       purchaseLink: this.purchaseLink.value,
+      imageUrl: this.imageUrl.value,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
     }
@@ -123,6 +135,7 @@ export class Book extends AggregateRoot {
       isbn: this.isbn.value,
       description: this.description.value,
       purchaseLink: this.purchaseLink.value,
+      imageUrl: this.imageUrl.value,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
     }

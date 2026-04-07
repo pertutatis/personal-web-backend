@@ -5,6 +5,7 @@ import { BookAuthor } from '../domain/BookAuthor'
 import { BookIsbn } from '../domain/BookIsbn'
 import { BookDescription } from '../domain/BookDescription'
 import { BookPurchaseLink } from '../domain/BookPurchaseLink'
+import { BookImageUrl } from '../domain/BookImageUrl'
 import { BookRepository } from '../domain/BookRepository'
 
 export type UpdateBookRequest = {
@@ -41,6 +42,7 @@ export class UpdateBook {
           : request.purchaseLink === null
             ? BookPurchaseLink.createEmpty()
             : BookPurchaseLink.create(request.purchaseLink),
+      imageUrl: book.imageUrl,
       createdAt: book.createdAt,
       updatedAt: new Date(),
     })

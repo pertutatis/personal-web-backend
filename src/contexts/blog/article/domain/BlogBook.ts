@@ -10,6 +10,7 @@ export class BlogBook {
     readonly isbn: string,
     readonly description: string,
     readonly purchaseLink: string | null,
+    readonly imageUrl: string | null,
     readonly createdAt: Date,
     readonly updatedAt: Date,
   ) {}
@@ -25,6 +26,7 @@ export class BlogBook {
       this.isbn,
       this.description,
       this.purchaseLink,
+      this.imageUrl,
       this.createdAt,
       this.updatedAt,
     )

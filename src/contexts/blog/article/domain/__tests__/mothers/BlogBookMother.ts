@@ -9,6 +9,7 @@ export class BlogBookMother {
     isbn: string = '9780132350884',
     description: string = 'A book about writing clean code',
     purchaseLink: string | null = 'https://example.com/clean-code',
+    imageUrl: string | null = null,
     createdAt: Date = new Date('2024-01-01'),
     updatedAt: Date = new Date('2024-01-02'),
   ): BlogBook {
@@ -19,6 +20,7 @@ export class BlogBookMother {
       isbn,
       description,
       purchaseLink,
+      imageUrl,
       createdAt,
       updatedAt,
     )

@@ -6,6 +6,7 @@ import { BookAuthor } from '../domain/BookAuthor'
 import { BookIsbn } from '../domain/BookIsbn'
 import { BookDescription } from '../domain/BookDescription'
 import { BookPurchaseLink } from '../domain/BookPurchaseLink'
+import { BookImageUrl } from '../domain/BookImageUrl'
 import { BookIdDuplicated } from '../domain/BookIdDuplicated'
 import { BookIsbnDuplicated } from '../domain/BookIsbnDuplicated'
 import { Collection } from '@/contexts/shared/domain/Collection'
@@ -18,6 +19,7 @@ interface BookRow {
   isbn: string
   description: string
   purchase_link: string | null
+  image_url: string | null
   created_at: Date
   updated_at: Date
 }
@@ -39,8 +41,9 @@ export class PostgresBookRepository implements BookRepository {
 
     const primitives = book.toPrimitives()
     const purchaseLink = primitives.purchaseLink || null
+    const imageUrl = primitives.imageUrl || null
     await this.connection.execute(
-      'INSERT INTO books (id, title, author, isbn, description, purchase_link, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
+      'INSERT INTO books (id, title, author, isbn, description, purchase_link, image_url, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)',
       [
         primitives.id,
         primitives.title,
@@ -48,6 +51,7 @@ export class PostgresBookRepository implements BookRepository {
         primitives.isbn,
         primitives.description,
         purchaseLink,
+        imageUrl,
         primitives.createdAt,
         primitives.updatedAt,
       ],
@@ -125,14 +129,16 @@ export class PostgresBookRepository implements BookRepository {
   async update(book: Book): Promise<void> {
     const primitives = book.toPrimitives()
     const purchaseLink = primitives.purchaseLink || null
+    const imageUrl = primitives.imageUrl || null
     await this.connection.execute(
-      'UPDATE books SET title = $1, author = $2, isbn = $3, description = $4, purchase_link = $5, updated_at = $6 WHERE id = $7',
+      'UPDATE books SET title = $1, author = $2, isbn = $3, description = $4, purchase_link = $5, image_url = $6, updated_at = $7 WHERE id = $8',
       [
         primitives.title,
         primitives.author,
         primitives.isbn,
         primitives.description,
         purchaseLink,
+        imageUrl,
         primitives.updatedAt,
         primitives.id,
       ],
@@ -166,6 +172,9 @@ export class PostgresBookRepository implements BookRepository {
       purchaseLink: row.purchase_link
         ? BookPurchaseLink.create(row.purchase_link)
         : BookPurchaseLink.createEmpty(),
+      imageUrl: row.image_url
+        ? BookImageUrl.create(row.image_url)
+        : BookImageUrl.createEmpty(),
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     })

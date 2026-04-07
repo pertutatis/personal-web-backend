@@ -7,6 +7,7 @@ export type BookCreatedDomainEventProps = {
   isbn: string
   description: string
   purchaseLink: string | null
+  imageUrl: string | null
   createdAt: Date
   updatedAt: Date
 }
@@ -19,6 +20,7 @@ export class BookCreatedDomainEvent extends DomainEvent {
   readonly isbn: string
   readonly description: string
   readonly purchaseLink: string | null
+  readonly imageUrl: string | null
   readonly createdAt: Date
   readonly updatedAt: Date
 
@@ -30,6 +32,7 @@ export class BookCreatedDomainEvent extends DomainEvent {
     this.isbn = props.isbn
     this.description = props.description
     this.purchaseLink = props.purchaseLink
+    this.imageUrl = props.imageUrl
     this.createdAt = props.createdAt
     this.updatedAt = props.updatedAt
   }
@@ -42,6 +45,7 @@ export class BookCreatedDomainEvent extends DomainEvent {
       isbn: this.isbn,
       description: this.description,
       purchaseLink: this.purchaseLink,
+      imageUrl: this.imageUrl,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
     }

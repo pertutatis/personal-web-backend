@@ -31,6 +31,7 @@ interface BookRow {
   isbn: string | null
   description: string | null
   purchase_link: string | null
+  image_url: string | null
   created_at: Date
   updated_at: Date
 }
@@ -169,6 +170,7 @@ export class PostgresBlogArticleRepository implements BlogArticleRepository {
           book.isbn ?? '',
           book.description ?? '',
           book.purchase_link ?? '',
+          book.image_url ?? null,
           new Date(book.created_at),
           new Date(book.updated_at),
         ),

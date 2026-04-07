@@ -5,6 +5,7 @@ import { BookAuthor } from '../BookAuthor'
 import { BookIsbn } from '../BookIsbn'
 import { BookDescription } from '../BookDescription'
 import { BookPurchaseLink } from '../BookPurchaseLink'
+import { BookImageUrl } from '../BookImageUrl'
 import { BookTitleEmpty } from '../BookTitleEmpty'
 import { BookAuthorEmpty } from '../BookAuthorEmpty'
 import { InvalidBookIsbn } from '../InvalidBookIsbn'
@@ -45,6 +46,7 @@ describe('Book', () => {
         isbn: new BookIsbn('9780132350884'),
         description: new BookDescription('Test'),
         purchaseLink: BookPurchaseLink.createEmpty(),
+        imageUrl: BookImageUrl.createEmpty(),
         createdAt: new Date(),
         updatedAt: new Date(),
       })
@@ -70,6 +72,7 @@ describe('Book', () => {
       isbn: new BookIsbn('9780141036144'),
       description: new BookDescription('Test Description'),
       purchaseLink: BookPurchaseLink.createEmpty(),
+      imageUrl: BookImageUrl.createEmpty(),
       createdAt: defaultDate,
       updatedAt: defaultDate,
     })
@@ -133,6 +136,7 @@ describe('Book', () => {
       isbn: '978-0-13-235088-4',
       description: 'A comprehensive guide to writing clean code',
       purchaseLink: 'https://example.com/clean-code',
+      imageUrl: null,
       createdAt: defaultDate,
       updatedAt: defaultDate,
     })

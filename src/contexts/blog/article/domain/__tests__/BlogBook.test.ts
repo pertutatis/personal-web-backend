@@ -12,6 +12,8 @@ describe('BlogBook', () => {
     const createdAt = new Date('2024-01-01')
     const updatedAt = new Date('2024-01-02')
 
+    const imageUrl = '/uploads/books/test.jpg'
+
     const book = new BlogBook(
       id,
       title,
@@ -19,6 +21,7 @@ describe('BlogBook', () => {
       isbn,
       description,
       purchaseLink,
+      imageUrl,
       createdAt,
       updatedAt,
     )
@@ -29,6 +32,7 @@ describe('BlogBook', () => {
     expect(book.isbn).toBe(isbn)
     expect(book.description).toBe(description)
     expect(book.purchaseLink).toBe(purchaseLink)
+    expect(book.imageUrl).toBe(imageUrl)
     expect(book.createdAt).toBe(createdAt)
     expect(book.updatedAt).toBe(updatedAt)
   })

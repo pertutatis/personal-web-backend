@@ -5,6 +5,7 @@ import { BookAuthor } from '../../BookAuthor'
 import { BookIsbn } from '../../BookIsbn'
 import { BookDescription } from '../../BookDescription'
 import { BookPurchaseLink } from '../../BookPurchaseLink'
+import { BookImageUrl } from '../../BookImageUrl'
 
 const DEFAULT_UUID = '123e4567-e89b-4456-a456-426614174000' // Valid UUID v4 format
 
@@ -28,6 +29,7 @@ export class BookMother {
       purchaseLink:
         purchaseLink ||
         BookPurchaseLink.create('https://example.com/clean-code'),
+      imageUrl: BookImageUrl.createEmpty(),
       createdAt: new Date(),
       updatedAt: new Date(),
     })
@@ -43,6 +45,7 @@ export class BookMother {
         'A comprehensive guide to writing clean code',
       ),
       purchaseLink: BookPurchaseLink.create('https://example.com/clean-code'),
+      imageUrl: BookImageUrl.createEmpty(),
       createdAt,
       updatedAt,
     })

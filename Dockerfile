@@ -27,6 +27,9 @@ RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+
+RUN mkdir -p /app/public/uploads/books && chown -R nextjs:nodejs /app/public/uploads
 
 USER nextjs
 

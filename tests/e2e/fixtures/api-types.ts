@@ -12,6 +12,7 @@ export interface BookResponse {
   isbn: string
   description: string
   purchaseLink: string | null
+  imageUrl: string | null
   createdAt: string
   updatedAt: string
 }
