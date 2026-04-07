@@ -48,7 +48,7 @@ export async function POST(
     const buffer = Buffer.from(bytes)
     await writeFile(path.join(uploadsDir, fileName), buffer)
 
-    const imageUrl = `/uploads/books/${fileName}`
+    const imageUrl = `/api/uploads/books/${fileName}`
 
     const connection = await getConnection()
     const repository = new PostgresBookRepository(connection)
